@@ -20,3 +20,53 @@
 
 ### Подсказки
 - `os.OpenFile`, `os.Create`,`os.ReadALL`,`os.Args`
+
+---
+
+## Решение
+
+### Информация о функционале:
+
+go run cmd/main.go help
+
+    Это утилита для управления ПВЗ.
+
+    Применение:
+        go run cmd/main.go [flags] [command]
+    
+    command:            Описание:                                flags:
+        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024
+        delete            Вернуть заказ курьеру (удалить).         -id=1212
+        giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
+        list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
+        return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
+        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2
+
+
+
+---
+
+### Входные данные:
+
+    Принять заказ (создать):
+        go run cmd/main.go -id=1212 -clientid=9886 -shelflife=15.09.2024 create
+        go run cmd/main.go -id=1213 -clientid=9886 -shelflife=15.09.2024 create
+        go run cmd/main.go -id=1214 -clientid=9886 -shelflife=15.09.2024 create
+
+    Вернуть заказ курьеру (удалить):
+        go run cmd/main.go -id=1212 delete
+
+    Выдать заказ клиенту:
+        go run cmd/main.go -ids=[1212,1214] giveout
+
+    Получить список заказов:
+        go run cmd/main.go -clientid=9886 list
+        go run cmd/main.go -clientid=9886 -inpvz=true list
+        go run cmd/main.go -clientid=9886 -lastn=2 -inpvz=true list
+
+    Возврат заказа клиентом:
+        go run cmd/main.go -id=1212 -clientid=9886 return
+
+    Получить список возвращенных товаров:
+        go run cmd/main.go -pagenum=1 -itemsonpage=2 listofreturned
+    
