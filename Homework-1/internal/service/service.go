@@ -89,7 +89,7 @@ func (s *Service) Work() error {
 		datePattern := "02.01.2006"
 		shelfLife, err := time.Parse(datePattern, *shelfLifeStr)
 		if err != nil {
-			fmt.Println(err)
+			return errors.New("Неправльный формат даты")
 		}
 
 		newOrder := model.Order{
