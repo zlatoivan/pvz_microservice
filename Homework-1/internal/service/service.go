@@ -10,6 +10,20 @@ import (
 	"time"
 )
 
+const helpConst = `Это утилита для управления ПВЗ.
+
+Применение:
+        go run cmd/main.go [flags] [command]
+
+command:            Описание:                                flags:
+        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024
+        delete            Вернуть заказ курьеру (удалить).         -id=1212
+        giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
+        list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
+        return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
+        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2
+`
+
 type storage interface {
 	Create(order model.Order) error
 	Delete(id int) error
@@ -28,19 +42,7 @@ func New(s storage) Service {
 }
 
 func (s *Service) Help() error {
-	fmt.Print(
-		"Это утилита для управления ПВЗ.\n\n" +
-			"Применение:\n" +
-			"\tgo run cmd/main.go [flags] [command]\n\n" +
-			"command:            Описание:                                flags:\n" +
-			"\tcreate            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024\n" +
-			"\tdelete            Вернуть заказ курьеру (удалить).         -id=1212\n" +
-			"\tgiveout           Выдать заказ клиенту.                    -ids=[1212,1214]\n" +
-			"\tlist              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)\n" +
-			"\treturn            Возврат заказа клиентом.                 -id=1212 -clientid=9886\n" +
-			"\tlistofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2\n",
-	)
-
+	fmt.Print(helpConst)
 	return nil
 }
 
