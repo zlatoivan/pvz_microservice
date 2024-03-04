@@ -93,7 +93,7 @@ func (s *Service) Delete(id int) error {
 }
 
 func (s *Service) GiveOut(idsStr string) error {
-	idsToSplit := (idsStr)[1 : len(idsStr)-1]
+	idsToSplit := idsStr[1 : len(idsStr)-1]
 	idsToInt := strings.Split(idsToSplit, ",")
 	ids := make([]int, len(idsToInt))
 	for i := range idsToInt {
