@@ -27,28 +27,142 @@ func New(s storage) Service {
 	return Service{stor: s}
 }
 
-func (s *Service) Create(order model.Order) error {
-	return s.stor.Create(order)
+func (s *Service) Help() error {
+	fmt.Print(
+		"Это утилита для управления ПВЗ.\n\n" +
+			"Применение:\n" +
+			"\tgo run cmd/main.go [flags] [command]\n\n" +
+			"command:            Описание:                                flags:\n" +
+			"\tcreate            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024\n" +
+			"\tdelete            Вернуть заказ курьеру (удалить).         -id=1212\n" +
+			"\tgiveout           Выдать заказ клиенту.                    -ids=[1212,1214]\n" +
+			"\tlist              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)\n" +
+			"\treturn            Возврат заказа клиентом.                 -id=1212 -clientid=9886\n" +
+			"\tlistofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2\n",
+	)
+
+	return nil
 }
 
-func (s *Service) Delete(id int) error {
-	return s.stor.Delete(id)
+func (s *Service) Create(id *int, clientId *int, shelfLifeStr *string) error {
+	if *id == -1 || *clientId == -1 || *shelfLifeStr == "-" {
+		return errors.New("Неправильный формат входных данных")
+	}
+
+	// Привести срок хранения к типу даты
+	datePattern := "02.01.2006"
+	shelfLife, err := time.Parse(datePattern, *shelfLifeStr)
+	if err != nil {
+		return errors.New("Неправльный формат даты")
+	}
+
+	newOrder := model.Order{
+		Id:          *id,
+		ClientId:    *clientId,
+		ShelfLife:   shelfLife,
+		IsDeleted:   false,
+		IsGaveOut:   false,
+		GiveOutTime: time.Date(1, 0, 0, 0, 0, 0, 0, time.UTC),
+		IsReturned:  false,
+	}
+	err = s.stor.Create(newOrder)
+	if err != nil {
+		return errors.New("Ошибка создания заказа: " + err.Error())
+	}
+
+	fmt.Println("Заказ принят")
+
+	return nil
 }
 
-func (s *Service) Giveout(ids []int) error {
-	return s.stor.Giveout(ids)
+func (s *Service) Delete(id *int) error {
+	if *id == -1 {
+		return errors.New("Неправильный формат входных данных")
+	}
+
+	err := s.stor.Delete(*id)
+	if err != nil {
+		return errors.New("Ошибка удаления заказа: " + err.Error())
+	}
+
+	fmt.Println("Заказ удален")
+
+	return nil
 }
 
-func (s *Service) List(id int, lastn int, inpvz bool) ([]int, error) {
-	return s.stor.List(id, lastn, inpvz)
+func (s *Service) Giveout(idsStr *string) error {
+	idsToSplit := (*idsStr)[1 : len(*idsStr)-1]
+	idsToInt := strings.Split(idsToSplit, ",")
+	ids := make([]int, len(idsToInt))
+	for i := range idsToInt {
+		idInt, err := strconv.Atoi(idsToInt[i])
+		if err != nil {
+			return errors.New("Неверные id заказов " + idsToInt[i])
+		}
+		ids[i] = idInt
+	}
+
+	err := s.stor.Giveout(ids)
+	if err != nil {
+		return errors.New("Ошибка выдачи заказов клиенту: " + err.Error())
+	}
+
+	fmt.Println("Заказы выданы клиенту")
+
+	return nil
 }
 
-func (s *Service) Return(id int, clientId int) error {
-	return s.stor.Return(id, clientId)
+func (s *Service) List(clientId *int, lastn *int, inPvz *bool) error {
+	if *clientId == -1 {
+		return errors.New("Неправильный формат входных данных")
+	}
+
+	list, err := s.stor.List(*clientId, *lastn, *inPvz)
+	if err != nil {
+		return errors.New("Ошибка получения списка заказов клиента: " + err.Error())
+	}
+
+	if len(list) == 0 {
+		return errors.New("У данного пользователя нет заказов с такими параметрами")
+	}
+
+	fmt.Println("Заказы клиента:", list)
+
+	return nil
 }
 
-func (s *Service) ListOfRuturned(pagenum int, itemsonpage int) ([]int, error) {
-	return s.stor.ListOfReturned(pagenum, itemsonpage)
+func (s *Service) Return(id *int, clientId *int) error {
+	if *id == -1 || *clientId == -1 {
+		return errors.New("Неправильный формат входных данных")
+	}
+
+	err := s.stor.Return(*id, *clientId)
+	if err != nil {
+		return errors.New("Ошибка возврата заказа: " + err.Error())
+	}
+
+	fmt.Println("Возврат заказа принят")
+
+	return nil
+}
+
+func (s *Service) ListOfReturned(pagenum *int, itemsonpage *int) error {
+	if *pagenum == -1 || *itemsonpage == -1 {
+		return errors.New("Неправильный формат входных данных")
+	}
+
+	list, err := s.stor.ListOfReturned(*pagenum, *itemsonpage)
+	if err != nil {
+		return errors.New("Ошибка получения списка возвращенных заказов: " + err.Error())
+	}
+
+	if len(list) == 0 {
+		return errors.New("Возвращенных заказов нет")
+	}
+
+	fmt.Printf("Возвращенные заказы (стр.%d; %d заказа на стр.):\n%v\n", *pagenum, *itemsonpage, list)
+
+	return nil
 }
 
 func (s *Service) Work() error {
@@ -67,125 +181,20 @@ func (s *Service) Work() error {
 	// Бизнес-логика
 	switch command {
 	case "help":
-		fmt.Print(
-			"Это утилита для управления ПВЗ.\n\n" +
-				"Применение:\n" +
-				"\tgo run cmd/main.go [flags] [command]\n\n" +
-				"command:            Описание:                                flags:\n" +
-				"\tcreate            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024\n" +
-				"\tdelete            Вернуть заказ курьеру (удалить).         -id=1212\n" +
-				"\tgiveout           Выдать заказ клиенту.                    -ids=[1212,1214]\n" +
-				"\tlist              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)\n" +
-				"\treturn            Возврат заказа клиентом.                 -id=1212 -clientid=9886\n" +
-				"\tlistofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2\n",
-		)
-
+		return s.Help()
 	case "create":
-		if *id == -1 || *clientId == -1 || *shelfLifeStr == "-" {
-			return errors.New("Неправильный формат входных данных")
-		}
-
-		// Привести срок хранения к типу даты
-		datePattern := "02.01.2006"
-		shelfLife, err := time.Parse(datePattern, *shelfLifeStr)
-		if err != nil {
-			return errors.New("Неправльный формат даты")
-		}
-
-		newOrder := model.Order{
-			Id:          *id,
-			ClientId:    *clientId,
-			ShelfLife:   shelfLife,
-			IsDeleted:   false,
-			IsGaveOut:   false,
-			GiveOutTime: time.Date(1, 0, 0, 0, 0, 0, 0, time.UTC),
-			IsReturned:  false,
-		}
-		err = s.Create(newOrder)
-		if err != nil {
-			return errors.New("Ошибка создания заказа: " + err.Error())
-		}
-
-		fmt.Println("Заказ принят")
-
+		return s.Create(id, clientId, shelfLifeStr)
 	case "delete":
-		if *id == -1 {
-			return errors.New("Неправильный формат входных данных")
-		}
-
-		err := s.Delete(*id)
-		if err != nil {
-			return errors.New("Ошибка удаления заказа: " + err.Error())
-		}
-
-		fmt.Println("Заказ удален")
-
+		return s.Delete(id)
 	case "giveout":
-		idsToSplit := (*idsStr)[1 : len(*idsStr)-1]
-		idsToInt := strings.Split(idsToSplit, ",")
-		ids := make([]int, len(idsToInt))
-		for i := range idsToInt {
-			idInt, err := strconv.Atoi(idsToInt[i])
-			if err != nil {
-				return errors.New("Неверные id заказов " + idsToInt[i])
-			}
-			ids[i] = idInt
-		}
-
-		err := s.Giveout(ids)
-		if err != nil {
-			return errors.New("Ошибка выдачи заказов клиенту: " + err.Error())
-		}
-
-		fmt.Println("Заказы выданы клиенту")
-
+		return s.Giveout(idsStr)
 	case "list":
-		if *clientId == -1 {
-			return errors.New("Неправильный формат входных данных")
-		}
-
-		list, err := s.List(*clientId, *lastn, *inPvz)
-		if err != nil {
-			return errors.New("Ошибка получения списка заказов клиента: " + err.Error())
-		}
-
-		if len(list) == 0 {
-			return errors.New("У данного пользователя нет заказов с такими параметрами")
-		}
-
-		fmt.Println("Заказы клиента:", list)
-
+		return s.List(clientId, lastn, inPvz)
 	case "return":
-		if *id == -1 || *clientId == -1 {
-			return errors.New("Неправильный формат входных данных")
-		}
-
-		err := s.Return(*id, *clientId)
-		if err != nil {
-			return errors.New("Ошибка возврата заказа: " + err.Error())
-		}
-
-		fmt.Println("Возврат заказа принят")
-
+		return s.Return(id, clientId)
 	case "listofreturned":
-		if *pagenum == -1 || *itemsonpage == -1 {
-			return errors.New("Неправильный формат входных данных")
-		}
-
-		list, err := s.ListOfRuturned(*pagenum, *itemsonpage)
-		if err != nil {
-			return errors.New("Ошибка получения списка возвращенных заказов: " + err.Error())
-		}
-
-		if len(list) == 0 {
-			return errors.New("Возвращенных заказов нет")
-		}
-
-		fmt.Printf("Возвращенные заказы (стр.%d; %d заказа на стр.):\n%v\n", *pagenum, *itemsonpage, list)
-
+		return s.ListOfReturned(pagenum, itemsonpage)
 	default:
 		return errors.New("Неизвестная команда")
 	}
-
-	return nil
 }
