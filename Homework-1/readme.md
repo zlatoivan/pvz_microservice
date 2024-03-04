@@ -42,8 +42,6 @@ go run cmd/main.go help
         return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
         listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2
 
----
-
 ### Входные данные:
 
     Принять заказ (создать):
