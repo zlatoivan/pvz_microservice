@@ -27,7 +27,7 @@ command:            Описание:                                flags:
 type storage interface {
 	Create(order model.Order) error
 	Delete(id int) error
-	Giveout(ids []int) error
+	GiveOut(ids []int) error
 	List(id int, lastn int, inpvz bool) ([]int, error)
 	Return(id int, clientId int) error
 	ListOfReturned(pagenum int, itemsonpage int) ([]int, error)
@@ -92,7 +92,7 @@ func (s *Service) Delete(id int) error {
 	return nil
 }
 
-func (s *Service) Giveout(idsStr string) error {
+func (s *Service) GiveOut(idsStr string) error {
 	idsToSplit := (idsStr)[1 : len(idsStr)-1]
 	idsToInt := strings.Split(idsToSplit, ",")
 	ids := make([]int, len(idsToInt))
@@ -104,7 +104,7 @@ func (s *Service) Giveout(idsStr string) error {
 		ids[i] = idInt
 	}
 
-	err := s.stor.Giveout(ids)
+	err := s.stor.GiveOut(ids)
 	if err != nil {
 		return errors.New("Ошибка выдачи заказов клиенту: " + err.Error())
 	}
@@ -189,7 +189,7 @@ func (s *Service) Work() error {
 	case "delete":
 		return s.Delete(*id)
 	case "giveout":
-		return s.Giveout(*idsStr)
+		return s.GiveOut(*idsStr)
 	case "list":
 		return s.List(*clientId, *lastn, *inPvz)
 	case "return":

@@ -120,7 +120,7 @@ func (s *Storage) Delete(id int) error {
 	return nil
 }
 
-func (s *Storage) Giveout(ids []int) error {
+func (s *Storage) GiveOut(ids []int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
