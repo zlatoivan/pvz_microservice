@@ -244,8 +244,10 @@ func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 		if i == len(all) {
 			break
 		}
-		v := all[i]
-		list = append(list, v.Id)
+		if all[i].IsDeleted {
+			continue
+		}
+		list = append(list, all[i].Id)
 	}
 
 	return list, nil
