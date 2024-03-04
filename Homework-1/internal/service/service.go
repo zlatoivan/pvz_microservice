@@ -42,7 +42,7 @@ func New(s storage) Service {
 }
 
 func (s *Service) Help() error {
-	fmt.Print(helpConst)
+	fmt.Println(helpConst)
 	return nil
 }
 
