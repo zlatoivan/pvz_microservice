@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"route_256/homework/Homework-1/internal/model"
 	"strconv"
 	"time"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 type Storage struct {
@@ -15,12 +16,12 @@ type Storage struct {
 
 const storagePath = "db/db.txt"
 
-func New() (Storage, error) {
+func New() (*Storage, error) {
 	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
 	if err != nil {
-		return Storage{}, err
+		return &Storage{}, err
 	}
-	return Storage{storage: file}, nil
+	return &Storage{storage: file}, nil
 }
 
 func (s *Storage) listAll() ([]model.Order, error) {
@@ -243,10 +244,9 @@ func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 		if i == len(all) {
 			break
 		}
-		if all[i].IsDeleted {
-			continue
+		if all[i].IsReturned && !all[i].IsDeleted {
+			list = append(list, all[i].ID)
 		}
-		list = append(list, all[i].ID)
 	}
 
 	return list, nil

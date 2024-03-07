@@ -4,8 +4,9 @@ import (
 	"errors"
 	"log"
 	"os"
-	"route_256/homework/Homework-1/internal/service"
-	"route_256/homework/Homework-1/internal/storage"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/service"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage"
 )
 
 func validateArgs() error {
@@ -27,7 +28,7 @@ func main() {
 		log.Fatalf("storage.New: %v", err)
 	}
 
-	serv, err := service.New(&store)
+	serv, err := service.New(store)
 	if err != nil {
 		log.Fatalf("service.New: %v", err)
 	}

@@ -3,10 +3,11 @@ package service
 import (
 	"flag"
 	"fmt"
-	"route_256/homework/Homework-1/internal/model"
 	"strconv"
 	"strings"
 	"time"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 const helpConst = `Это утилита для управления ПВЗ.
