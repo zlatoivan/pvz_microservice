@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"route_256/homework/Homework-1/internal/model"
@@ -21,8 +20,9 @@ command:            Описание:                                flags:
         giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
         list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
         return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
-        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2
-`
+        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2`
+
+const dateLayoutConst = "02.01.2006"
 
 type storage interface {
 	Create(order model.Order) error
@@ -34,60 +34,59 @@ type storage interface {
 }
 
 type Service struct {
-	stor storage
+	store storage
 }
 
-func New(s storage) Service {
-	return Service{stor: s}
+func New(s storage) (Service, error) {
+	return Service{store: s}, nil
 }
 
 func (s *Service) Help() error {
 	fmt.Println(helpConst)
+	fmt.Println()
 	return nil
 }
 
 func (s *Service) Create(id int, clientId int, shelfLifeStr string) error {
 	if id == -1 || clientId == -1 || shelfLifeStr == "-" {
-		return errors.New("Неправильный формат входных данных")
+		return fmt.Errorf("incorrect input data format")
 	}
 
 	// Привести срок хранения к типу даты
-	datePattern := "02.01.2006"
-	shelfLife, err := time.Parse(datePattern, shelfLifeStr)
+	shelfLife, err := time.Parse(dateLayoutConst, shelfLifeStr)
 	if err != nil {
-		return errors.New("Неправльный формат даты")
+		return fmt.Errorf("incorrect date format")
 	}
 
 	newOrder := model.Order{
-		Id:          id,
-		ClientId:    clientId,
-		ShelfLife:   shelfLife,
+		ID:          id,
+		ClientID:    clientId,
+		StoresTill:  shelfLife,
 		IsDeleted:   false,
-		IsGaveOut:   false,
-		GiveOutTime: time.Date(1, 0, 0, 0, 0, 0, 0, time.UTC),
+		GiveOutTime: time.Time{}, // zero value
 		IsReturned:  false,
 	}
-	err = s.stor.Create(newOrder)
+	err = s.store.Create(newOrder)
 	if err != nil {
-		return errors.New("Ошибка создания заказа: " + err.Error())
+		return fmt.Errorf("s.store.Create: %w", err)
 	}
 
-	fmt.Println("Заказ принят")
+	fmt.Println("The order is accepted")
 
 	return nil
 }
 
 func (s *Service) Delete(id int) error {
 	if id == -1 {
-		return errors.New("Неправильный формат входных данных")
+		return fmt.Errorf("incorrect input data format")
 	}
 
-	err := s.stor.Delete(id)
+	err := s.store.Delete(id)
 	if err != nil {
-		return errors.New("Ошибка удаления заказа: " + err.Error())
+		return fmt.Errorf("s.store.Delete: %w", err)
 	}
 
-	fmt.Println("Заказ удален")
+	fmt.Println("The order has been deleted")
 
 	return nil
 }
@@ -99,70 +98,70 @@ func (s *Service) GiveOut(idsStr string) error {
 	for i := range idsToInt {
 		idInt, err := strconv.Atoi(idsToInt[i])
 		if err != nil {
-			return errors.New("Неверные id заказов " + idsToInt[i])
+			return fmt.Errorf("invalid order IDs " + idsToInt[i])
 		}
 		ids[i] = idInt
 	}
 
-	err := s.stor.GiveOut(ids)
+	err := s.store.GiveOut(ids)
 	if err != nil {
-		return errors.New("Ошибка выдачи заказов клиенту: " + err.Error())
+		return fmt.Errorf("s.store.GiveOut: %w", err)
 	}
 
-	fmt.Println("Заказы выданы клиенту")
+	fmt.Println("Orders have been given out to the client")
 
 	return nil
 }
 
 func (s *Service) List(clientId int, lastn int, inPvz bool) error {
 	if clientId == -1 {
-		return errors.New("Неправильный формат входных данных")
+		return fmt.Errorf("incorrect input data format")
 	}
 
-	list, err := s.stor.List(clientId, lastn, inPvz)
+	list, err := s.store.List(clientId, lastn, inPvz)
 	if err != nil {
-		return errors.New("Ошибка получения списка заказов клиента: " + err.Error())
+		return fmt.Errorf("s.store.List: %w", err)
 	}
 
 	if len(list) == 0 {
-		return errors.New("У данного пользователя нет заказов с такими параметрами")
+		return fmt.Errorf("this client does not have orders with such parameters")
 	}
 
-	fmt.Println("Заказы клиента:", list)
+	fmt.Println("Customer orders:", list)
 
 	return nil
 }
 
 func (s *Service) Return(id int, clientId int) error {
 	if id == -1 || clientId == -1 {
-		return errors.New("Неправильный формат входных данных")
+		return fmt.Errorf("incorrect input data format")
 	}
 
-	err := s.stor.Return(id, clientId)
+	err := s.store.Return(id, clientId)
 	if err != nil {
-		return errors.New("Ошибка возврата заказа: " + err.Error())
+		return fmt.Errorf("s.store.Return: %w", err)
 	}
 
-	fmt.Println("Возврат заказа принят")
+	fmt.Println("Order return accepted")
 
 	return nil
 }
 
 func (s *Service) ListOfReturned(pagenum int, itemsonpage int) error {
 	if pagenum == -1 || itemsonpage == -1 {
-		return errors.New("Неправильный формат входных данных")
+		return fmt.Errorf("incorrect input data format")
 	}
 
-	list, err := s.stor.ListOfReturned(pagenum, itemsonpage)
+	list, err := s.store.ListOfReturned(pagenum, itemsonpage)
 	if err != nil {
-		return errors.New("Ошибка получения списка возвращенных заказов: " + err.Error())
+		return fmt.Errorf("s.store.ListOfReturned: %w", err)
 	}
 
 	if len(list) == 0 {
-		return errors.New("Возвращенных заказов нет")
+		return fmt.Errorf("there are no returned orders")
 	}
 
-	fmt.Printf("Возвращенные заказы (стр.%d; %d заказа на стр.):\n%v\n", pagenum, itemsonpage, list)
+	fmt.Printf("Returned orders (page %d; %d orders on page):\n%v\n", pagenum, itemsonpage, list)
 
 	return nil
 }
@@ -197,6 +196,6 @@ func (s *Service) Work() error {
 	case "listofreturned":
 		return s.ListOfReturned(*pagenum, *itemsonpage)
 	default:
-		return errors.New("Неизвестная команда")
+		return fmt.Errorf("unknown command")
 	}
 }

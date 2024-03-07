@@ -1,34 +1,39 @@
 package main
 
 import (
-	"fmt"
+	"errors"
+	"log"
 	"os"
 	"route_256/homework/Homework-1/internal/service"
 	"route_256/homework/Homework-1/internal/storage"
 )
 
-func main() {
-	// Проверка аргументов
+func validateArgs() error {
 	args := os.Args[1:]
 	if len(args) < 1 {
-		fmt.Println("Недостаточно аргументов")
-		return
+		return errors.New("not enough arguments")
 	}
+	return nil
+}
 
-	// Создание бд
-	stor, err := storage.New()
+func main() {
+	err := validateArgs()
 	if err != nil {
-		fmt.Println("Не удалось подключиться к хранилищу")
-		return
+		log.Fatalf("validateArgs: %v", err)
 	}
 
-	// Создание сервиса
-	serv := service.New(&stor)
+	store, err := storage.New()
+	if err != nil {
+		log.Fatalf("storage.New: %v", err)
+	}
 
-	// Работа сервиса
+	serv, err := service.New(&store)
+	if err != nil {
+		log.Fatalf("service.New: %v", err)
+	}
+
 	err = serv.Work()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatalf("serv.Work: %v", err)
 	}
 }

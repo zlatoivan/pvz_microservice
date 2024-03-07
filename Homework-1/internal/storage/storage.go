@@ -2,7 +2,7 @@ package storage
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"os"
 	"route_256/homework/Homework-1/internal/model"
 	"strconv"
@@ -13,7 +13,7 @@ type Storage struct {
 	storage *os.File
 }
 
-const storagePath = "internal/storage/storage.txt"
+const storagePath = "db/db.txt"
 
 func New() (Storage, error) {
 	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
@@ -63,17 +63,17 @@ func (s *Storage) Create(order model.Order) error {
 
 	// Проверка, что заказ уже принят
 	for _, v := range all {
-		if v.Id == order.Id {
+		if v.ID == order.ID {
 			if v.IsDeleted == true {
-				return errors.New("данный заказ уже удален")
+				return fmt.Errorf("this order has already been deleted")
 			}
-			return errors.New("данный заказ уже принят")
+			return fmt.Errorf("this order has already been accepted")
 		}
 	}
 
 	// Проверка, что срок хранения заказа не истек
-	if order.ShelfLife.Before(time.Now()) {
-		return errors.New("срок хранения данного заказа истек")
+	if order.StoresTill.Before(time.Now()) {
+		return fmt.Errorf("the shelf life of this order has expired")
 	}
 
 	all = append(all, order)
@@ -93,15 +93,15 @@ func (s *Storage) Delete(id int) error {
 
 	ok := false
 	for i := range all {
-		if all[i].Id == id {
+		if all[i].ID == id {
 			if all[i].IsDeleted == true {
-				return errors.New("данный заказ уже удален")
+				return fmt.Errorf("this order has already been deleted")
 			}
-			if all[i].IsGaveOut == true {
-				return errors.New("данный заказ выдан клиенту")
+			if !all[i].GiveOutTime.IsZero() {
+				return fmt.Errorf("this order has been given out to the client")
 			}
-			if time.Now().Before(all[i].ShelfLife) {
-				return errors.New("у данного заказа не истек срок хранения")
+			if time.Now().Before(all[i].StoresTill) {
+				return fmt.Errorf("the storage period of this order has not expired")
 			}
 			all[i].IsDeleted = true
 			ok = true
@@ -109,7 +109,7 @@ func (s *Storage) Delete(id int) error {
 	}
 
 	if !ok {
-		return errors.New("данный заказ не найден в хранилище")
+		return fmt.Errorf("this order was not found in the storage")
 	}
 
 	err = rewriteStorageFile(all)
@@ -130,30 +130,29 @@ func (s *Storage) GiveOut(ids []int) error {
 	for _, id := range ids {
 		ok := false
 		for _, v := range all {
-			if v.Id == id {
+			if v.ID == id {
 				ok = true
 				// Проверка того, что срок заказа не истек
-				if v.ShelfLife.Before(time.Now()) {
-					return errors.New("срок заказа " + strconv.Itoa(v.Id) + " истек")
+				if v.StoresTill.Before(time.Now()) {
+					return fmt.Errorf("the storage period of order " + strconv.Itoa(v.ID) + " has expired")
 				}
 				// Проверка того, что все заказы принадлежат одному клиенту
 				if clientId == -1 {
-					clientId = v.ClientId
-				} else if clientId != v.ClientId {
-					return errors.New("не все заказы принадлежат одному клиенту")
+					clientId = v.ClientID
+				} else if clientId != v.ClientID {
+					return fmt.Errorf("not all orders belong to the same client")
 				}
 			}
 		}
 		// Проверка того, что все заказы найдены в хранилище
 		if !ok {
-			return errors.New("заказы не найдены в хранилище")
+			return fmt.Errorf("orders were not found in the storage")
 		}
 	}
 
 	for i, a := range all {
 		for _, id := range ids {
-			if a.Id == id {
-				all[i].IsGaveOut = true
+			if a.ID == id {
 				all[i].GiveOutTime = time.Now()
 			}
 		}
@@ -180,12 +179,12 @@ func (s *Storage) List(id int, lastn int, inpvz bool) ([]int, error) {
 			break
 		}
 		v := all[i]
-		if v.ClientId == id {
+		if v.ClientID == id {
 			// Выбрать только те заказы, которые находятся в нашем ПВЗ, если есть такое уточнение
-			if inpvz && (v.IsGaveOut || v.IsDeleted) {
+			if inpvz && (!v.GiveOutTime.IsZero() || v.IsDeleted) {
 				continue
 			}
-			list = append(list, v.Id)
+			list = append(list, v.ID)
 		}
 	}
 
@@ -200,28 +199,28 @@ func (s *Storage) Return(id int, clientId int) error {
 
 	ok := false
 	for i, v := range all {
-		if v.Id == id && v.ClientId == clientId {
+		if v.ID == id && v.ClientID == clientId {
 			if v.IsReturned {
-				return errors.New("данный заказ уже возвращен")
+				return fmt.Errorf("this order has already been returned")
 			}
 			// Проверка, что заказ был выдан с нашего ПВЗ
-			if v.IsGaveOut == false {
-				return errors.New("данный заказ не был выдан клиенту")
+			if v.GiveOutTime.IsZero() {
+				return fmt.Errorf("this order has not been given out to the client")
 			}
 			// Проверка, что заказ возвращен в течение двух дней с момента выдачи
 			today := time.Now()
 			daysBetween := today.Sub(v.GiveOutTime).Hours() / 24
 			if daysBetween > 2 {
-				return errors.New("срок хранения данного заказа менее двух дней")
+				return fmt.Errorf("the storage period of this order is less than two days")
 			}
 			all[i].IsReturned = true
-			all[i].IsGaveOut = false
+			all[i].GiveOutTime = time.Time{}
 			ok = true
 		}
 	}
 
 	if !ok {
-		return errors.New("данный заказ не найден в хранилище")
+		return fmt.Errorf("this order was not found in the storage")
 	}
 
 	err = rewriteStorageFile(all)
@@ -247,7 +246,7 @@ func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 		if all[i].IsDeleted {
 			continue
 		}
-		list = append(list, all[i].Id)
+		list = append(list, all[i].ID)
 	}
 
 	return list, nil
