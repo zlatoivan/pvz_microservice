@@ -35,7 +35,7 @@ go run cmd/main.go help
         go run cmd/main.go [flags] [command]
     
     command:            Описание:                                flags:
-        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024
+        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -storestill=15.09.2024
         delete            Вернуть заказ курьеру (удалить).         -id=1212
         giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
         list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
@@ -45,9 +45,9 @@ go run cmd/main.go help
 ### Входные данные:
 
     Принять заказ (создать):
-        go run cmd/main.go -id=1212 -clientid=9886 -shelflife=15.09.2024 create
-        go run cmd/main.go -id=1213 -clientid=9886 -shelflife=15.09.2024 create
-        go run cmd/main.go -id=1214 -clientid=9886 -shelflife=15.09.2024 create
+        go run cmd/main.go -id=1212 -clientid=9886 -storestill=15.09.2024 create
+        go run cmd/main.go -id=1213 -clientid=9886 -storestill=15.09.2024 create
+        go run cmd/main.go -id=1214 -clientid=9886 -storestill=15.09.2024 create
 
     Вернуть заказ курьеру (удалить):
         go run cmd/main.go -id=1212 delete

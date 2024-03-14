@@ -16,7 +16,7 @@ const helpConst = `Это утилита для управления ПВЗ.
         go run cmd/main.go [flags] [command]
 
 command:            Описание:                                flags:
-        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -shelflife=15.09.2024
+        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -storestill=15.09.2024
         delete            Вернуть заказ курьеру (удалить).         -id=1212
         giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
         list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
@@ -48,22 +48,22 @@ func (s *Service) Help() error {
 	return nil
 }
 
-func validateCreate(id int, clientID int, shelfLifeStr string) (time.Time, error) {
-	if id == -1 || clientID == -1 || shelfLifeStr == "-" {
+func validateCreate(id int, clientID int, storesTillStr string) (time.Time, error) {
+	if id == -1 || clientID == -1 || storesTillStr == "-" {
 		return time.Time{}, fmt.Errorf("incorrect input data format")
 	}
 
 	// Привести срок хранения к типу даты
-	shelfLife, err := time.Parse(dateLayoutConst, shelfLifeStr)
+	storesTill, err := time.Parse(dateLayoutConst, storesTillStr)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("incorrect date format")
 	}
 
-	return shelfLife, nil
+	return storesTill, nil
 }
 
-func (s *Service) Create(id int, clientID int, shelfLifeStr string) error {
-	shelfLife, err := validateCreate(id, clientID, shelfLifeStr)
+func (s *Service) Create(id int, clientID int, storesTillStr string) error {
+	storesTill, err := validateCreate(id, clientID, storesTillStr)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func (s *Service) Create(id int, clientID int, shelfLifeStr string) error {
 	newOrder := model.Order{
 		ID:          id,
 		ClientID:    clientID,
-		StoresTill:  shelfLife,
+		StoresTill:  storesTill,
 		IsDeleted:   false,
 		GiveOutTime: time.Time{}, // zero value
 		IsReturned:  false,
@@ -179,7 +179,7 @@ func (s *Service) ListOfReturned(pagenum int, itemsonpage int) error {
 func parseFlags() (int, int, string, string, int, bool, int, int) {
 	id := flag.Int("id", -1, "id of order")
 	clientID := flag.Int("clientid", -1, "id of client")
-	shelfLifeStr := flag.String("shelflife", "-", "shelf life of order")
+	storesTillStr := flag.String("storestill", "-", "shelf life of order")
 	idsStr := flag.String("ids", "-", "ids of orders to give out")
 	lastN := flag.Int("lastn", -1, "last n orders of client")
 	inPVZ := flag.Bool("inpvz", false, "client's orders that are in pvz")
@@ -187,18 +187,18 @@ func parseFlags() (int, int, string, string, int, bool, int, int) {
 	itemsonpage := flag.Int("itemsonpage", -1, "number of items on page")
 	flag.Parse()
 
-	return *id, *clientID, *shelfLifeStr, *idsStr, *lastN, *inPVZ, *pagenum, *itemsonpage
+	return *id, *clientID, *storesTillStr, *idsStr, *lastN, *inPVZ, *pagenum, *itemsonpage
 }
 
 func (s *Service) Work() error {
-	id, clientID, shelfLifeStr, idsStr, lastN, inPVZ, pagenum, itemsonpage := parseFlags()
+	id, clientID, storesTillStr, idsStr, lastN, inPVZ, pagenum, itemsonpage := parseFlags()
 	command := flag.Args()[len(flag.Args())-1]
 
 	switch command {
 	case "help":
 		return s.Help()
 	case "create":
-		return s.Create(id, clientID, shelfLifeStr)
+		return s.Create(id, clientID, storesTillStr)
 	case "delete":
 		return s.Delete(id)
 	case "giveout":
