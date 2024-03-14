@@ -29,8 +29,8 @@ type storage interface {
 	Create(order model.Order) error
 	Delete(id int) error
 	GiveOut(ids []int) error
-	List(id int, lastn int, inpvz bool) ([]int, error)
-	Return(id int, clientId int) error
+	List(id int, lastN int, inPVZ bool) ([]int, error)
+	Return(id int, clientID int) error
 	ListOfReturned(pagenum int, itemsonpage int) ([]int, error)
 }
 
@@ -48,20 +48,29 @@ func (s *Service) Help() error {
 	return nil
 }
 
-func (s *Service) Create(id int, clientId int, shelfLifeStr string) error {
-	if id == -1 || clientId == -1 || shelfLifeStr == "-" {
-		return fmt.Errorf("incorrect input data format")
+func validateCreate(id int, clientID int, shelfLifeStr string) (time.Time, error) {
+	if id == -1 || clientID == -1 || shelfLifeStr == "-" {
+		return time.Time{}, fmt.Errorf("incorrect input data format")
 	}
 
 	// Привести срок хранения к типу даты
 	shelfLife, err := time.Parse(dateLayoutConst, shelfLifeStr)
 	if err != nil {
-		return fmt.Errorf("incorrect date format")
+		return time.Time{}, fmt.Errorf("incorrect date format")
+	}
+
+	return shelfLife, nil
+}
+
+func (s *Service) Create(id int, clientID int, shelfLifeStr string) error {
+	shelfLife, err := validateCreate(id, clientID, shelfLifeStr)
+	if err != nil {
+		return err
 	}
 
 	newOrder := model.Order{
 		ID:          id,
-		ClientID:    clientId,
+		ClientID:    clientID,
 		StoresTill:  shelfLife,
 		IsDeleted:   false,
 		GiveOutTime: time.Time{}, // zero value
@@ -114,12 +123,12 @@ func (s *Service) GiveOut(idsStr string) error {
 	return nil
 }
 
-func (s *Service) List(clientId int, lastn int, inPvz bool) error {
-	if clientId == -1 {
+func (s *Service) List(clientID int, lastN int, inPVZ bool) error {
+	if clientID == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
 
-	list, err := s.store.List(clientId, lastn, inPvz)
+	list, err := s.store.List(clientID, lastN, inPVZ)
 	if err != nil {
 		return fmt.Errorf("s.store.List: %w", err)
 	}
@@ -133,12 +142,12 @@ func (s *Service) List(clientId int, lastn int, inPvz bool) error {
 	return nil
 }
 
-func (s *Service) Return(id int, clientId int) error {
-	if id == -1 || clientId == -1 {
+func (s *Service) Return(id int, clientID int) error {
+	if id == -1 || clientID == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
 
-	err := s.store.Return(id, clientId)
+	err := s.store.Return(id, clientID)
 	if err != nil {
 		return fmt.Errorf("s.store.Return: %w", err)
 	}
@@ -167,35 +176,39 @@ func (s *Service) ListOfReturned(pagenum int, itemsonpage int) error {
 	return nil
 }
 
-func (s *Service) Work() error {
-	// Считывание флагов
+func parseFlags() (int, int, string, string, int, bool, int, int) {
 	id := flag.Int("id", -1, "id of order")
-	clientId := flag.Int("clientid", -1, "id of client")
+	clientID := flag.Int("clientid", -1, "id of client")
 	shelfLifeStr := flag.String("shelflife", "-", "shelf life of order")
 	idsStr := flag.String("ids", "-", "ids of orders to give out")
-	lastn := flag.Int("lastn", -1, "last n orders of client")
-	inPvz := flag.Bool("inpvz", false, "client's orders that are in pvz")
+	lastN := flag.Int("lastn", -1, "last n orders of client")
+	inPVZ := flag.Bool("inpvz", false, "client's orders that are in pvz")
 	pagenum := flag.Int("pagenum", -1, "number of pages")
 	itemsonpage := flag.Int("itemsonpage", -1, "number of items on page")
 	flag.Parse()
+
+	return *id, *clientID, *shelfLifeStr, *idsStr, *lastN, *inPVZ, *pagenum, *itemsonpage
+}
+
+func (s *Service) Work() error {
+	id, clientID, shelfLifeStr, idsStr, lastN, inPVZ, pagenum, itemsonpage := parseFlags()
 	command := flag.Args()[len(flag.Args())-1]
 
-	// Бизнес-логика
 	switch command {
 	case "help":
 		return s.Help()
 	case "create":
-		return s.Create(*id, *clientId, *shelfLifeStr)
+		return s.Create(id, clientID, shelfLifeStr)
 	case "delete":
-		return s.Delete(*id)
+		return s.Delete(id)
 	case "giveout":
-		return s.GiveOut(*idsStr)
+		return s.GiveOut(idsStr)
 	case "list":
-		return s.List(*clientId, *lastn, *inPvz)
+		return s.List(clientID, lastN, inPVZ)
 	case "return":
-		return s.Return(*id, *clientId)
+		return s.Return(id, clientID)
 	case "listofreturned":
-		return s.ListOfReturned(*pagenum, *itemsonpage)
+		return s.ListOfReturned(pagenum, itemsonpage)
 	default:
 		return fmt.Errorf("unknown command")
 	}

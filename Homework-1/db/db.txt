@@ -4,26 +4,7 @@
 		"ClientID": 9886,
 		"StoresTill": "2024-09-15T00:00:00Z",
 		"IsDeleted": false,
-		"IsGivenOut": false,
 		"GiveOutTime": "0001-01-01T00:00:00Z",
-		"IsReturned": true
-	},
-	{
-		"ID": 1213,
-		"ClientID": 9886,
-		"StoresTill": "2024-09-15T00:00:00Z",
-		"IsDeleted": false,
-		"IsGivenOut": false,
-		"GiveOutTime": "0001-01-01T00:00:00Z",
-		"IsReturned": false
-	},
-	{
-		"ID": 1214,
-		"ClientID": 9886,
-		"StoresTill": "2024-09-15T00:00:00Z",
-		"IsDeleted": false,
-		"IsGivenOut": false,
-		"GiveOutTime": "2024-03-08T02:01:14.371144697+03:00",
 		"IsReturned": false
 	}
 ]

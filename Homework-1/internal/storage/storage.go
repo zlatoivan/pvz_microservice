@@ -35,11 +35,8 @@ func (s *Storage) listAll() ([]model.Order, error) {
 		return orders, nil
 	}
 	err = json.Unmarshal(bytes, &orders)
-	if err != nil {
-		return orders, err
-	}
 
-	return orders, nil
+	return orders, err
 }
 
 func rewriteStorageFile(all []model.Order) error {
@@ -49,11 +46,8 @@ func rewriteStorageFile(all []model.Order) error {
 	}
 
 	err = os.WriteFile(storagePath, bytes, 0644)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (s *Storage) Create(order model.Order) error {
@@ -65,7 +59,7 @@ func (s *Storage) Create(order model.Order) error {
 	// Проверка, что заказ уже принят
 	for _, v := range all {
 		if v.ID == order.ID {
-			if v.IsDeleted == true {
+			if v.IsDeleted {
 				return fmt.Errorf("this order has already been deleted")
 			}
 			return fmt.Errorf("this order has already been accepted")
@@ -79,11 +73,8 @@ func (s *Storage) Create(order model.Order) error {
 
 	all = append(all, order)
 	err = rewriteStorageFile(all)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (s *Storage) Delete(id int) error {
@@ -95,7 +86,7 @@ func (s *Storage) Delete(id int) error {
 	ok := false
 	for i := range all {
 		if all[i].ID == id {
-			if all[i].IsDeleted == true {
+			if all[i].IsDeleted {
 				return fmt.Errorf("this order has already been deleted")
 			}
 			if !all[i].GiveOutTime.IsZero() {
@@ -114,11 +105,8 @@ func (s *Storage) Delete(id int) error {
 	}
 
 	err = rewriteStorageFile(all)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (s *Storage) GiveOut(ids []int) error {
@@ -160,14 +148,11 @@ func (s *Storage) GiveOut(ids []int) error {
 	}
 
 	err = rewriteStorageFile(all)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
-func (s *Storage) List(id int, lastn int, inpvz bool) ([]int, error) {
+func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err
@@ -176,13 +161,13 @@ func (s *Storage) List(id int, lastn int, inpvz bool) ([]int, error) {
 	list := make([]int, 0)
 	for i := len(all) - 1; i >= 0; i-- {
 		// Выбрать только последние n заказов клиента, если есть такое уточнение
-		if lastn != -1 && len(list) == lastn {
+		if lastN != -1 && len(list) == lastN {
 			break
 		}
 		v := all[i]
 		if v.ClientID == id {
 			// Выбрать только те заказы, которые находятся в нашем ПВЗ, если есть такое уточнение
-			if inpvz && (!v.GiveOutTime.IsZero() || v.IsDeleted) {
+			if inPVZ && (!v.GiveOutTime.IsZero() || v.IsDeleted) {
 				continue
 			}
 			list = append(list, v.ID)
@@ -225,11 +210,8 @@ func (s *Storage) Return(id int, clientId int) error {
 	}
 
 	err = rewriteStorageFile(all)
-	if err == nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
