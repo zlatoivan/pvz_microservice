@@ -1,0 +1,17 @@
+Это утилита для управления ПВЗ.
+
+Применение:
+        go run cmd/main.go [flags] [command]
+
+command:            Описание:                                flags:
+        create            Create order                             -id=1212 -clientid=9886 -storestill=15.09.2024
+        delete            Return the order to the client           -id=1212
+        giveout           Give out the order to the client         -ids=[1212,1214]
+        list              Get the list of clients orders           -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
+        return            Return of the order by the client        -id=1212 -clientid=9886
+        listofreturned    Get a list of returned orders            -pagenum=1 -itemsonpage=2
+
+        interactive_mode  Interactive mode to add and get PVZ      No flags. Enter command and follow the instructions
+            command:
+                add       Create PVZ
+                get       Get the information about PVZ

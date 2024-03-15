@@ -1,29 +1,23 @@
 package service
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-const helpConst = `Это утилита для управления ПВЗ.
-
-Применение:
-        go run cmd/main.go [flags] [command]
-
-command:            Описание:                                flags:
-        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -storestill=15.09.2024
-        delete            Вернуть заказ курьеру (удалить).         -id=1212
-        giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
-        list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
-        return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
-        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2`
-
 const dateLayoutConst = "02.01.2006"
+const helpPath = "help.txt"
 
 type storage interface {
 	Create(order model.Order) error
@@ -32,10 +26,14 @@ type storage interface {
 	List(id int, lastN int, inPVZ bool) ([]int, error)
 	Return(id int, clientID int) error
 	ListOfReturned(pagenum int, itemsonpage int) ([]int, error)
+	CreatePVZ(pvz model.PVZ) error
+	GetPVZ(title string) (model.PVZ, error)
 }
 
 type Service struct {
-	store storage
+	store  storage
+	wg     sync.WaitGroup
+	infoWg sync.WaitGroup
 }
 
 func New(s storage) (Service, error) {
@@ -43,8 +41,11 @@ func New(s storage) (Service, error) {
 }
 
 func (s *Service) Help() error {
-	fmt.Println(helpConst)
-	fmt.Println()
+	data, err := os.ReadFile(helpPath)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data) + "\n")
 	return nil
 }
 
@@ -190,6 +191,159 @@ func parseFlags() (int, int, string, string, int, bool, int, int) {
 	return *id, *clientID, *storesTillStr, *idsStr, *lastN, *inPVZ, *pagenum, *itemsonpage
 }
 
+func (s *Service) Writer(writeCh <-chan model.PVZ, infoCh chan<- string) {
+	for {
+		select {
+		case newPVZ := <-writeCh:
+			s.infoWg.Add(1)
+			infoCh <- "\t[INFO]: goroutine Writer is activated and is writing now"
+			s.infoWg.Wait()
+			err := s.store.CreatePVZ(newPVZ)
+			if err != nil {
+				log.Printf("s.Writer: %v", err)
+			} else {
+				fmt.Println("PVZ added")
+			}
+			s.infoWg.Add(1)
+			infoCh <- "\t[INFO]: goroutine Writer wrote everything and is waiting again"
+			s.wg.Done()
+		}
+	}
+}
+
+func (s *Service) Reader(readCh <-chan string, infoCh chan<- string) {
+	for {
+		select {
+		case title := <-readCh:
+			s.infoWg.Add(1)
+			infoCh <- "\t[INFO]: goroutine Reader is activated and is reading now"
+			s.infoWg.Wait()
+			pvz, err := s.store.GetPVZ(title)
+			if err != nil {
+				log.Printf("s.Reader: %v", err)
+			} else {
+				fmt.Println("Information about the PVZ:")
+				fmt.Println("Title:", pvz.Title)
+				fmt.Println("Address:", pvz.Address)
+				fmt.Println("Contacts:", pvz.Contacts)
+			}
+			s.infoWg.Add(1)
+			infoCh <- "\t[INFO]: goroutine Reader read everything and is waiting again"
+			s.wg.Done()
+		}
+	}
+}
+
+func (s *Service) CreatePVZ(writeCh chan<- model.PVZ) error {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter the title of PVZ: ")
+	title, err := reader.ReadString('\n')
+	title = title[:len(title)-1]
+	if err != nil {
+		return err
+	}
+
+	fmt.Print("Enter the address of PVZ: ")
+	address, err := reader.ReadString('\n')
+	address = address[:len(address)-1]
+	if err != nil {
+		return err
+	}
+
+	fmt.Print("Enter the contacts of PVZ: ")
+	contacts, err := reader.ReadString('\n')
+	contacts = contacts[:len(contacts)-1]
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+
+	newPVZ := model.PVZ{Title: title, Address: address, Contacts: contacts}
+	writeCh <- newPVZ
+
+	return nil
+}
+
+func (s *Service) GetPVZ(readCh chan<- string) error {
+	fmt.Print("Enter the title of PVZ: ")
+	reader := bufio.NewReader(os.Stdin)
+	title, err := reader.ReadString('\n')
+	title = title[:len(title)-1]
+	if err != nil {
+		return err
+	}
+	fmt.Println()
+
+	readCh <- title
+
+	return nil
+}
+
+func (s *Service) Signal(signalCh <-chan os.Signal) {
+	sig := <-signalCh
+	fmt.Println("\nThe program termination signal has been received:", sig)
+	fmt.Print("Shutting down the tool...\n\n")
+	os.Exit(0)
+}
+
+func (s *Service) Info(infoCh <-chan string) {
+	for {
+		info := <-infoCh
+		fmt.Println(info)
+		s.infoWg.Done()
+	}
+}
+
+func (s *Service) InteractiveMode() error {
+	infoCh := make(chan string)
+	writeCh := make(chan model.PVZ)
+	readCh := make(chan string)
+	signalCh := make(chan os.Signal, 1)
+	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
+
+	go s.Info(infoCh)
+	go s.Writer(writeCh, infoCh)
+	s.infoWg.Add(1)
+	infoCh <- "\t[INFO]: goroutine Writer is launched (waiting)"
+	go s.Reader(readCh, infoCh)
+	s.infoWg.Add(1)
+	infoCh <- "\t[INFO]: goroutine Reader is launched (waiting)"
+	go s.Signal(signalCh)
+	s.infoWg.Wait()
+
+	for {
+		fmt.Print("\n> ")
+		reader := bufio.NewReader(os.Stdin)
+
+		command, err := reader.ReadString('\n')
+		command = command[:len(command)-1]
+		if err != nil {
+			return err
+		}
+
+		s.wg.Add(1)
+		switch command {
+		case "add":
+			err = s.CreatePVZ(writeCh)
+			if err != nil {
+				return err
+			}
+
+		case "get":
+			err = s.GetPVZ(readCh)
+			if err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unknown command")
+		}
+		s.wg.Wait()
+		s.infoWg.Wait()
+	}
+}
+
 func (s *Service) Work() error {
 	id, clientID, storesTillStr, idsStr, lastN, inPVZ, pagenum, itemsonpage := parseFlags()
 	command := flag.Args()[len(flag.Args())-1]
@@ -209,6 +363,8 @@ func (s *Service) Work() error {
 		return s.Return(id, clientID)
 	case "listofreturned":
 		return s.ListOfReturned(pagenum, itemsonpage)
+	case "interactive_mode":
+		return s.InteractiveMode()
 	default:
 		return fmt.Errorf("unknown command")
 	}

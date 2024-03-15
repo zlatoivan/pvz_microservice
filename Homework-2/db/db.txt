@@ -1,10 +1,29 @@
 [
 	{
-		"ID": 1212,
-		"ClientID": 9886,
-		"StoresTill": "2024-09-15T00:00:00Z",
+		"Id": 1212,
+		"ClientId": 9886,
+		"ShelfLife": "2024-09-15T00:00:00Z",
 		"IsDeleted": false,
-		"GiveOutTime": "0001-01-01T00:00:00Z",
+		"IsGaveOut": false,
+		"GiveOutTime": "2024-03-04T00:40:02.239811545+03:00",
+		"IsReturned": true
+	},
+	{
+		"Id": 1213,
+		"ClientId": 9886,
+		"ShelfLife": "2024-09-15T00:00:00Z",
+		"IsDeleted": false,
+		"IsGaveOut": false,
+		"GiveOutTime": "0000-11-30T00:00:00Z",
+		"IsReturned": false
+	},
+	{
+		"Id": 1214,
+		"ClientId": 9886,
+		"ShelfLife": "2024-09-15T00:00:00Z",
+		"IsDeleted": false,
+		"IsGaveOut": false,
+		"GiveOutTime": "0000-11-30T00:00:00Z",
 		"IsReturned": false
 	}
 ]

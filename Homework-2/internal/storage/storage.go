@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
@@ -12,16 +13,41 @@ import (
 
 type Storage struct {
 	storage *os.File
+	mutex   sync.Mutex
+	pvzs    map[string]model.PVZ
 }
 
 const storagePath = "db/db.txt"
+const PVZStoragePath = "db/pvz_db.json"
 
 func New() (*Storage, error) {
+	// For hw-1
 	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
 	if err != nil {
-		return &Storage{}, err
+		return nil, err
 	}
-	return &Storage{storage: file}, nil
+	store := &Storage{
+		storage: file,
+		pvzs:    make(map[string]model.PVZ),
+	}
+
+	// For hw-2
+	file, err = os.OpenFile(PVZStoragePath, os.O_CREATE, 0777)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	bytes, err := os.ReadFile(PVZStoragePath)
+	if err != nil {
+		return nil, err
+	}
+	if len(bytes) == 0 {
+		return store, nil
+	}
+
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&store.pvzs)
+	return store, err
 }
 
 func (s *Storage) listAll() ([]model.Order, error) {
@@ -232,4 +258,33 @@ func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 	}
 
 	return list, nil
+}
+
+func (s *Storage) CreatePVZ(pvz model.PVZ) error {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	for k := range s.pvzs {
+		if k == pvz.Title {
+			return fmt.Errorf("PVZ with this title is already in the storage")
+		}
+	}
+	s.pvzs[pvz.Title] = pvz
+
+	file, err := os.Open(PVZStoragePath)
+	if err != nil {
+		return fmt.Errorf("s.store.CreatePVZ: %w", err)
+	}
+	defer file.Close()
+	bytes, err := json.MarshalIndent(s.pvzs, "", "\t")
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(PVZStoragePath, bytes, 0644)
+	return err
+}
+
+func (s *Storage) GetPVZ(title string) (model.PVZ, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	return s.pvzs[title], nil
 }
