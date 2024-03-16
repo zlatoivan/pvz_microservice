@@ -1,0 +1,24 @@
+linters:
+  disable-all: true
+  enable:
+#    - gofumpt
+    - errcheck
+    - goconst
+    - goimports
+    - gosec
+    - govet
+    - ineffassign
+    - megacheck
+    - revive
+    - typecheck
+    - unused
+
+linters-settings:
+  goconst:
+    min-len: 2
+    min-occurrences: 3
+  govet:
+    check-shadowing: true
+  nolintlint:
+    require-explanation: true
+    require-specific: true

@@ -286,5 +286,15 @@ func (s *Storage) CreatePVZ(pvz model.PVZ) error {
 func (s *Storage) GetPVZ(title string) (model.PVZ, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+	ok := false
+	for k := range s.pvzs {
+		if k == title {
+			ok = true
+		}
+	}
+	if !ok {
+		return model.PVZ{}, fmt.Errorf("No PVZ with this title was found")
+	}
+
 	return s.pvzs[title], nil
 }
