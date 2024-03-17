@@ -3,31 +3,37 @@ package pvz
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 
-	"github.com/google/uuid"
-
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-type PVZStorage struct {
-	Mutex sync.RWMutex       `json:"mutex"`
-	Pvzs  map[string]pvz.PVZ `json:"pvzs,omitempty"`
+type Storage struct {
+	mu   sync.RWMutex
+	pvzs map[string]model.PVZ
 }
 
-const PVZStoragePath = "db/pvz_db.json"
+const storagePath = "db/pvz_db.json"
 
-func New() (*PVZStorage, error) {
-	file, err := os.OpenFile(PVZStoragePath, os.O_CREATE, 0777)
+// New Creates a new pvz storage
+func New() (*Storage, error) {
+	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("os.OpenFile: %w", err)
 	}
-	defer file.Close()
-	store := &PVZStorage{
-		Pvzs: make(map[string]pvz.PVZ),
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Println("[pvz][Storage] file.Close:", err)
+		}
+	}()
+
+	store := &Storage{
+		pvzs: make(map[string]model.PVZ),
 	}
-	bytes, err := os.ReadFile(PVZStoragePath)
+	bytes, err := os.ReadFile(storagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -36,45 +42,60 @@ func New() (*PVZStorage, error) {
 	}
 
 	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&store.Pvzs)
-	return store, err
+	err = decoder.Decode(&store.pvzs)
+	if err != nil {
+		return nil, fmt.Errorf("decoder.Decode: %w", err)
+	}
+
+	return store, nil
 }
 
-func (s *PVZStorage) CreatePVZ(pvz pvz.PVZ) error {
-	s.Mutex.Lock()
-	defer s.Mutex.Unlock()
-	for k := range s.Pvzs {
-		if k == pvz.Name {
-			return fmt.Errorf("PVZ with this name is already in the storage")
-		}
-	}
-	s.Pvzs[uuid.New().String()] = pvz
-
-	file, err := os.Open(PVZStoragePath)
+// Close closes the storage connection, updating and saving data in a file
+func (s *Storage) Close() error {
+	file, err := os.Open(storagePath)
 	if err != nil {
-		return fmt.Errorf("s.store.CreatePVZ: %w", err)
+		return fmt.Errorf("pvz.Storage os.OpenFile: %w", err)
 	}
-	defer file.Close()
-	bytes, err := json.MarshalIndent(s.Pvzs, "", "\t")
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Println("pvz.Storage file.Close:", err)
+		}
+	}()
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	bytes, err := json.MarshalIndent(s.pvzs, "", "\t")
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(PVZStoragePath, bytes, 0644)
-	return err
+	err = os.WriteFile(storagePath, bytes, 0644)
+	if err != nil {
+		return fmt.Errorf("pvz.Storage os.WriteFile: %w", err)
+	}
+
+	return nil
 }
 
-func (s *PVZStorage) GetPVZ(name string) ([]pvz.PVZ, error) {
-	s.Mutex.RLock()
-	defer s.Mutex.RUnlock()
-	ok := false
-	pvzs := make([]pvz.PVZ, 0)
-	for _, p := range s.Pvzs {
+// CreatePVZ creates a new PVZ
+func (s *Storage) CreatePVZ(pvz model.PVZ) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.pvzs[pvz.ID] = pvz
+	return nil
+}
+
+// GetPVZ get information about the PVZ
+func (s *Storage) GetPVZ(name string) ([]model.PVZ, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	pvzs := make([]model.PVZ, 0)
+	for _, p := range s.pvzs {
 		if p.Name == name {
 			pvzs = append(pvzs, p)
-			ok = true
 		}
 	}
-	if !ok {
+	if len(pvzs) == 0 {
 		return nil, fmt.Errorf("no PVZ with this name was found")
 	}
 

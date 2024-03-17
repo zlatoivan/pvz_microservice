@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"flag"
 	"fmt"
 
@@ -9,29 +10,20 @@ import (
 )
 
 type App struct {
-	orderService order.OrderService
-	pvzService   pvz.PVZService
+	orderService order.Service
+	pvzService   pvz.Service
 }
 
-func New(os order.OrderStorage, ps pvz.PvzStorage) (*App, error) {
-	orderServ, err := order.New(os)
-	if err != nil {
-		return nil, err
+// New creates a new app
+func New(orderService *order.Service, pvzService *pvz.Service) (*App, error) {
+	service := &App{
+		orderService: *orderService,
+		pvzService:   *pvzService,
 	}
-	pvzServ, err := pvz.New(ps)
-	if err != nil {
-		return nil, err
-	}
-	//_ = pvzServ
-
-	serv := &App{
-		orderService: *orderServ,
-		pvzService:   *pvzServ,
-		//pvzService:   pvz.PVZService{store: ps},
-	}
-	return serv, nil
+	return service, nil
 }
 
+// parseFlags parses flags from console
 func parseFlags() (int, int, string, string, int, bool, int, int) {
 	id := flag.Int("id", -1, "id of order")
 	clientID := flag.Int("clientid", -1, "id of client")
@@ -46,7 +38,8 @@ func parseFlags() (int, int, string, string, int, bool, int, int) {
 	return *id, *clientID, *storesTillStr, *idsStr, *lastN, *inPVZ, *pagenum, *itemsonpage
 }
 
-func (s *App) Work() error {
+// Work starts the application work
+func (s *App) Work(ctx context.Context, cancel context.CancelFunc) error {
 	id, clientID, storesTillStr, idsStr, lastN, inPVZ, pagenum, itemsonpage := parseFlags()
 	command := flag.Args()[len(flag.Args())-1]
 
@@ -66,7 +59,7 @@ func (s *App) Work() error {
 	case "listofreturned":
 		return s.orderService.ListOfReturned(pagenum, itemsonpage)
 	case "interactive_mode":
-		return s.pvzService.InteractiveMode()
+		return s.pvzService.InteractiveMode(ctx, cancel)
 	default:
 		return fmt.Errorf("unknown command")
 	}

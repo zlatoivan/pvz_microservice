@@ -2,180 +2,214 @@ package pvz
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
+	"time"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-type PvzStorage interface {
-	CreatePVZ(pvz pvz.PVZ) error
-	GetPVZ(name string) ([]pvz.PVZ, error)
+type Storage interface {
+	CreatePVZ(pvz model.PVZ) error
+	GetPVZ(name string) ([]model.PVZ, error)
 }
 
-type PVZService struct {
-	store  PvzStorage
-	wg     sync.WaitGroup
-	infoWg sync.WaitGroup
+type Service struct {
+	store Storage
 }
 
-func New(ps PvzStorage) (*PVZService, error) {
-	return &PVZService{store: ps}, nil
+// New creates a new PVZ service
+func New(ps Storage) (*Service, error) {
+	return &Service{store: ps}, nil
 }
 
-func (s *PVZService) Writer(writeCh <-chan pvz.PVZ, infoCh chan<- string) {
-	for {
-		select {
-		case newPVZ := <-writeCh:
-			s.infoWg.Add(1)
-			infoCh <- "\t[INFO]: goroutine Writer is activated and is writing now"
-			s.infoWg.Wait()
-			err := s.store.CreatePVZ(newPVZ)
-			if err != nil {
-				log.Printf("s.Writer: %v", err)
-			} else {
-				fmt.Println("PVZ added")
-			}
-			s.infoWg.Add(1)
-			infoCh <- "\t[INFO]: goroutine Writer wrote everything and is waiting again"
-			s.wg.Done()
+func (s *Service) Writer(writeCh <-chan model.PVZ, printCh chan<- string, errCh chan<- error) {
+	for newPVZ := range writeCh {
+		printCh <- "\t[INFO]: goroutine Writer is activated and is writing now\n"
+		err := s.store.CreatePVZ(newPVZ)
+		if err != nil {
+			//_, _ = fmt.Fprintf(os.Stderr, "s.Writer: %v", err)
+			errCh <- fmt.Errorf("s.Writer: %w", err)
+		} else {
+			printCh <- "PVZ added\n"
 		}
+		printCh <- "\t[INFO]: goroutine Writer wrote everything and is waiting again\n"
 	}
 }
 
-func (s *PVZService) Reader(readCh <-chan string, infoCh chan<- string) {
-	for {
-		select {
-		case name := <-readCh:
-			s.infoWg.Add(1)
-			infoCh <- "\t[INFO]: goroutine Reader is activated and is reading now"
-			s.infoWg.Wait()
-			pvzs, err := s.store.GetPVZ(name)
-			if err != nil {
-				log.Printf("s.Reader: %v", err)
-			} else {
-				fmt.Println("Information about the PVZs:")
-				for _, p := range pvzs {
-					fmt.Printf("Name: %s\nAddress: %s\nContacts: %s\n", p.Name, p.Address, p.Contacts)
-				}
+func (s *Service) Reader(readCh <-chan string, printCh chan<- string, errCh chan<- error) {
+	for name := range readCh {
+		printCh <- "\t[INFO]: goroutine Reader is activated and is reading now\n"
+		pvzs, err := s.store.GetPVZ(name)
+		if err != nil {
+			//log.Printf("s.Reader: %v", err)
+			errCh <- fmt.Errorf("s.Writer: %w", err)
+		} else {
+			printCh <- "Information about the PVZs:"
+			for _, p := range pvzs {
+				pr := fmt.Sprintf("Name: %s\nAddress: %s\nContacts: %s\n", p.Name, p.Address, p.Contacts)
+				printCh <- pr
 			}
-			s.infoWg.Add(1)
-			infoCh <- "\t[INFO]: goroutine Reader read everything and is waiting again"
-			s.wg.Done()
 		}
+		printCh <- "\t[INFO]: goroutine Reader read everything and is waiting again\n"
 	}
 }
 
-func (s *PVZService) CreatePVZ(writeCh chan<- pvz.PVZ) error {
-	reader := bufio.NewReader(os.Stdin)
+func (s *Service) CreatePVZ(writeCh chan<- model.PVZ, printCh chan<- string) error {
+	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Print("Enter the name of PVZ: ")
-	name, err := reader.ReadString('\n')
-	name = name[:len(name)-1]
-	if err != nil {
-		return err
-	}
+	printCh <- "Enter the name of PVZ: "
+	scanner.Scan()
+	name := scanner.Text()
 
-	fmt.Print("Enter the address of PVZ: ")
-	address, err := reader.ReadString('\n')
-	address = address[:len(address)-1]
-	if err != nil {
-		return err
-	}
+	printCh <- "Enter the address of PVZ: "
+	scanner.Scan()
+	address := scanner.Text()
 
-	fmt.Print("Enter the contacts of PVZ: ")
-	contacts, err := reader.ReadString('\n')
-	contacts = contacts[:len(contacts)-1]
-	if err != nil {
-		return err
-	}
-	fmt.Println()
+	printCh <- "Enter the contacts of PVZ: "
+	scanner.Scan()
+	contacts := scanner.Text()
+	printCh <- "\n"
 
-	newPVZ := pvz.PVZ{Name: name, Address: address, Contacts: contacts}
+	newPVZ := model.PVZ{ID: uuid.NewString(), Name: name, Address: address, Contacts: contacts}
+	fmt.Println(newPVZ)
 	writeCh <- newPVZ
 
 	return nil
 }
 
-func (s *PVZService) GetPVZ(readCh chan<- string) error {
-	fmt.Print("Enter the name of PVZ: ")
-	reader := bufio.NewReader(os.Stdin)
-	name, err := reader.ReadString('\n')
-	name = name[:len(name)-1]
-	if err != nil {
-		return err
-	}
-	fmt.Println()
+func (s *Service) GetPVZ(readCh chan<- string, printCh chan<- string) error {
+	printCh <- "Enter the name of PVZ: "
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	name := scanner.Text()
+	printCh <- "\n"
 
 	readCh <- name
 
 	return nil
 }
 
-func (s *PVZService) Signal(signalCh <-chan os.Signal) {
-	sig := <-signalCh
-	fmt.Println("\nThe program termination signal has been received:", sig)
-	fmt.Print("Shutting down the tool...\n\n")
-	os.Exit(0)
-}
-
-func (s *PVZService) Info(infoCh <-chan string) {
-	for {
-		info := <-infoCh
-		fmt.Println(info)
-		s.infoWg.Done()
+func (s *Service) Print(printCh <-chan string) {
+	for pr := range printCh {
+		fmt.Print(pr)
 	}
 }
 
-func (s *PVZService) InteractiveMode() error {
-	infoCh := make(chan string)
-	writeCh := make(chan pvz.PVZ)
+func (s *Service) Signal(ctx context.Context, cancel context.CancelFunc, signalCh <-chan os.Signal, printCh chan<- string) {
+	for sig := range signalCh {
+		printCh <- fmt.Sprintf("\nThe program termination signal has been received: %v\n", sig)
+		printCh <- "Shutting down the tool...\n\n"
+		cancel()
+	}
+}
+
+func (s *Service) Errors(ctx context.Context, cancel context.CancelFunc, errCh <-chan error) {
+	for err := range errCh {
+		log.Printf("Error: %v", err)
+		cancel()
+	}
+}
+
+func (s *Service) Work(ctx context.Context, cancel context.CancelFunc, writeCh chan model.PVZ, readCh chan string, printCh chan<- string, errCh chan<- error) {
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer ticker.Stop()
+
+	//wgForWork := sync.WaitGroup{}
+	for {
+		//wgForWork.Add(1)
+		select {
+		case <-ctx.Done():
+			close(writeCh)
+			close(readCh)
+			//if errors.Is(ctx.Err(), context.Canceled) {}  // Тип ctx.Done может быть разный
+			fmt.Println("STOP")
+			//errCh <- fmt.Errorf("%w", ctx.Err())
+		case <-ticker.C:
+			printCh <- "\n> "
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			command := scanner.Text()
+
+			switch command {
+			case "add":
+				err := s.CreatePVZ(writeCh, printCh)
+				if err != nil {
+					errCh <- fmt.Errorf("pvz.Service.CreatePVZ: %w", err)
+				}
+
+			case "get":
+				err := s.GetPVZ(readCh, printCh)
+				if err != nil {
+					errCh <- fmt.Errorf("pvz.Service.GetPVZ: %w", err)
+				}
+
+			default:
+				errCh <- fmt.Errorf("unknown command")
+			}
+			//wgForWork.Done()
+		}
+		//wgForWork.Wait()
+	}
+}
+
+// InteractiveMode starts an interactive mod of the program
+func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc) error {
+	printCh := make(chan string)
+	writeCh := make(chan model.PVZ)
 	readCh := make(chan string)
-	signalCh := make(chan os.Signal, 1)
+	signalCh := make(chan os.Signal)
+	errCh := make(chan error)
 	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
-	go s.Info(infoCh)
-	go s.Writer(writeCh, infoCh)
-	s.infoWg.Add(1)
-	infoCh <- "\t[INFO]: goroutine Writer is launched (waiting)"
-	go s.Reader(readCh, infoCh)
-	s.infoWg.Add(1)
-	infoCh <- "\t[INFO]: goroutine Reader is launched (waiting)"
-	go s.Signal(signalCh)
-	s.infoWg.Wait()
+	wg := sync.WaitGroup{}
 
-	for {
-		fmt.Print("\n> ")
-		reader := bufio.NewReader(os.Stdin)
+	wg.Add(1)
+	go func() {
+		s.Print(printCh)
+		wg.Done()
+	}()
 
-		command, err := reader.ReadString('\n')
-		command = command[:len(command)-1]
-		if err != nil {
-			return err
-		}
+	wg.Add(1)
+	go func() {
+		s.Writer(writeCh, printCh, errCh)
+		wg.Done()
+	}()
+	printCh <- "\t[INFO]: goroutine Reader is launched (waiting)\n"
 
-		s.wg.Add(1)
-		switch command {
-		case "add":
-			err = s.CreatePVZ(writeCh)
-			if err != nil {
-				return err
-			}
+	wg.Add(1)
+	go func() {
+		s.Reader(readCh, printCh, errCh)
+		wg.Done()
+	}()
+	printCh <- "\t[INFO]: goroutine Writer is launched (waiting)\n"
 
-		case "get":
-			err = s.GetPVZ(readCh)
-			if err != nil {
-				return err
-			}
+	wg.Add(1)
+	go func() {
+		s.Signal(ctx, cancel, signalCh, printCh)
+		wg.Done()
+	}()
 
-		default:
-			return fmt.Errorf("unknown command")
-		}
-		s.wg.Wait()
-		s.infoWg.Wait()
-	}
+	wg.Add(1)
+	go func() {
+		s.Errors(ctx, cancel, errCh)
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
+		s.Work(ctx, cancel, writeCh, readCh, printCh, errCh)
+		wg.Done()
+	}()
+
+	wg.Wait()
+	close(printCh)
+
+	return nil
 }

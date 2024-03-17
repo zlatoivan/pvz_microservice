@@ -3,38 +3,53 @@ package order
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-type OrderStorage struct {
-	Orders *os.File `json:"orders"`
+type Storage struct {
+	orders *os.File
 }
 
 const storagePath = "db/order_db.txt"
 
-func New() (*OrderStorage, error) {
+// New creates a new order storage
+func New() (*Storage, error) {
 	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("os.OpenFile: %w", err)
 	}
-	store := &OrderStorage{
-		Orders: file,
+	defer func() {
+		err = file.Close()
+		if err != nil {
+			log.Println("[pvz][Storage] file.Close:", err)
+		}
+	}()
+
+	store := &Storage{
+		orders: file,
 	}
 
 	return store, nil
 }
 
-func (s *OrderStorage) listAll() ([]order.Order, error) {
+// Close closes order storage
+func (s *Storage) Close() error {
+	return nil
+}
+
+// listAll gets all orders from storage
+func (s *Storage) listAll() ([]model.Order, error) {
 	bytes, err := os.ReadFile(storagePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var orders []order.Order
+	var orders []model.Order
 	if len(bytes) == 0 {
 		return orders, nil
 	}
@@ -43,7 +58,8 @@ func (s *OrderStorage) listAll() ([]order.Order, error) {
 	return orders, err
 }
 
-func rewriteStorageFile(all []order.Order) error {
+// rewriteStorageFile writes new data to the storage file
+func rewriteStorageFile(all []model.Order) error {
 	bytes, err := json.MarshalIndent(all, "", "\t")
 	if err != nil {
 		return err
@@ -54,7 +70,8 @@ func rewriteStorageFile(all []order.Order) error {
 	return err
 }
 
-func (s *OrderStorage) Create(order order.Order) error {
+// Create creates a new order in storage
+func (s *Storage) Create(order model.Order) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -81,7 +98,8 @@ func (s *OrderStorage) Create(order order.Order) error {
 	return err
 }
 
-func (s *OrderStorage) Delete(id int) error {
+// Delete deletes an order from storage by id
+func (s *Storage) Delete(id int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -113,7 +131,8 @@ func (s *OrderStorage) Delete(id int) error {
 	return err
 }
 
-func (s *OrderStorage) GiveOut(ids []int) error {
+// GiveOut gives out an orders to the client by orders ids
+func (s *Storage) GiveOut(ids []int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -156,7 +175,8 @@ func (s *OrderStorage) GiveOut(ids []int) error {
 	return err
 }
 
-func (s *OrderStorage) List(id int, lastN int, inPVZ bool) ([]int, error) {
+// List gets a list of all orders of a specific client
+func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err
@@ -181,7 +201,8 @@ func (s *OrderStorage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 	return list, nil
 }
 
-func (s *OrderStorage) Return(id int, clientId int) error {
+// Return returns the order by order id and client id
+func (s *Storage) Return(id int, clientID int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -189,7 +210,7 @@ func (s *OrderStorage) Return(id int, clientId int) error {
 
 	ok := false
 	for i, v := range all {
-		if v.ID == id && v.ClientID == clientId {
+		if v.ID == id && v.ClientID == clientID {
 			if v.IsReturned {
 				return fmt.Errorf("this order has already been returned")
 			}
@@ -218,7 +239,8 @@ func (s *OrderStorage) Return(id int, clientId int) error {
 	return err
 }
 
-func (s *OrderStorage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
+// ListOfReturned gets a list of returned orders. With pagination.
+func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err

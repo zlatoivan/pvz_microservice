@@ -7,14 +7,14 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 const helpPath = "help.txt"
 const dateLayout = "02.01.2006"
 
-type OrderStorage interface {
-	Create(order order.Order) error
+type Storage interface {
+	Create(order model.Order) error
 	Delete(id int) error
 	GiveOut(ids []int) error
 	List(id int, lastN int, inPVZ bool) ([]int, error)
@@ -22,15 +22,17 @@ type OrderStorage interface {
 	ListOfReturned(pagenum int, itemsonpage int) ([]int, error)
 }
 
-type OrderService struct {
-	store OrderStorage
+type Service struct {
+	store Storage
 }
 
-func New(os OrderStorage) (*OrderService, error) {
-	return &OrderService{store: os}, nil
+// New creates a new order service
+func New(orderStore Storage) (*Service, error) {
+	return &Service{store: orderStore}, nil
 }
 
-func (s *OrderService) Help() error {
+// Help displays auxiliary information about the functionality of the program
+func (s *Service) Help() error {
 	data, err := os.ReadFile(helpPath)
 	if err != nil {
 		return err
@@ -39,6 +41,7 @@ func (s *OrderService) Help() error {
 	return nil
 }
 
+// validateCreate checks the validation of the data for the create method
 func validateCreate(id int, clientID int, storesTillStr string) (time.Time, error) {
 	if id == -1 || clientID == -1 || storesTillStr == "-" {
 		return time.Time{}, fmt.Errorf("incorrect input data format")
@@ -53,13 +56,14 @@ func validateCreate(id int, clientID int, storesTillStr string) (time.Time, erro
 	return storesTill, nil
 }
 
-func (s *OrderService) Create(id int, clientID int, storesTillStr string) error {
+// Create creates a new order in the Storage
+func (s *Service) Create(id int, clientID int, storesTillStr string) error {
 	storesTill, err := validateCreate(id, clientID, storesTillStr)
 	if err != nil {
 		return err
 	}
 
-	newOrder := order.Order{
+	newOrder := model.Order{
 		ID:          id,
 		ClientID:    clientID,
 		StoresTill:  storesTill,
@@ -77,7 +81,8 @@ func (s *OrderService) Create(id int, clientID int, storesTillStr string) error 
 	return nil
 }
 
-func (s *OrderService) Delete(id int) error {
+// Delete deletes an order from the Storage
+func (s *Service) Delete(id int) error {
 	if id == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
@@ -92,7 +97,8 @@ func (s *OrderService) Delete(id int) error {
 	return nil
 }
 
-func (s *OrderService) GiveOut(idsStr string) error {
+// GiveOut gives out an orders to the client by orders ids
+func (s *Service) GiveOut(idsStr string) error {
 	idsToSplit := idsStr[1 : len(idsStr)-1]
 	idsToInt := strings.Split(idsToSplit, ",")
 	ids := make([]int, len(idsToInt))
@@ -109,12 +115,13 @@ func (s *OrderService) GiveOut(idsStr string) error {
 		return fmt.Errorf("s.store.GiveOut: %w", err)
 	}
 
-	fmt.Println("Orders have been given out to the client")
+	fmt.Println("orders have been given out to the client")
 
 	return nil
 }
 
-func (s *OrderService) List(clientID int, lastN int, inPVZ bool) error {
+// List gets a list of all orders of a specific client
+func (s *Service) List(clientID int, lastN int, inPVZ bool) error {
 	if clientID == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
@@ -133,7 +140,8 @@ func (s *OrderService) List(clientID int, lastN int, inPVZ bool) error {
 	return nil
 }
 
-func (s *OrderService) Return(id int, clientID int) error {
+// Return returns the order by order id and client id
+func (s *Service) Return(id int, clientID int) error {
 	if id == -1 || clientID == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
@@ -148,7 +156,8 @@ func (s *OrderService) Return(id int, clientID int) error {
 	return nil
 }
 
-func (s *OrderService) ListOfReturned(pagenum int, itemsonpage int) error {
+// ListOfReturned gets a list of returned orders. With pagination.
+func (s *Service) ListOfReturned(pagenum int, itemsonpage int) error {
 	if pagenum == -1 || itemsonpage == -1 {
 		return fmt.Errorf("incorrect input data format")
 	}
