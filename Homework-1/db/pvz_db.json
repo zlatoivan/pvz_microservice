@@ -1,27 +1,22 @@
 {
-	"1": {
-		"Name": "1",
-		"Address": "2",
-		"Contacts": "3"
-	},
-	"4": {
-		"Name": "4",
-		"Address": "5",
-		"Contacts": "6"
-	},
-	"Ozon Company": {
-		"Name": "Ozon Company",
-		"Address": "Moscow, Arbat, 23",
-		"Contacts": "8-967-157-42-42"
-	},
-	"e": {
+	"17b9e8c9-0153-4906-8f3d-8a17292c655d": {
 		"Name": "e",
 		"Address": "d",
 		"Contacts": "c"
 	},
-	"p": {
-		"Name": "p",
-		"Address": "l",
-		"Contacts": ","
+	"297d00a0-2f5e-42be-b671-0df34f36b1df": {
+		"Name": "1",
+		"Address": "2",
+		"Contacts": "3"
+	},
+	"33ed47b6-a42a-45e2-a5ef-c1d97178b69a": {
+		"Name": "1",
+		"Address": "edededed",
+		"Contacts": "tgtgtgtgtg"
+	},
+	"c6a7e43b-6988-49e7-a868-b943168ddf01": {
+		"Name": "Ozon Company",
+		"Address": "Moscow, Arbat, 23",
+		"Contacts": "8-536-346-32-34"
 	}
 }

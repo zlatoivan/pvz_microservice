@@ -14,7 +14,7 @@ import (
 
 type PvzStorage interface {
 	CreatePVZ(pvz pvz.PVZ) error
-	GetPVZ(name string) (pvz.PVZ, error)
+	GetPVZ(name string) ([]pvz.PVZ, error)
 }
 
 type PVZService struct {
@@ -54,11 +54,14 @@ func (s *PVZService) Reader(readCh <-chan string, infoCh chan<- string) {
 			s.infoWg.Add(1)
 			infoCh <- "\t[INFO]: goroutine Reader is activated and is reading now"
 			s.infoWg.Wait()
-			pvz, err := s.store.GetPVZ(name)
+			pvzs, err := s.store.GetPVZ(name)
 			if err != nil {
 				log.Printf("s.Reader: %v", err)
 			} else {
-				fmt.Printf("Information about the PVZ:\nName: %s\nAddress:%s\nContacts:%s\n", pvz.Name, pvz.Address, pvz.Contacts)
+				fmt.Println("Information about the PVZs:")
+				for _, p := range pvzs {
+					fmt.Printf("Name: %s\nAddress: %s\nContacts: %s\n", p.Name, p.Address, p.Contacts)
+				}
 			}
 			s.infoWg.Add(1)
 			infoCh <- "\t[INFO]: goroutine Reader read everything and is waiting again"

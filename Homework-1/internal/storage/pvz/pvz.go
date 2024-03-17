@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/pvz"
 )
 
@@ -46,7 +48,7 @@ func (s *PVZStorage) CreatePVZ(pvz pvz.PVZ) error {
 			return fmt.Errorf("PVZ with this name is already in the storage")
 		}
 	}
-	s.Pvzs[pvz.Name] = pvz
+	s.Pvzs[uuid.New().String()] = pvz
 
 	file, err := os.Open(PVZStoragePath)
 	if err != nil {
@@ -61,18 +63,20 @@ func (s *PVZStorage) CreatePVZ(pvz pvz.PVZ) error {
 	return err
 }
 
-func (s *PVZStorage) GetPVZ(name string) (pvz.PVZ, error) {
+func (s *PVZStorage) GetPVZ(name string) ([]pvz.PVZ, error) {
 	s.Mutex.RLock()
 	defer s.Mutex.RUnlock()
 	ok := false
-	for k := range s.Pvzs {
-		if k == name {
+	pvzs := make([]pvz.PVZ, 0)
+	for _, p := range s.Pvzs {
+		if p.Name == name {
+			pvzs = append(pvzs, p)
 			ok = true
 		}
 	}
 	if !ok {
-		return pvz.PVZ{}, fmt.Errorf("no PVZ with this name was found")
+		return nil, fmt.Errorf("no PVZ with this name was found")
 	}
 
-	return s.Pvzs[name], nil
+	return pvzs, nil
 }
