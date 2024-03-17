@@ -1,4 +1,4 @@
-package storage
+package order
 
 import (
 	"encoding/json"
@@ -7,30 +7,34 @@ import (
 	"strconv"
 	"time"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model/order"
 )
 
-type Storage struct {
-	storage *os.File
+type OrderStorage struct {
+	Orders *os.File `json:"orders"`
 }
 
-const storagePath = "db/db.txt"
+const storagePath = "db/order_db.txt"
 
-func New() (*Storage, error) {
+func New() (*OrderStorage, error) {
 	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
 	if err != nil {
-		return &Storage{}, err
+		return nil, err
 	}
-	return &Storage{storage: file}, nil
+	store := &OrderStorage{
+		Orders: file,
+	}
+
+	return store, nil
 }
 
-func (s *Storage) listAll() ([]model.Order, error) {
+func (s *OrderStorage) listAll() ([]order.Order, error) {
 	bytes, err := os.ReadFile(storagePath)
 	if err != nil {
 		return nil, err
 	}
 
-	var orders []model.Order
+	var orders []order.Order
 	if len(bytes) == 0 {
 		return orders, nil
 	}
@@ -39,7 +43,7 @@ func (s *Storage) listAll() ([]model.Order, error) {
 	return orders, err
 }
 
-func rewriteStorageFile(all []model.Order) error {
+func rewriteStorageFile(all []order.Order) error {
 	bytes, err := json.MarshalIndent(all, "", "\t")
 	if err != nil {
 		return err
@@ -50,7 +54,7 @@ func rewriteStorageFile(all []model.Order) error {
 	return err
 }
 
-func (s *Storage) Create(order model.Order) error {
+func (s *OrderStorage) Create(order order.Order) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -77,7 +81,7 @@ func (s *Storage) Create(order model.Order) error {
 	return err
 }
 
-func (s *Storage) Delete(id int) error {
+func (s *OrderStorage) Delete(id int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -93,7 +97,7 @@ func (s *Storage) Delete(id int) error {
 				return fmt.Errorf("this order has been given out to the client")
 			}
 			if time.Now().Before(all[i].StoresTill) {
-				return fmt.Errorf("the storage period of this order has not expired")
+				return fmt.Errorf("the orders period of this order has not expired")
 			}
 			all[i].IsDeleted = true
 			ok = true
@@ -101,7 +105,7 @@ func (s *Storage) Delete(id int) error {
 	}
 
 	if !ok {
-		return fmt.Errorf("this order was not found in the storage")
+		return fmt.Errorf("this order was not found in the orders")
 	}
 
 	err = rewriteStorageFile(all)
@@ -109,7 +113,7 @@ func (s *Storage) Delete(id int) error {
 	return err
 }
 
-func (s *Storage) GiveOut(ids []int) error {
+func (s *OrderStorage) GiveOut(ids []int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -123,7 +127,7 @@ func (s *Storage) GiveOut(ids []int) error {
 				ok = true
 				// Проверка того, что срок заказа не истек
 				if v.StoresTill.Before(time.Now()) {
-					return fmt.Errorf("the storage period of order " + strconv.Itoa(v.ID) + " has expired")
+					return fmt.Errorf("the orders period of order " + strconv.Itoa(v.ID) + " has expired")
 				}
 				// Проверка того, что все заказы принадлежат одному клиенту
 				if clientId == -1 {
@@ -135,7 +139,7 @@ func (s *Storage) GiveOut(ids []int) error {
 		}
 		// Проверка того, что все заказы найдены в хранилище
 		if !ok {
-			return fmt.Errorf("orders were not found in the storage")
+			return fmt.Errorf("orders were not found in the orders")
 		}
 	}
 
@@ -152,7 +156,7 @@ func (s *Storage) GiveOut(ids []int) error {
 	return err
 }
 
-func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
+func (s *OrderStorage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err
@@ -177,7 +181,7 @@ func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 	return list, nil
 }
 
-func (s *Storage) Return(id int, clientId int) error {
+func (s *OrderStorage) Return(id int, clientId int) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -197,7 +201,7 @@ func (s *Storage) Return(id int, clientId int) error {
 			today := time.Now()
 			daysBetween := today.Sub(v.GiveOutTime).Hours() / 24
 			if daysBetween > 2 {
-				return fmt.Errorf("the storage period of this order is less than two days")
+				return fmt.Errorf("the orders period of this order is less than two days")
 			}
 			all[i].IsReturned = true
 			all[i].GiveOutTime = time.Time{}
@@ -206,7 +210,7 @@ func (s *Storage) Return(id int, clientId int) error {
 	}
 
 	if !ok {
-		return fmt.Errorf("this order was not found in the storage")
+		return fmt.Errorf("this order was not found in the orders")
 	}
 
 	err = rewriteStorageFile(all)
@@ -214,7 +218,7 @@ func (s *Storage) Return(id int, clientId int) error {
 	return err
 }
 
-func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
+func (s *OrderStorage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err

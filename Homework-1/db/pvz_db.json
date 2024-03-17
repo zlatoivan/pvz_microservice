@@ -1,0 +1,27 @@
+{
+	"1": {
+		"Name": "1",
+		"Address": "2",
+		"Contacts": "3"
+	},
+	"4": {
+		"Name": "4",
+		"Address": "5",
+		"Contacts": "6"
+	},
+	"Ozon Company": {
+		"Name": "Ozon Company",
+		"Address": "Moscow, Arbat, 23",
+		"Contacts": "8-967-157-42-42"
+	},
+	"e": {
+		"Name": "e",
+		"Address": "d",
+		"Contacts": "c"
+	},
+	"p": {
+		"Name": "p",
+		"Address": "l",
+		"Contacts": ","
+	}
+}

@@ -24,3 +24,29 @@
 
 ### Deadline
 16 марта, 23:59 (сдача) / 19 марта, 23:59 (проверка)
+
+---
+
+## Решение
+
+### Информация о функционале:
+
+go run cmd/main.go help
+
+    Это утилита для управления ПВЗ.
+
+    Применение:
+        go run cmd/main.go [flags] [command]
+    
+    command:            Описание:                                flags:
+        create            Принять заказ (создать).                 -id=1212 -clientid=9886 -storestill=15.09.2024
+        delete            Вернуть заказ курьеру (удалить).         -id=1212
+        giveout           Выдать заказ клиенту.                    -ids=[1212,1214]
+        list              Получить список заказов клиента.         -clientid=9886 -lastn=2 -inpvz=true  (последние два опциональные)
+        return            Возврат заказа клиентом.                 -id=1212 -clientid=9886
+        listofreturned    Получить список возвращенных заказов.    -pagenum=1 -itemsonpage=2
+
+        interactive_mode  Interactive mode to add and get PVZ      No flags. Enter command and follow the instructions
+            command:
+                add       Create PVZ
+                get       Get the information about PVZ

@@ -5,8 +5,9 @@ import (
 	"log"
 	"os"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/service"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/pvz"
 )
 
 func validateArgs() error {
@@ -23,18 +24,23 @@ func main() {
 		log.Fatalf("validateArgs: %v", err)
 	}
 
-	store, err := storage.New()
+	orderStore, err := order.New()
 	if err != nil {
-		log.Fatalf("storage.New: %v", err)
+		log.Fatalf("orderStore.New: %v", err)
 	}
 
-	serv, err := service.New(store)
+	pvzStore, err := pvz.New()
+	if err != nil {
+		log.Fatalf("pvzStore.New: %v", err)
+	}
+
+	app, err := app.New(orderStore, pvzStore)
 	if err != nil {
 		log.Fatalf("service.New: %v", err)
 	}
 
-	err = serv.Work()
+	err = app.Work()
 	if err != nil {
-		log.Fatalf("serv.Work: %v", err)
+		log.Fatalf("app.Work: %v", err)
 	}
 }
