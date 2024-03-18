@@ -11,11 +11,13 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/pvz"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
-	//ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+	//ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	err := bootstrap(ctx, cancel)

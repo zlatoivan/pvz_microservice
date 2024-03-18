@@ -5,11 +5,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
-	"log"
 	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
@@ -78,7 +75,6 @@ func (s *Service) CreatePVZ(writeCh chan<- model.PVZ, printCh chan<- string) err
 	printCh <- "\n"
 
 	newPVZ := model.PVZ{ID: uuid.NewString(), Name: name, Address: address, Contacts: contacts}
-	fmt.Println(newPVZ)
 	writeCh <- newPVZ
 
 	return nil
@@ -102,7 +98,7 @@ func (s *Service) Print(printCh <-chan string) {
 	}
 }
 
-func (s *Service) Signal(ctx context.Context, cancel context.CancelFunc, signalCh <-chan os.Signal, printCh chan<- string) {
+func (s *Service) Signal(cancel context.CancelFunc, signalCh <-chan os.Signal, printCh chan<- string) {
 	for sig := range signalCh {
 		printCh <- fmt.Sprintf("\nThe program termination signal has been received: %v\n", sig)
 		printCh <- "Shutting down the tool...\n\n"
@@ -110,52 +106,62 @@ func (s *Service) Signal(ctx context.Context, cancel context.CancelFunc, signalC
 	}
 }
 
-func (s *Service) Errors(ctx context.Context, cancel context.CancelFunc, errCh <-chan error) {
+func (s *Service) Errors(cancel context.CancelFunc, errCh <-chan error) {
 	for err := range errCh {
-		log.Printf("Error: %v", err)
-		cancel()
+		_, _ = fmt.Fprintf(os.Stderr, "Error: %v", err)
+		//cancel()
 	}
 }
 
-func (s *Service) Work(ctx context.Context, cancel context.CancelFunc, writeCh chan model.PVZ, readCh chan string, printCh chan<- string, errCh chan<- error) {
+func (s *Service) Work(ctx context.Context, writeCh chan model.PVZ, readCh chan string, printCh chan<- string, errCh chan<- error) {
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer ticker.Stop()
 
-	//wgForWork := sync.WaitGroup{}
 	for {
-		//wgForWork.Add(1)
+		//select {
+		//case <-ctx.Done():
+		//	fmt.Println("ctx.Done 1", ctx.Err())
+		//	return
+		//default:
+		//}
+
 		select {
-		case <-ctx.Done():
-			close(writeCh)
-			close(readCh)
-			//if errors.Is(ctx.Err(), context.Canceled) {}  // Тип ctx.Done может быть разный
-			fmt.Println("STOP")
-			//errCh <- fmt.Errorf("%w", ctx.Err())
+		//case <-ctx.Done():
+		//	fmt.Println("ctx.Done 2")
+		//	return
+		//errCh <- fmt.Errorf("%w", ctx.Err())
 		case <-ticker.C:
 			printCh <- "\n> "
 			scanner := bufio.NewScanner(os.Stdin)
 			scanner.Scan()
 			command := scanner.Text()
+			//fmt.Println("command =" + "{" + command + "}")
+			//select {
+			//case <-ctx.Done():
+			//	fmt.Println("ctx.Done 3", ctx.Err())
+			//	return
+			//default:
+			//}
 
 			switch command {
 			case "add":
 				err := s.CreatePVZ(writeCh, printCh)
 				if err != nil {
-					errCh <- fmt.Errorf("pvz.Service.CreatePVZ: %w", err)
+					errCh <- fmt.Errorf("pvz.Service.CreatePVZ\n: %w", err)
 				}
 
 			case "get":
 				err := s.GetPVZ(readCh, printCh)
 				if err != nil {
-					errCh <- fmt.Errorf("pvz.Service.GetPVZ: %w", err)
+					errCh <- fmt.Errorf("pvz.Service.GetPVZ: %w\n", err)
 				}
 
 			default:
-				errCh <- fmt.Errorf("unknown command")
+				errCh <- fmt.Errorf("[interactive mode] unknown command\n")
 			}
-			//wgForWork.Done()
+
+			time.Sleep(200 * time.Millisecond)
 		}
-		//wgForWork.Wait()
 	}
 }
 
@@ -164,16 +170,17 @@ func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc
 	printCh := make(chan string)
 	writeCh := make(chan model.PVZ)
 	readCh := make(chan string)
-	signalCh := make(chan os.Signal)
 	errCh := make(chan error)
-	signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
+	//signalCh := make(chan os.Signal)
+	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
 	wg := sync.WaitGroup{}
+	wg2 := sync.WaitGroup{}
 
-	wg.Add(1)
+	wg2.Add(1)
 	go func() {
 		s.Print(printCh)
-		wg.Done()
+		wg2.Done()
 	}()
 
 	wg.Add(1)
@@ -190,26 +197,39 @@ func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc
 	}()
 	printCh <- "\t[INFO]: goroutine Writer is launched (waiting)\n"
 
-	wg.Add(1)
+	//wg2.Add(1)
+	//go func() {
+	//	s.Signal(ctx, cancel, signalCh, printCh)
+	//	wg2.Done()
+	//}()
+
+	wg2.Add(1)
 	go func() {
-		s.Signal(ctx, cancel, signalCh, printCh)
-		wg.Done()
+		s.Errors(cancel, errCh)
+		wg2.Done()
 	}()
 
 	wg.Add(1)
 	go func() {
-		s.Errors(ctx, cancel, errCh)
+		s.Work(ctx, writeCh, readCh, printCh, errCh)
 		wg.Done()
 	}()
 
-	wg.Add(1)
-	go func() {
-		s.Work(ctx, cancel, writeCh, readCh, printCh, errCh)
-		wg.Done()
-	}()
+	<-ctx.Done()
+	printCh <- fmt.Sprintf("\nThe program termination signal has been received\n")
+	printCh <- "Shutting down the tool...\n\n"
+	close(writeCh)
+	close(readCh)
+	//if errors.Is(ctx.Err(), context.Canceled) {}  // Тип ctx.Done может быть разный
+	//fmt.Println("STOP")
 
+	wg.Done()
 	wg.Wait()
+	close(errCh)
 	close(printCh)
+	//close(signalCh)
+	wg2.Wait()
 
+	//fmt.Println("DONE")
 	return nil
 }
