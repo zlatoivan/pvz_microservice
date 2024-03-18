@@ -48,9 +48,9 @@ func (s *Service) Reader(readCh <-chan string, printCh chan<- string, errCh chan
 			//log.Printf("s.Reader: %v", err)
 			errCh <- fmt.Errorf("s.Writer: %w", err)
 		} else {
-			printCh <- "Information about the PVZs:"
-			for _, p := range pvzs {
-				pr := fmt.Sprintf("Name: %s\nAddress: %s\nContacts: %s\n", p.Name, p.Address, p.Contacts)
+			printCh <- "Information about the PVZs:\n"
+			for i, p := range pvzs {
+				pr := fmt.Sprintf("%d) Name: %s\n   Address: %s\n   Contacts: %s\n", i+1, p.Name, p.Address, p.Contacts)
 				printCh <- pr
 			}
 		}
