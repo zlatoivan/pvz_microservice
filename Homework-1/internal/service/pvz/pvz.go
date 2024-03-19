@@ -98,15 +98,7 @@ func (s *Service) Print(printCh <-chan string) {
 	}
 }
 
-func (s *Service) Signal(cancel context.CancelFunc, signalCh <-chan os.Signal, printCh chan<- string) {
-	for sig := range signalCh {
-		printCh <- fmt.Sprintf("\nThe program termination signal has been received: %v\n", sig)
-		printCh <- "Shutting down the tool...\n\n"
-		cancel()
-	}
-}
-
-func (s *Service) Errors(cancel context.CancelFunc, errCh <-chan error) {
+func (s *Service) Errors(errCh <-chan error) {
 	for err := range errCh {
 		_, _ = fmt.Fprintf(os.Stderr, "Error: %v", err)
 		//cancel()
@@ -118,30 +110,13 @@ func (s *Service) Work(ctx context.Context, writeCh chan model.PVZ, readCh chan 
 	defer ticker.Stop()
 
 	for {
-		//select {
-		//case <-ctx.Done():
-		//	fmt.Println("ctx.Done 1", ctx.Err())
-		//	return
-		//default:
-		//}
 
 		select {
-		//case <-ctx.Done():
-		//	fmt.Println("ctx.Done 2")
-		//	return
-		//errCh <- fmt.Errorf("%w", ctx.Err())
 		case <-ticker.C:
 			printCh <- "\n> "
 			scanner := bufio.NewScanner(os.Stdin)
 			scanner.Scan()
 			command := scanner.Text()
-			//fmt.Println("command =" + "{" + command + "}")
-			//select {
-			//case <-ctx.Done():
-			//	fmt.Println("ctx.Done 3", ctx.Err())
-			//	return
-			//default:
-			//}
 
 			switch command {
 			case "add":
@@ -171,48 +146,40 @@ func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc
 	writeCh := make(chan model.PVZ)
 	readCh := make(chan string)
 	errCh := make(chan error)
-	//signalCh := make(chan os.Signal)
-	//signal.Notify(signalCh, syscall.SIGINT, syscall.SIGTERM)
 
+	wgForWork := sync.WaitGroup{}
 	wg := sync.WaitGroup{}
-	wg2 := sync.WaitGroup{}
-
-	wg2.Add(1)
-	go func() {
-		s.Print(printCh)
-		wg2.Done()
-	}()
 
 	wg.Add(1)
 	go func() {
-		s.Writer(writeCh, printCh, errCh)
+		s.Print(printCh)
 		wg.Done()
+	}()
+
+	wgForWork.Add(1)
+	go func() {
+		s.Writer(writeCh, printCh, errCh)
+		wgForWork.Done()
 	}()
 	printCh <- "\t[INFO]: goroutine Reader is launched (waiting)\n"
 
-	wg.Add(1)
+	wgForWork.Add(1)
 	go func() {
 		s.Reader(readCh, printCh, errCh)
-		wg.Done()
+		wgForWork.Done()
 	}()
 	printCh <- "\t[INFO]: goroutine Writer is launched (waiting)\n"
 
-	//wg2.Add(1)
-	//go func() {
-	//	s.Signal(ctx, cancel, signalCh, printCh)
-	//	wg2.Done()
-	//}()
-
-	wg2.Add(1)
-	go func() {
-		s.Errors(cancel, errCh)
-		wg2.Done()
-	}()
-
 	wg.Add(1)
 	go func() {
-		s.Work(ctx, writeCh, readCh, printCh, errCh)
+		s.Errors(errCh)
 		wg.Done()
+	}()
+
+	wgForWork.Add(1)
+	go func() {
+		s.Work(ctx, writeCh, readCh, printCh, errCh)
+		wgForWork.Done()
 	}()
 
 	<-ctx.Done()
@@ -220,16 +187,12 @@ func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc
 	printCh <- "Shutting down the tool...\n\n"
 	close(writeCh)
 	close(readCh)
-	//if errors.Is(ctx.Err(), context.Canceled) {}  // Тип ctx.Done может быть разный
-	//fmt.Println("STOP")
 
-	wg.Done()
-	wg.Wait()
+	wgForWork.Done()
+	wgForWork.Wait()
 	close(errCh)
 	close(printCh)
-	//close(signalCh)
-	wg2.Wait()
+	wg.Wait()
 
-	//fmt.Println("DONE")
 	return nil
 }

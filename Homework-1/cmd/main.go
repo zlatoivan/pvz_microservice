@@ -4,23 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app"
 	orderService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	pvzService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/pvz"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
 )
 
 func main() {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-	//ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := context.Background()
 
-	err := bootstrap(ctx, cancel)
+	err := bootstrap(ctx)
 	if err != nil {
 		log.Fatalf("[main] bootstrap: %v", err)
 	}
@@ -34,7 +33,10 @@ func validateArgs() error {
 	return nil
 }
 
-func bootstrap(ctx context.Context, cancel context.CancelFunc) error {
+func bootstrap(ctx context.Context) error {
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
 	err := validateArgs()
 	if err != nil {
 		return fmt.Errorf("validateArgs: %v", err)
