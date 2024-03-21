@@ -15,7 +15,7 @@ type Storage struct {
 	orders *os.File
 }
 
-const storagePath = "db/order_db.txt"
+const storagePath = "db_files/order_db.txt"
 
 // New creates a new order storage
 func New() (*Storage, error) {

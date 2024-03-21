@@ -12,10 +12,10 @@ import (
 
 type Storage struct {
 	mu   sync.RWMutex
-	pvzs map[string]model.PVZ
+	pvzs map[int]model.PVZ
 }
 
-const storagePath = "db/pvz_db.json"
+const storagePath = "db_files/pvz_db.json"
 
 // New Creates a new pvz storage
 func New() (*Storage, error) {
@@ -31,7 +31,7 @@ func New() (*Storage, error) {
 	}()
 
 	store := &Storage{
-		pvzs: make(map[string]model.PVZ),
+		pvzs: make(map[int]model.PVZ),
 	}
 	bytes, err := os.ReadFile(storagePath)
 	if err != nil {
@@ -85,7 +85,7 @@ func (s *Storage) CreatePVZ(pvz model.PVZ) error {
 	return nil
 }
 
-// GetPVZ get information about the PVZ
+// GetPVZ gets information about the PVZ
 func (s *Storage) GetPVZ(name string) ([]model.PVZ, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
@@ -100,4 +100,17 @@ func (s *Storage) GetPVZ(name string) ([]model.PVZ, error) {
 	}
 
 	return pvzs, nil
+}
+
+// GetListOfPVZs gets information about all PVZs
+func (s *Storage) GetListOfPVZs() ([]model.PVZ, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	pvzsList := make([]model.PVZ, 0)
+	for _, v := range s.pvzs {
+		pvzsList = append(pvzsList, v)
+	}
+
+	return pvzsList, nil
 }

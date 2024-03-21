@@ -1,8 +1,8 @@
 package model
 
 type PVZ struct {
-	ID       string
-	Name     string // the name of PVZ
-	Address  string // the address of PVZ
-	Contacts string // the contacts of PVZ
+	ID       int    `db:"id"`       // the id of PVZ
+	Name     string `db:"name"`     // the name of PVZ
+	Address  string `db:"address"`  // the address of PVZ
+	Contacts string `db:"contacts"` // the contacts of PVZ
 }

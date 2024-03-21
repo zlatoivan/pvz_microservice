@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"os"
 	"sync"
 	"time"
@@ -15,6 +14,7 @@ import (
 type Storage interface {
 	CreatePVZ(pvz model.PVZ) error
 	GetPVZ(name string) ([]model.PVZ, error)
+	GetListOfPVZs() ([]model.PVZ, error)
 }
 
 type Service struct {
@@ -74,7 +74,11 @@ func (s *Service) CreatePVZ(writeCh chan<- model.PVZ, printCh chan<- string) err
 	contacts := scanner.Text()
 	printCh <- "\n"
 
-	newPVZ := model.PVZ{ID: uuid.NewString(), Name: name, Address: address, Contacts: contacts}
+	pvzs, err := s.store.GetListOfPVZs()
+	if err != nil {
+		return fmt.Errorf("pvz.service.CreatePVZ: %w", err)
+	}
+	newPVZ := model.PVZ{ID: len(pvzs), Name: name, Address: address, Contacts: contacts}
 	writeCh <- newPVZ
 
 	return nil
@@ -110,33 +114,30 @@ func (s *Service) Work(ctx context.Context, writeCh chan model.PVZ, readCh chan 
 	defer ticker.Stop()
 
 	for {
+		<-ticker.C
+		printCh <- "\n> "
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		command := scanner.Text()
 
-		select {
-		case <-ticker.C:
-			printCh <- "\n> "
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			command := scanner.Text()
-
-			switch command {
-			case "add":
-				err := s.CreatePVZ(writeCh, printCh)
-				if err != nil {
-					errCh <- fmt.Errorf("pvz.Service.CreatePVZ\n: %w", err)
-				}
-
-			case "get":
-				err := s.GetPVZ(readCh, printCh)
-				if err != nil {
-					errCh <- fmt.Errorf("pvz.Service.GetPVZ: %w\n", err)
-				}
-
-			default:
-				errCh <- fmt.Errorf("[interactive mode] unknown command\n")
+		switch command {
+		case "add":
+			err := s.CreatePVZ(writeCh, printCh)
+			if err != nil {
+				errCh <- fmt.Errorf("pvz.Service.CreatePVZ\n: %w", err)
 			}
 
-			time.Sleep(200 * time.Millisecond)
+		case "get":
+			err := s.GetPVZ(readCh, printCh)
+			if err != nil {
+				errCh <- fmt.Errorf("pvz.Service.GetPVZ: %w\n", err)
+			}
+
+		default:
+			errCh <- fmt.Errorf("[interactive mode] unknown command\n")
 		}
+
+		time.Sleep(200 * time.Millisecond)
 	}
 }
 
@@ -183,7 +184,7 @@ func (s *Service) InteractiveMode(ctx context.Context, cancel context.CancelFunc
 	}()
 
 	<-ctx.Done()
-	printCh <- fmt.Sprintf("\nThe program termination signal has been received\n")
+	printCh <- "\nThe program termination signal has been received\n"
 	printCh <- "Shutting down the tool...\n\n"
 	close(writeCh)
 	close(readCh)
