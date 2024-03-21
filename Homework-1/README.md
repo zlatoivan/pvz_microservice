@@ -59,27 +59,27 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ### Подготовка
 
-Сгенерировать приватный ключ (.key):
+#### Сгенерировать приватный ключ (.key):
 
     openssl genrsa -out server.key 2048
 
-Сгенерировать публичный ключ (.crt), основанный на приватном ключе:
+#### Сгенерировать публичный ключ (.crt), основанный на приватном ключе:
 
     openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes
 
-Поместить оба файла в папку /configs
+#### Поместить оба файла в папку /configs
 
     mv -f server.key server.crt configs/
 
-Запустить демон docker
+#### Запустить демон docker
 
     systemctl --user start docker-desktop
 
-Поднять базу данных docker compose
+#### Поднять базу данных docker compose
 
     docker compose up --build
 
-Поднять миграцию
+#### Поднять миграцию
 
     make migration-up
 
@@ -93,11 +93,11 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ### Входные данные ДЗ-3
 
-Main Page
+#### Main Page
 
     curl http://localhost:9000 -u ivan:the_best_pass
 
-Create
+#### Create
 
     curl -X POST http://localhost:9000/api/v1/pvzs -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
         "Name": "Ozon Tech",
@@ -105,15 +105,15 @@ Create
         "Contacts": "+7 958 400-00-05, add 76077"
     }'
 
-List
+#### List
 
     curl http://localhost:9000/api/v1/pvzs -u ivan:the_best_pass
 
-GetById
+#### GetById
 
     curl http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass
 
-Update
+#### Update
 
     curl -X PUT http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
         "Name": "Ozon Company",
@@ -121,11 +121,11 @@ Update
         "Contacts": "+7 999 888 11 11"
     }'
 
-Delete
+#### Delete
 
     curl -X DELETE http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass
 
-HTTPS:
+#### HTTPS
     
     Запросы аналогичные, но надо изменить в запросе:
     http -> https
@@ -136,15 +136,16 @@ HTTPS:
 
 ### Входные данные ДЗ-2
 
-Запустить интерактивный режим:
+#### Запустить интерактивный режим
 
         go run cmd/cli/main.go interactive_mode
 
-Далее следовать командам интерактивного режима
+Далее следовать его командам.
 
 ---
 
 ### Входные данные ДЗ-1
+
     Принять заказ (создать):
         go run cmd/cli/main.go -id=1212 -clientid=9886 -storestill=15.09.2024 create
     Вернуть заказ курьеру (удалить):
