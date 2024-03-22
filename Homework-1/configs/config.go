@@ -21,8 +21,8 @@ type Pg struct {
 }
 
 type User struct {
-	Login string `env:"USER_LOGIN"`
-	Pass  string `env:"USER_PASSWORD"`
+	Login    string `env:"USER_LOGIN"`
+	Password string `env:"USER_PASSWORD"`
 }
 
 func NewConfig() (Config, error) {

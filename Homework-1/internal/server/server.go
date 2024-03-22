@@ -64,7 +64,7 @@ func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
 func (s *Server) createRouter(cfg configs.Config) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Use(mwBasicAuth(map[string]string{cfg.User.Login: cfg.User.Pass}))
+	r.Use(mwBasicAuth(map[string]string{cfg.User.Login: cfg.User.Password}))
 
 	r.Get("/", s.mainPage)
 
