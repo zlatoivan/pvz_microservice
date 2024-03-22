@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -42,10 +43,10 @@ func (db *Database) Query(ctx context.Context, query string) (pgx.Rows, error) {
 	return db.pool.Query(ctx, query)
 }
 
-//func (db *Database) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
-//	return pgxscan.Get(ctx, db.pool, dest, query, args...)
-//}
+func (db *Database) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	return pgxscan.Get(ctx, db.pool, dest, query, args...)
+}
 
-//func (db *Database) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
-//	return pgxscan.Select(ctx, db.pool, dest, query, args...)
-//}
+func (db *Database) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
+	return pgxscan.Select(ctx, db.pool, dest, query, args...)
+}
