@@ -33,7 +33,7 @@ func NewServer(repo repo) (*Server, error) {
 
 // Run starts the server
 func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
-	router := s.createRouter()
+	router := s.createRouter(cfg)
 
 	go func() {
 		httpsPort := cfg.HttpsPort
@@ -61,10 +61,10 @@ func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
 }
 
 // createRouter creates http router
-func (s *Server) createRouter() *chi.Mux {
+func (s *Server) createRouter(cfg configs.Config) *chi.Mux {
 	r := chi.NewRouter()
 
-	r.Use(mwBasicAuth(map[string]string{"ivan": "the_best_pass"}))
+	r.Use(mwBasicAuth(map[string]string{cfg.User.Login: cfg.User.Pass}))
 
 	r.Get("/", s.mainPage)
 
