@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/configs"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
@@ -54,6 +55,7 @@ func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
 
 	<-ctx.Done()
 	log.Printf("\nThe program termination signal has been received.\nShutting down the tool...\n\n")
+	time.Sleep(1 * time.Second)
 
 	return nil
 }
@@ -173,7 +175,7 @@ func mwGetData(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			log.Printf("[MW]: DELETE request:\nid = %d", id)
+			log.Printf("[MW]: DELETE request:\nid = %d\n\n", id)
 			ctx := context.WithValue(req.Context(), "id", id)
 			next.ServeHTTP(w, req.WithContext(ctx))
 		}
