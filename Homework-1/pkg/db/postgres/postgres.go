@@ -45,7 +45,7 @@ func (db *Database) Query(ctx context.Context, query string) (pgx.Rows, error) {
 //func (db *Database) Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 //	return pgxscan.Get(ctx, db.pool, dest, query, args...)
 //}
-//
+
 //func (db *Database) Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error {
 //	return pgxscan.Select(ctx, db.pool, dest, query, args...)
 //}

@@ -30,6 +30,7 @@ func NewServer(repo repo) (*Server, error) {
 	return &Server{repo: repo}, nil
 }
 
+// Run starts the server
 func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
 	router := s.createRouter()
 
@@ -52,11 +53,12 @@ func (s *Server) Run(ctx context.Context, cfg configs.Config) error {
 	}()
 
 	<-ctx.Done()
-	log.Printf("\nThe program termination signal has been received\nShutting down the tool...\n\n")
+	log.Printf("\nThe program termination signal has been received.\nShutting down the tool...\n\n")
 
 	return nil
 }
 
+// createRouter creates http router
 func (s *Server) createRouter() *chi.Mux {
 	r := chi.NewRouter()
 
@@ -65,10 +67,10 @@ func (s *Server) createRouter() *chi.Mux {
 	r.Get("/", s.mainPage)
 
 	r.Route("/api/v1/pvzs", func(r chi.Router) {
-		r.With(s.mwGetData).Post("/", s.createPVZ) // Create
-		r.Get("/", s.getListOfPVZ)                 // List
+		r.With(mwGetData).Post("/", s.createPVZ) // Create
+		r.Get("/", s.getListOfPVZ)               // List
 		r.Route("/{pvzID}", func(r chi.Router) {
-			r.Use(s.mwGetData)
+			r.Use(mwGetData)
 			r.Get("/", s.getPVZByID)   // GetById
 			r.Put("/", s.updatePVZ)    // Update
 			r.Delete("/", s.deletePVZ) // Delete
@@ -135,7 +137,7 @@ func prepToPrint(pvz model.PVZ) string {
 	return fmt.Sprintf("   Id: %d\n   Name: %s\n   Address: %s\n   Contacts: %s\n\n", pvz.ID, pvz.Name, pvz.Address, pvz.Contacts)
 }
 
-func (s *Server) mwGetData(next http.Handler) http.Handler {
+func mwGetData(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
@@ -178,11 +180,13 @@ func (s *Server) mwGetData(next http.Handler) http.Handler {
 	})
 }
 
+// mainPage shows main page
 func (s *Server) mainPage(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write([]byte("This is the main page!\n"))
 }
 
+// createPVZ creates PVZ
 func (s *Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	newPVZ := req.Context().Value("pvz").(model.PVZ)
 
@@ -197,6 +201,7 @@ func (s *Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("PVZ created!\nid = %d\n\n", id)
 }
 
+// getListOfPVZ gets list of PVZ
 func (s *Server) getListOfPVZ(w http.ResponseWriter, req *http.Request) {
 	list, err := s.repo.GetListOfPVZ(req.Context())
 	if err != nil {
@@ -214,6 +219,7 @@ func (s *Server) getListOfPVZ(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// getPVZByID gets PVZ by ID
 func (s *Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	id := req.Context().Value("id").(int)
 
@@ -228,6 +234,7 @@ func (s *Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("PVZ by ID:\n" + prepToPrint(pvz))
 }
 
+// updatePVZ updates PVZ
 func (s *Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	id := req.Context().Value("id").(int)
 	updPVZ := req.Context().Value("pvz").(model.PVZ)
@@ -243,6 +250,7 @@ func (s *Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("PVZ updated!\n\n")
 }
 
+// deletePVZ deletes PVZ
 func (s *Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	id := req.Context().Value("id").(int)
 
