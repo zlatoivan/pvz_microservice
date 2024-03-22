@@ -2,6 +2,12 @@ POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost
 MIGRATION_FOLDER=$(CURDIR)/pkg/db/migrations
 MIGRATION_NAME=migration
 
+.PHONY: gen-tls-cert
+gen-tls-cert:
+	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
+	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
+	mv -f server.key server.crt configs/  # Поместить оба файла в папку /configs
+
 .PHONY: compose-up
 compose-up:
 	docker compose build
