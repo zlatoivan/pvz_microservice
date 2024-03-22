@@ -9,7 +9,7 @@ type Config struct {
 	HttpPort  string `env:"HTTP_PORT"`
 	HttpsPort string `env:"HTTPS_PORT"`
 	Pg
-	User
+	Auth
 }
 
 type Pg struct {
@@ -20,9 +20,9 @@ type Pg struct {
 	DBname   string `env:"POSTGRES_DB"`
 }
 
-type User struct {
-	Login    string `env:"USER_LOGIN"`
-	Password string `env:"USER_PASSWORD"`
+type Auth struct {
+	Login    string `env:"AUTH_LOGIN"`
+	Password string `env:"AUTH_PASSWORD"`
 }
 
 func NewConfig() (Config, error) {
