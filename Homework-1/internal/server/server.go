@@ -16,7 +16,7 @@ import (
 )
 
 type repo interface {
-	CreatePVZ(ctx context.Context, pvz model.PVZ) (int64, error)
+	CreatePVZ(ctx context.Context, pvz model.PVZ) (int, error)
 	GetListOfPVZ(ctx context.Context) ([]model.PVZ, error)
 	GetPVZByID(ctx context.Context, id int) (model.PVZ, error)
 	UpdatePVZ(ctx context.Context, id int, updPVZ model.PVZ) error

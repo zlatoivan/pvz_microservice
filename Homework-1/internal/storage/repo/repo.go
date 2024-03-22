@@ -20,21 +20,21 @@ type postgres interface {
 	Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 }
 
-type PVZRepo struct {
+type Repo struct {
 	db postgres
 	mu sync.Mutex
 }
 
-func NewRepo(database postgres) (*PVZRepo, error) {
-	return &PVZRepo{db: database}, nil
+func NewRepo(database postgres) (*Repo, error) {
+	return &Repo{db: database}, nil
 }
 
 // CreatePVZ creates PVZ in postgres
-func (repo *PVZRepo) CreatePVZ(ctx context.Context, pvz model.PVZ) (int64, error) {
+func (repo *Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (int, error) {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
-	var id int64
+	var id int
 	query := `INSERT INTO pvz (name, address, contacts) VALUES ($1, $2, $3) RETURNING id;`
 	err := repo.db.QueryRow(ctx, query, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
 	if err != nil {
@@ -45,7 +45,7 @@ func (repo *PVZRepo) CreatePVZ(ctx context.Context, pvz model.PVZ) (int64, error
 }
 
 // GetListOfPVZ gets list of PVZ from postgres
-func (repo *PVZRepo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
+func (repo *Repo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
@@ -60,7 +60,7 @@ func (repo *PVZRepo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
 }
 
 // GetPVZByID gets PVZ by ID from postgres
-func (repo *PVZRepo) GetPVZByID(ctx context.Context, id int) (model.PVZ, error) {
+func (repo *Repo) GetPVZByID(ctx context.Context, id int) (model.PVZ, error) {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
@@ -75,7 +75,7 @@ func (repo *PVZRepo) GetPVZByID(ctx context.Context, id int) (model.PVZ, error) 
 }
 
 // UpdatePVZ updates PVZ in postgres
-func (repo *PVZRepo) UpdatePVZ(ctx context.Context, id int, updPVZ model.PVZ) error {
+func (repo *Repo) UpdatePVZ(ctx context.Context, id int, updPVZ model.PVZ) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
@@ -92,7 +92,7 @@ func (repo *PVZRepo) UpdatePVZ(ctx context.Context, id int, updPVZ model.PVZ) er
 }
 
 // DeletePVZ deletes PVZ from postgres
-func (repo *PVZRepo) DeletePVZ(ctx context.Context, id int) error {
+func (repo *Repo) DeletePVZ(ctx context.Context, id int) error {
 	repo.mu.Lock()
 	defer repo.mu.Unlock()
 
