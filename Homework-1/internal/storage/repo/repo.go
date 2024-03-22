@@ -38,7 +38,7 @@ func (repo *PVZRepo) CreatePVZ(ctx context.Context, pvz model.PVZ) (int64, error
 	query := `INSERT INTO pvz (name, address, contacts) VALUES ($1, $2, $3) RETURNING id;`
 	err := repo.db.QueryRow(ctx, query, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("postgres.postgres.QueryRow().Scan: %w", err)
+		return 0, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
 	}
 
 	return id, nil
