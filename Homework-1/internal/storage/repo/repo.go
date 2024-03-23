@@ -3,55 +3,52 @@ package repo
 import (
 	"context"
 	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"sync"
 
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/errors"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 type postgres interface {
 	GetPool(_ context.Context) *pgxpool.Pool
-	QueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row
+	QueryRow(ctx context.Context, query string, args ...any) pgx.Row
 	Query(ctx context.Context, query string) (pgx.Rows, error)
-	Exec(ctx context.Context, query string, args ...interface{}) (pgconn.CommandTag, error)
-	Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error
-	Select(ctx context.Context, dest interface{}, query string, args ...interface{}) error
+	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
+	Get(ctx context.Context, dest any, query string, args ...any) error
+	Select(ctx context.Context, dest any, query string, args ...any) error
 }
 
 type Repo struct {
 	db postgres
-	mu sync.Mutex
 }
 
-func NewRepo(database postgres) (*Repo, error) {
-	return &Repo{db: database}, nil
+func New(database postgres) Repo {
+	return Repo{db: database}
 }
+
+const queryInsertPVZ = `INSERT INTO pvz (name, address, contacts) VALUES ($1, $2, $3) RETURNING id;`
 
 // CreatePVZ creates PVZ in postgres
-func (repo *Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (int, error) {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
-
-	var id int
-	query := `INSERT INTO pvz (name, address, contacts) VALUES ($1, $2, $3) RETURNING id;`
-	err := repo.db.QueryRow(ctx, query, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
+func (repo Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error) {
+	var id uuid.UUID
+	err := repo.db.QueryRow(ctx, queryInsertPVZ, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
+		return uuid.UUID{}, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
 	}
 
 	return id, nil
 }
 
-// GetListOfPVZ gets list of PVZ from postgres
-func (repo *Repo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
+const querySelectPVZ = `SELECT id, name, address, contacts FROM pvz;`
 
+// GetListOfPVZ gets list of PVZ from postgres
+func (repo Repo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
 	var pvzs []model.PVZ
-	query := `SELECT id, name, address, contacts FROM pvz;`
-	err := repo.db.Select(ctx, &pvzs, query)
+	err := repo.db.Select(ctx, &pvzs, querySelectPVZ)
 	if err != nil {
 		return nil, fmt.Errorf("repo.db.Select: %w", err)
 	}
@@ -59,14 +56,12 @@ func (repo *Repo) GetListOfPVZ(ctx context.Context) ([]model.PVZ, error) {
 	return pvzs, nil
 }
 
-// GetPVZByID gets PVZ by ID from postgres
-func (repo *Repo) GetPVZByID(ctx context.Context, id int) (model.PVZ, error) {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
+const querySelectPBZByID = `SELECT id, name, address, contacts FROM pvz WHERE id = $1;`
 
-	query := `SELECT id, name, address, contacts FROM pvz WHERE id = $1;`
+// GetPVZByID gets PVZ by ID from postgres
+func (repo Repo) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error) {
 	var pvz model.PVZ
-	err := repo.db.Get(ctx, &pvz, query, id)
+	err := repo.db.Get(ctx, &pvz, querySelectPBZByID, id)
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("repo.db.Get: %w", err)
 	}
@@ -74,35 +69,31 @@ func (repo *Repo) GetPVZByID(ctx context.Context, id int) (model.PVZ, error) {
 	return pvz, nil
 }
 
-// UpdatePVZ updates PVZ in postgres
-func (repo *Repo) UpdatePVZ(ctx context.Context, id int, updPVZ model.PVZ) error {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
+const queryUpdatePVZ = `UPDATE pvz SET name = $2, address = $3, contacts = $4 WHERE id = $1;`
 
-	query := `UPDATE pvz SET name = $2, address = $3, contacts = $4 WHERE id = $1;`
-	t, err := repo.db.Exec(ctx, query, id, updPVZ.Name, updPVZ.Address, updPVZ.Contacts)
+// UpdatePVZ updates PVZ in postgres
+func (repo Repo) UpdatePVZ(ctx context.Context, updPVZ model.PVZ) error {
+	t, err := repo.db.Exec(ctx, queryUpdatePVZ, updPVZ.ID, updPVZ.Name, updPVZ.Address, updPVZ.Contacts)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
 	if t.RowsAffected() == 0 {
-		return fmt.Errorf("no PVZ with this id")
+		return errors.ErrorNotFound
 	}
 
 	return nil
 }
 
-// DeletePVZ deletes PVZ from postgres
-func (repo *Repo) DeletePVZ(ctx context.Context, id int) error {
-	repo.mu.Lock()
-	defer repo.mu.Unlock()
+const queryDeletePVZ = `DELETE FROM pvz WHERE id = $1;`
 
-	query := `DELETE FROM pvz WHERE id = $1;`
-	t, err := repo.db.Exec(ctx, query, id)
+// DeletePVZ deletes PVZ from postgres
+func (repo Repo) DeletePVZ(ctx context.Context, id uuid.UUID) error {
+	t, err := repo.db.Exec(ctx, queryDeletePVZ, id)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
 	if t.RowsAffected() == 0 {
-		return fmt.Errorf("no PVZ with this id")
+		return errors.ErrorNotFound
 	}
 
 	return nil

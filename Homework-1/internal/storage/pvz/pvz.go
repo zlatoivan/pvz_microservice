@@ -7,12 +7,14 @@ import (
 	"os"
 	"sync"
 
+	"github.com/google/uuid"
+
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 type Storage struct {
 	mu   sync.RWMutex
-	pvzs map[int]model.PVZ
+	pvzs map[uuid.UUID]model.PVZ
 }
 
 const storagePath = "db_files/pvz_db.json"
@@ -31,7 +33,7 @@ func New() (*Storage, error) {
 	}()
 
 	store := &Storage{
-		pvzs: make(map[int]model.PVZ),
+		pvzs: make(map[uuid.UUID]model.PVZ),
 	}
 	bytes, err := os.ReadFile(storagePath)
 	if err != nil {

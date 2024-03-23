@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/configs"
-	server_ "gitlab.ozon.dev/zlatoivan4/homework/internal/server"
-	repo_ "gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
-	"gitlab.ozon.dev/zlatoivan4/homework/pkg/db/postgres"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/server"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/postgres"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
 func main() {
@@ -26,31 +26,24 @@ func bootstrap(ctx context.Context) error {
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
 
-	go func() {}()
-	cfg, err := configs.NewConfig()
+	cfg, err := config.New()
 	if err != nil {
-		return fmt.Errorf("configs.NewConfig: %w", err)
+		return fmt.Errorf("config.New: %w", err)
 	}
 
-	database, err := postgres.NewDB(ctx, cfg)
+	database, err := postgres.New(ctx, cfg)
 	if err != nil {
-		return fmt.Errorf("repo.NewDB: %w", err)
+		return fmt.Errorf("postgres.New: %w", err)
 	}
 	defer database.GetPool(ctx).Close()
 
-	repo, err := repo_.NewRepo(database)
-	if err != nil {
-		return fmt.Errorf("repo.NewRepo: %w", err)
-	}
+	pvzRepo := repo.New(database)
 
-	server, err := server_.NewServer(repo)
-	if err != nil {
-		return fmt.Errorf("server.NewServer: %w", err)
-	}
+	pvzServer := server.New(pvzRepo)
 
-	err = server.Run(ctx, cfg)
+	err = pvzServer.Run(ctx, cfg)
 	if err != nil {
-		return fmt.Errorf("server.Run: %w", err)
+		return fmt.Errorf("pvzServer.Run: %w", err)
 	}
 
 	return nil

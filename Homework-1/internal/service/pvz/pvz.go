@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
@@ -74,11 +76,7 @@ func (s *Service) CreatePVZ(writeCh chan<- model.PVZ, printCh chan<- string) err
 	contacts := scanner.Text()
 	printCh <- "\n"
 
-	pvzs, err := s.store.GetListOfPVZs()
-	if err != nil {
-		return fmt.Errorf("pvz.service.CreatePVZ: %w", err)
-	}
-	newPVZ := model.PVZ{ID: len(pvzs), Name: name, Address: address, Contacts: contacts}
+	newPVZ := model.PVZ{ID: uuid.New(), Name: name, Address: address, Contacts: contacts}
 	writeCh <- newPVZ
 
 	return nil

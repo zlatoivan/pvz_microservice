@@ -69,7 +69,7 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ##### Main Page
 
-    curl http://localhost:9000 -u ivan:the_best_pass
+    curl http://localhost:9000
 
 ##### Create
 
@@ -85,11 +85,15 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ##### GetById
 
-    curl http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass
+    [Вставить UUID]
+
+    curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass
 
 ##### Update
 
-    curl -X PUT http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+    [Вставить UUID]
+
+    curl -X PUT http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
         "Name": "Ozon Company",
         "Address": "Moscow, Arbat, 27",
         "Contacts": "+7 999 888 11 11"
@@ -97,7 +101,9 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ##### Delete
 
-    curl -X DELETE http://localhost:9000/api/v1/pvzs/2 -u ivan:the_best_pass
+    [Вставить UUID]
+
+    curl -X DELETE http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass
 
 ##### HTTPS
     
@@ -105,6 +111,12 @@ _Посмотрите на результат выполнения дз 2. Се�
     http -> https
     9000 -> 9001
     Добавить флаг -k
+
+##### Флаги
+    
+    -v (--verbose) Выводит подробную информацию о заголовках и тело ответа.
+    -I (--head) Выводит только заголовки ответа 
+    -k (--insecure) Игнорирует ошибки SSL сертификата
 
 
 ## Входные данные ДЗ-2
