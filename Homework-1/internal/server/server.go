@@ -160,8 +160,6 @@ func prepToPrint(pvz model.PVZ) string {
 func mwGetData(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
-		case http.MethodGet:
-			next.ServeHTTP(w, req)
 		case http.MethodPost:
 			pvz, err := getPVZFromReq(req)
 			if err != nil {
