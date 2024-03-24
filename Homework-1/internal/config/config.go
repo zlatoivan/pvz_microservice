@@ -45,7 +45,5 @@ func New() (Config, error) {
 		return Config{}, fmt.Errorf("cleanenv.ReadConfig: %w", err)
 	}
 
-	fmt.Println(cfg)
-
 	return cfg, nil
 }
