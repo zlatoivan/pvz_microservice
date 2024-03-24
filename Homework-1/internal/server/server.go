@@ -202,7 +202,7 @@ func mwLogger(next http.Handler) http.Handler {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			log.Printf("[MW]: DELETE request:\nid = %d\n", id)
+			log.Printf("[MW]: DELETE request:\nid = %s\n", id)
 			next.ServeHTTP(w, req)
 		}
 	})

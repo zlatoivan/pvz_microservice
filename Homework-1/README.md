@@ -86,7 +86,7 @@ curl --post301 http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u iva
 }'
 ````
 ````    
-curl POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
     "Name": "Ozon Tech",
     "Address": "Moscow, Presnenskaya nab. 10, block С",
     "Contacts": "+7 958 400-00-05, add 76077"
@@ -111,7 +111,7 @@ curl https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i 
 
 ##### Update (Вставить UUID)
 ````
-curl PUT http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+curl -X PUT http://localhost:9000/api/v1/pvzs/86595598-f70d-4ffa-bc2b-29e11de41df8 -i -k --location-trusted -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
     "Name": "Ozon Company",
     "Address": "Moscow, Arbat, 27",
     "Contacts": "+7 999 888 11 11"
@@ -127,10 +127,10 @@ curl -X PUT https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d
 
 ##### Delete (Вставить UUID)
 ````
-curl DELETE http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass
+curl -X DELETE http://localhost:9000/api/v1/pvzs/3bdc65d0-3e6a-406f-9ed1-b52962b5faf8 -i -k --location-trusted -u ivan:the_best_pass
 ````
 ````
-curl DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass
+curl -X DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass
 ````
 
 ##### Дополнительные флаги
