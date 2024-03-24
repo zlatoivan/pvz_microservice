@@ -136,17 +136,17 @@ func getPVZFromReq(req *http.Request) (model.PVZ, error) {
 	return pvz, nil
 }
 
-func getDataFromReq(req *http.Request) (uuid.UUID, model.PVZ, error) {
+func getDataFromReq(req *http.Request) (model.PVZ, error) {
 	id, err := getIDFromURL(req)
 	if err != nil {
-		return uuid.UUID{}, model.PVZ{}, fmt.Errorf("getIDFromURL: %w", err)
+		return model.PVZ{}, fmt.Errorf("getIDFromURL: %w", err)
 	}
 	pvz, err := getPVZFromReq(req)
 	if err != nil {
-		return uuid.UUID{}, model.PVZ{}, fmt.Errorf("getPVZFromReq: %w", err)
+		return model.PVZ{}, fmt.Errorf("getPVZFromReq: %w", err)
 	}
 	pvz.ID = id
-	return uuid.UUID{}, pvz, nil
+	return pvz, nil
 }
 
 func prepToPrint(pvz model.PVZ) string {
@@ -170,7 +170,7 @@ func mwLogger(next http.Handler) http.Handler {
 			ctx := context.WithValue(req.Context(), "pvz", pvz)
 			next.ServeHTTP(w, req.WithContext(ctx))
 		case http.MethodPut:
-			_, pvz, err := getDataFromReq(req)
+			pvz, err := getDataFromReq(req)
 			if err != nil {
 				log.Printf("[mwLogger] getDataFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
@@ -194,12 +194,6 @@ func mwLogger(next http.Handler) http.Handler {
 
 // createPVZ creates PVZ
 func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
-	//newPVZ, err := getPVZFromReq(req)
-	//if err != nil {
-	//	log.Printf("[createPVZ] getPVZFromReq: %v", err)
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	return
-	//}
 	newPVZ := req.Context().Value("pvz").(model.PVZ)
 
 	id, err := s.repo.CreatePVZ(req.Context(), newPVZ)
@@ -266,12 +260,6 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 
 // updatePVZ updates PVZ
 func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
-	//_, updPVZ, err := getDataFromReq(req)
-	//if err != nil {
-	//	log.Printf("[updatePVZ] getDataFromReq: %v", err)
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	return
-	//}
 	updPVZ := req.Context().Value("pvz").(model.PVZ)
 
 	err := s.repo.UpdatePVZ(req.Context(), updPVZ)
