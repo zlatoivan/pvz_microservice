@@ -97,10 +97,9 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 		r.With(mwGetData).Post("/", s.createPVZ) // Create
 		r.Get("/", s.ListPVZs)                   // List
 		r.Route("/{pvzID}", func(r chi.Router) {
-			r.Use(mwGetData)
-			r.Get("/", s.getPVZByID)   // GetById
-			r.Put("/", s.updatePVZ)    // Update
-			r.Delete("/", s.deletePVZ) // Delete
+			r.Get("/", s.getPVZByID)                   // GetById
+			r.With(mwGetData).Put("/", s.updatePVZ)    // Update
+			r.With(mwGetData).Delete("/", s.deletePVZ) // Delete
 		})
 	})
 
