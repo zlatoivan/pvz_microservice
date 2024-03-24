@@ -101,7 +101,7 @@ curl http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:the_best
 curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:the_best_pass
 ````
 
-##### GetById
+##### GetById (Вставить UUID)
 ````
 curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass
 ````
@@ -109,7 +109,7 @@ curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -
 curl https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass
 ````
 
-##### Update
+##### Update (Вставить UUID)
 ````
 curl PUT http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
     "Name": "Ozon Company",
@@ -125,7 +125,7 @@ curl -X PUT https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d
 }'
 ````
 
-##### Delete
+##### Delete (Вставить UUID)
 ````
 curl DELETE http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass
 ````
