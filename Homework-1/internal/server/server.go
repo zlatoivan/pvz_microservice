@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
@@ -130,10 +129,7 @@ func getIDFromURL(req *http.Request) (uuid.UUID, error) {
 
 func getPVZFromReq(req *http.Request) (model.PVZ, error) {
 	var pvz model.PVZ
-	//dat := io.NopCloser(bytes.NewReader(req.Body))
-	data, _ := io.ReadAll(req.Body)
-	err := json.Unmarshal(data, &pvz)
-	//err := json.NewDecoder(req.Body).Decode(&pvz)
+	err := json.NewDecoder(req.Body).Decode(&pvz)
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("json.NewDecoder().Decode: %w", err)
 	}
