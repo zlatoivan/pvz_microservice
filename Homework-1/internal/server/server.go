@@ -140,6 +140,12 @@ func getPVZFromReq(req *http.Request) (model.PVZ, error) {
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("io.ReadAll: %w", err)
 	}
+	defer func() {
+		err = req.Body.Close()
+		if err != nil {
+			log.Printf("[error] req.Body.Close: %v", err)
+		}
+	}()
 	err = json.Unmarshal(data, &pvz)
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("json.NewDecoder().Decode: %w", err)
