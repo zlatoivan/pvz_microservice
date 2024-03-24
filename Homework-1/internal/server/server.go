@@ -94,12 +94,12 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 
 	r.Route("/api/v1/pvzs", func(r chi.Router) {
 		r.Use(middleware.BasicAuth("pvzs", pvzCreds))
-		r.With(mwGetData).Post("/", s.createPVZ) // Create
-		r.Get("/", s.ListPVZs)                   // List
+		r.With(mwLogger).Post("/", s.createPVZ) // Create
+		r.Get("/", s.ListPVZs)                  // List
 		r.Route("/{pvzID}", func(r chi.Router) {
-			r.Get("/", s.getPVZByID)                   // GetById
-			r.With(mwGetData).Put("/", s.updatePVZ)    // Update
-			r.With(mwGetData).Delete("/", s.deletePVZ) // Delete
+			r.Get("/", s.getPVZByID)                  // GetById
+			r.With(mwLogger).Put("/", s.updatePVZ)    // Update
+			r.With(mwLogger).Delete("/", s.deletePVZ) // Delete
 		})
 	})
 
@@ -156,13 +156,13 @@ func prepToPrint(pvz model.PVZ) string {
 	return fmt.Sprintf("   Id: %s\n   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.ID, pvz.Name, pvz.Address, pvz.Contacts)
 }
 
-func mwGetData(next http.Handler) http.Handler {
+func mwLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
 			pvz, err := getPVZFromReq(req)
 			if err != nil {
-				log.Printf("[mwGetData] getPVZFromReq: %v", err)
+				log.Printf("[mwLogger] getPVZFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -171,7 +171,7 @@ func mwGetData(next http.Handler) http.Handler {
 		case http.MethodPut:
 			_, pvz, err := getDataFromReq(req)
 			if err != nil {
-				log.Printf("[mwGetData] getDataFromReq: %v", err)
+				log.Printf("[mwLogger] getDataFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -180,7 +180,7 @@ func mwGetData(next http.Handler) http.Handler {
 		case http.MethodDelete:
 			id, err := getIDFromURL(req)
 			if err != nil {
-				log.Printf("[mwGetData] getIDFromURL: %v", err)
+				log.Printf("[mwLogger] getIDFromURL: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
