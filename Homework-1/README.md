@@ -67,50 +67,71 @@ _Посмотрите на результат выполнения дз 2. Се�
 
 ## Входные данные ДЗ-3
 
+Первый запрос - для HTTPS, второй - для HTTP.
+
 ##### Main Page
 
-    curl http://localhost:9000
+    curl http://localhost:9000 -i -k -L
+
+    curl https://localhost:9001 -i -k
 
 ##### Create
 
-    curl -X POST http://localhost:9000/api/v1/pvzs -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+    curl --post301 http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
         "Name": "Ozon Tech",
         "Address": "Moscow, Presnenskaya nab. 10, block С",
         "Contacts": "+7 958 400-00-05, add 76077"
     }'
+````    
+curl POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+    "Name": "Ozon Tech",
+    "Address": "Moscow, Presnenskaya nab. 10, block С",
+    "Contacts": "+7 958 400-00-05, add 76077"
+}'
+````
 
 ##### List
 
-    curl http://localhost:9000/api/v1/pvzs -u ivan:the_best_pass
+Http: ````curl http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:the_best_pass````
 
-##### GetById (Вставить UUID)
+    curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:the_best_pass
 
-    curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass
+##### GetById
 
-##### Update (Вставить UUID)
+    curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass
+    
+    curl https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass
 
-    curl -X PUT http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+##### Update
+
+    curl PUT http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
+        "Name": "Ozon Company",
+        "Address": "Moscow, Arbat, 27",
+        "Contacts": "+7 999 888 11 11"
+    }'
+    
+    curl -X PUT https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass -H 'Content-Type: application/json' -d '{
         "Name": "Ozon Company",
         "Address": "Moscow, Arbat, 27",
         "Contacts": "+7 999 888 11 11"
     }'
 
-##### Delete (Вставить UUID)
+##### Delete
 
-    curl -X DELETE http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -u ivan:the_best_pass
-
-##### HTTPS
+    curl DELETE http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:the_best_pass
     
-    Запросы аналогичные, но надо изменить в запросе:
-    http -> https
-    9000 -> 9001
-    Добавить флаг -k
+    curl DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:the_best_pass
+
 
 ##### Дополнительные флаги
     
-    -v (--verbose) Выводит подробную информацию о заголовках и тело ответа.
-    -I (--head) Выводит только заголовки ответа 
+    -i (--include) Выводит и заголовки, и тело ответа
     -k (--insecure) Игнорирует ошибки SSL сертификата
+    -L (--location) Разрешает преадрессацию
+    --location-trusted Разрешает перенаправлять данные для аутентификации
+    -v (--verbose) Выводит подробную информацию о заголовках и тело ответа.
+    -u (--user) Данные для аутентификации
+    -d (--data) Данные в теле запроса
 
 
 ## Входные данные ДЗ-2

@@ -63,7 +63,7 @@ func (repo Repo) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error
 	var pvz model.PVZ
 	err := repo.db.Get(ctx, &pvz, querySelectPBZByID, id)
 	if err != nil {
-		return model.PVZ{}, fmt.Errorf("repo.db.Get: %w", err)
+		return model.PVZ{}, errors.ErrorNotFound
 	}
 
 	return pvz, nil
