@@ -148,7 +148,7 @@ func getPVZFromReq(req *http.Request) (model.PVZ, error) {
 	}()
 	err = json.Unmarshal(data, &pvz)
 	if err != nil {
-		return model.PVZ{}, fmt.Errorf("json.NewDecoder().Decode: %w", err)
+		return model.PVZ{}, fmt.Errorf("json.Unmarshal: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
 	return pvz, nil
