@@ -30,6 +30,7 @@ func New(database postgres) Repo {
 }
 
 const queryInsertPVZ = `INSERT INTO pvz (name, address, contacts) VALUES ($1, $2, $3) RETURNING id;`
+const queryCheckInsertPVZ = `SELECT COUNT(*) FROM pvz WHERE id = $1;`
 
 // CreatePVZ creates PVZ in postgres
 func (repo Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error) {
@@ -37,6 +38,14 @@ func (repo Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error
 	err := repo.db.QueryRow(ctx, queryInsertPVZ, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
+	}
+
+	t, err := repo.db.Exec(ctx, queryCheckInsertPVZ, id)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("repo.db.Exec: %w", err)
+	}
+	if t.RowsAffected() == 0 {
+		return uuid.UUID{}, ErrorAlreadyExists
 	}
 
 	return id, nil

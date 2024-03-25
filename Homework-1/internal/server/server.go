@@ -111,12 +111,13 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 
 	r.Route("/api/v1/pvzs", func(r chi.Router) {
 		r.Use(middleware.BasicAuth("pvzs", pvzCreds))
-		r.With(mwLogger).Post("/", s.createPVZ) // Create
-		r.Get("/", s.ListPVZs)                  // List
+		r.Use(mwLogger)
+		r.Post("/", s.createPVZ) // Create
+		r.Get("/", s.ListPVZs)   // List
 		r.Route("/{pvzID}", func(r chi.Router) {
-			r.Get("/", s.getPVZByID)                  // GetById
-			r.With(mwLogger).Put("/", s.updatePVZ)    // Update
-			r.With(mwLogger).Delete("/", s.deletePVZ) // Delete
+			r.Get("/", s.getPVZByID)   // GetById
+			r.Put("/", s.updatePVZ)    // Update
+			r.Delete("/", s.deletePVZ) // Delete
 		})
 	})
 
@@ -189,6 +190,8 @@ func prepToPrint(pvz model.PVZ) string {
 func mwLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
+		case http.MethodGet:
+			log.Printf("[MW]: GET request.\n")
 		case http.MethodPost:
 			pvz, err := getPVZFromReq(req)
 			if err != nil {
@@ -230,6 +233,9 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	id, err := s.repo.CreatePVZ(req.Context(), newPVZ)
 	if err != nil {
 		log.Printf("[createPVZ] s.repo.CreatePVZ: %v\n", err)
+		if errors.Is(err, ErrorAlreadyExists) {
+			w.WriteHeader(http.StatusConflict)
+		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
