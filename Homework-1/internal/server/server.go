@@ -57,7 +57,7 @@ func (s Server) Run(ctx context.Context, cfg config.Config) error {
 	httpsPort := cfg.Server.HttpsPort
 	httpPort := cfg.Server.HttpPort
 	httpsServer := &http.Server{Addr: "localhost:" + httpsPort, Handler: router}
-	httpServer := &http.Server{Addr: "localhost:" + httpPort, Handler: http.HandlerFunc(redirectToHTTPS)}
+	httpServer := &http.Server{Addr: "localhost:" + httpPort, Handler: router} // http.HandlerFunc(redirectToHTTPS)
 
 	go func() {
 		log.Printf("[httpsServer] starting on %s\n", httpsPort)
@@ -153,12 +153,10 @@ func getPVZFromReq(req *http.Request) (model.PVZ, error) {
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("io.ReadAll: %w", err)
 	}
-	defer func() {
-		err = req.Body.Close()
-		if err != nil {
-			log.Printf("[error] req.Body.Close: %v", err)
-		}
-	}()
+	err = req.Body.Close()
+	if err != nil {
+		log.Printf("[error] req.Body.Close: %v", err)
+	}
 	err = json.Unmarshal(data, &pvz)
 	if err != nil {
 		return model.PVZ{}, fmt.Errorf("json.Unmarshal: %w", err)
@@ -197,6 +195,7 @@ func mwLogger(next http.Handler) http.Handler {
 			if err != nil {
 				log.Printf("[mwLogger] getPVZFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
+				writeComment(w, "Invalid data")
 				return
 			}
 			log.Printf("[MW]: POST request:\n" + prepToPrint(pvz))
@@ -205,6 +204,7 @@ func mwLogger(next http.Handler) http.Handler {
 			if err != nil {
 				log.Printf("[mwLogger] getDataFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
+				writeComment(w, "Invalid data")
 				return
 			}
 			log.Printf("[MW]: PUT request:\n" + prepToPrint(pvz))
@@ -213,6 +213,7 @@ func mwLogger(next http.Handler) http.Handler {
 			if err != nil {
 				log.Printf("[mwLogger] getIDFromURL: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
+				writeComment(w, "Invalid data")
 				return
 			}
 			log.Printf("[MW]: DELETE request:\nid = %s\n", id)
@@ -227,6 +228,7 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[createPVZ] getPVZFromReq: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data")
 		return
 	}
 
@@ -235,6 +237,7 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 		log.Printf("[createPVZ] s.repo.CreatePVZ: %v\n", err)
 		if errors.Is(err, ErrorAlreadyExists) {
 			w.WriteHeader(http.StatusConflict)
+			writeComment(w, "ID already exists")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -279,6 +282,7 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[getPVZByID] getIDFromURL: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data")
 		return
 	}
 
@@ -287,6 +291,7 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 		log.Printf("[getPVZByID] s.repo.GetPVZByID: %v\n", err)
 		if errors.Is(err, ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
+			writeComment(w, "PVZ not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -310,6 +315,7 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[updatePVZ] getDataFromReq: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data")
 		return
 	}
 
@@ -318,6 +324,7 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 		log.Printf("[updatePVZ] s.repo.UpdatePVZ: %v\n", err)
 		if errors.Is(err, ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
+			writeComment(w, "PVZ not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -334,6 +341,7 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[deletePVZ] getIDFromURL: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data")
 		return
 	}
 
@@ -342,6 +350,7 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 		log.Printf("[deletePVZ] s.repo.DeletePVZ: %v\n", err)
 		if errors.Is(err, ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
+			writeComment(w, "PVZ not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
