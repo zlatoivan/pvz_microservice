@@ -16,7 +16,6 @@ import (
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
-	serverErrors "gitlab.ozon.dev/zlatoivan4/homework/internal/errors"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
@@ -34,6 +33,18 @@ type Server struct {
 
 func New(repo repo) Server {
 	return Server{repo: repo}
+}
+
+type respID struct {
+	ID uuid.UUID
+}
+
+type respComment struct {
+	Comment string
+}
+
+func writeComment(w http.ResponseWriter, comment string) {
+	_ = json.NewEncoder(w).Encode(respComment{Comment: comment})
 }
 
 func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
@@ -65,7 +76,7 @@ func (s Server) Run(ctx context.Context, cfg config.Config) error {
 	}()
 
 	<-ctx.Done()
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	log.Println("[servers] shutting down")
@@ -77,7 +88,6 @@ func (s Server) Run(ctx context.Context, cfg config.Config) error {
 	if err != nil {
 		return fmt.Errorf("httpServer.Shutdown: %w", err)
 	}
-	<-ctx.Done()
 	log.Println("[servers] shut down successfully")
 
 	return nil
@@ -117,12 +127,14 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 func (s Server) notFound(w http.ResponseWriter, _ *http.Request) {
 	log.Println("Page not found")
 	w.WriteHeader(http.StatusNotFound)
+	writeComment(w, "Page not found")
 }
 
 // mainPage shows the main page
 func (s Server) mainPage(w http.ResponseWriter, _ *http.Request) {
+	log.Println("Got main page")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("This is the main page!\n"))
+	writeComment(w, "This is the main page")
 }
 
 func getIDFromURL(req *http.Request) (uuid.UUID, error) {
@@ -185,7 +197,6 @@ func mwLogger(next http.Handler) http.Handler {
 				return
 			}
 			log.Printf("[MW]: POST request:\n" + prepToPrint(pvz))
-			next.ServeHTTP(w, req)
 		case http.MethodPut:
 			pvz, err := getDataFromReq(req)
 			if err != nil {
@@ -194,7 +205,6 @@ func mwLogger(next http.Handler) http.Handler {
 				return
 			}
 			log.Printf("[MW]: PUT request:\n" + prepToPrint(pvz))
-			next.ServeHTTP(w, req)
 		case http.MethodDelete:
 			id, err := getIDFromURL(req)
 			if err != nil {
@@ -203,8 +213,8 @@ func mwLogger(next http.Handler) http.Handler {
 				return
 			}
 			log.Printf("[MW]: DELETE request:\nid = %s\n", id)
-			next.ServeHTTP(w, req)
 		}
+		next.ServeHTTP(w, req)
 	})
 }
 
@@ -226,6 +236,13 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 
 	log.Printf("PVZ created! id = %s", id)
 
+	err = json.NewEncoder(w).Encode(respID{ID: id})
+	if err != nil {
+		log.Printf("[ListPVZs] json.NewEncoder().Encode: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -240,13 +257,14 @@ func (s Server) ListPVZs(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("Got PVZ list!")
 
-	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(list)
 	if err != nil {
 		log.Printf("[ListPVZs] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // getPVZByID gets PVZ by ID
@@ -261,8 +279,8 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	pvz, err := s.repo.GetPVZByID(req.Context(), id)
 	if err != nil {
 		log.Printf("[getPVZByID] s.repo.GetPVZByID: %v\n", err)
-		if errors.Is(err, serverErrors.ErrorNotFound) {
-			w.WriteHeader(http.StatusConflict)
+		if errors.Is(err, ErrorNotFound) {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -270,13 +288,14 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 
 	log.Printf("PVZ by ID:\n" + prepToPrint(pvz))
 
-	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(pvz)
 	if err != nil {
 		log.Printf("[getPVZByID] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // updatePVZ updates PVZ
@@ -291,8 +310,8 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	err = s.repo.UpdatePVZ(req.Context(), updPVZ)
 	if err != nil {
 		log.Printf("[updatePVZ] s.repo.UpdatePVZ: %v\n", err)
-		if errors.Is(err, serverErrors.ErrorNotFound) {
-			w.WriteHeader(http.StatusConflict)
+		if errors.Is(err, ErrorNotFound) {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -315,8 +334,8 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	err = s.repo.DeletePVZ(req.Context(), id)
 	if err != nil {
 		log.Printf("[deletePVZ] s.repo.DeletePVZ: %v\n", err)
-		if errors.Is(err, serverErrors.ErrorNotFound) {
-			w.WriteHeader(http.StatusConflict)
+		if errors.Is(err, ErrorNotFound) {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		return

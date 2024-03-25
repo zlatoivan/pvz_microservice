@@ -9,7 +9,6 @@ import (
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/errors"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
@@ -63,7 +62,7 @@ func (repo Repo) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error
 	var pvz model.PVZ
 	err := repo.db.Get(ctx, &pvz, querySelectPBZByID, id)
 	if err != nil {
-		return model.PVZ{}, errors.ErrorNotFound
+		return model.PVZ{}, ErrorNotFound
 	}
 
 	return pvz, nil
@@ -78,7 +77,7 @@ func (repo Repo) UpdatePVZ(ctx context.Context, updPVZ model.PVZ) error {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
 	if t.RowsAffected() == 0 {
-		return errors.ErrorNotFound
+		return ErrorNotFound
 	}
 
 	return nil
@@ -93,7 +92,7 @@ func (repo Repo) DeletePVZ(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
 	if t.RowsAffected() == 0 {
-		return errors.ErrorNotFound
+		return ErrorNotFound
 	}
 
 	return nil

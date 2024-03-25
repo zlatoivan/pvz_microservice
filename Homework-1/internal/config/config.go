@@ -13,18 +13,18 @@ type Config struct {
 }
 
 type Pg struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	DBname   string `yaml:"dbname"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
+	Host     string `yaml:"host" env-default:"localhost"`
+	Port     string `yaml:"port" env-default:"5432"`
+	DBname   string `yaml:"dbname" env-default:"postgres"`
+	User     string `yaml:"user" env-default:"postgres"`
+	Password string `yaml:"password" env-default:"postgres"`
 }
 
 type Server struct {
-	HttpPort  string `yaml:"http_port"`
-	HttpsPort string `yaml:"https_port"`
-	Login     string `yaml:"pvz_auth_login"`
-	Password  string `yaml:"pvz_auth_password"`
+	HttpPort  string `yaml:"http_port" env-default:"9000"`
+	HttpsPort string `yaml:"https_port" env-default:"9001"`
+	Login     string `yaml:"pvz_auth_login" env-default:"ivan"`
+	Password  string `yaml:"pvz_auth_password" env-default:"the_best_pass"`
 }
 
 func New() (Config, error) {
