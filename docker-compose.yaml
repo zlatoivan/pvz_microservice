@@ -1,16 +1,19 @@
 services:
   postgres:
     image: postgres:13
+    restart: always
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    networks:
+      - default
 
   app:
-    build: ./config
-    env_file: config/config.yaml
+    build: .
+    restart: always
     depends_on:
       - postgres
     ports:
@@ -18,3 +21,6 @@ services:
       - '9001:9001'
     networks:
       - default
+
+networks:
+  default:

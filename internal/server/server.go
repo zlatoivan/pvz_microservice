@@ -17,6 +17,7 @@ import (
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
+	repo2 "gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
 type repo interface {
@@ -235,7 +236,7 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	id, err := s.repo.CreatePVZ(req.Context(), newPVZ)
 	if err != nil {
 		log.Printf("[createPVZ] s.repo.CreatePVZ: %v\n", err)
-		if errors.Is(err, ErrorAlreadyExists) {
+		if errors.Is(err, repo2.ErrorAlreadyExists) {
 			w.WriteHeader(http.StatusConflict)
 			writeComment(w, "ID already exists")
 		}
@@ -289,7 +290,7 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	pvz, err := s.repo.GetPVZByID(req.Context(), id)
 	if err != nil {
 		log.Printf("[getPVZByID] s.repo.GetPVZByID: %v\n", err)
-		if errors.Is(err, ErrorNotFound) {
+		if errors.Is(err, repo2.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 			writeComment(w, "PVZ not found by this ID")
 		}
@@ -322,7 +323,7 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	err = s.repo.UpdatePVZ(req.Context(), updPVZ)
 	if err != nil {
 		log.Printf("[updatePVZ] s.repo.UpdatePVZ: %v\n", err)
-		if errors.Is(err, ErrorNotFound) {
+		if errors.Is(err, repo2.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 			writeComment(w, "PVZ not found by this ID")
 		}
@@ -348,7 +349,7 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	err = s.repo.DeletePVZ(req.Context(), id)
 	if err != nil {
 		log.Printf("[deletePVZ] s.repo.DeletePVZ: %v\n", err)
-		if errors.Is(err, ErrorNotFound) {
+		if errors.Is(err, repo2.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
 			writeComment(w, "PVZ not found by this ID")
 		}
