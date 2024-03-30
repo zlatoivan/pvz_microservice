@@ -8,7 +8,7 @@
     make run
 
 
-## Входные данные ДЗ-3
+## Запросы к серверу
 
 Первый запрос - для HTTP, второй - для HTTPS.
 
@@ -20,7 +20,7 @@ curl http://localhost:9000 -i -k -L
 curl https://localhost:9001 -i -k
 ````
 
-##### Create
+##### Create PVZ
 ````
 curl --post301 http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "Name": "Ozon Tech",
@@ -36,7 +36,7 @@ curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass -H '
 }'
 ````
 
-##### List
+##### List of PVZs
 ````
 curl http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best_pass
 ````
@@ -44,7 +44,7 @@ curl http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best
 curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass
 ````
 
-##### GetById (Вставить UUID)
+##### Get PVZ by ID (Вставить UUID)
 ````
 curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k --location-trusted -u ivan:pvz_best_pass
 ````
@@ -52,7 +52,7 @@ curl http://localhost:9000/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -
 curl https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:pvz_best_pass
 ````
 
-##### Update (Вставить UUID)
+##### Update PVZ (Вставить UUID)
 ````
 curl -X PUT http://localhost:9000/api/v1/pvzs/86595598-f70d-4ffa-bc2b-29e11de41df8 -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "Name": "Ozon Company",
@@ -68,12 +68,64 @@ curl -X PUT https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d
 }'
 ````
 
-##### Delete (Вставить UUID)
+##### Delete PVZ (Вставить UUID)
 ````
 curl -X DELETE http://localhost:9000/api/v1/pvzs/3bdc65d0-3e6a-406f-9ed1-b52962b5faf8 -i -k --location-trusted -u ivan:pvz_best_pass
 ````
 ````
 curl -X DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:pvz_best_pass
+````
+
+##### Create Order
+````
+curl --post301 http://localhost:9000/api/v1/orders -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
+    "ClientID": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "StoresTill": "22.04.2024 13:14"
+}'
+````
+````    
+curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
+    "ClientID": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "StoresTill": "22.04.2024 13:14"
+}'
+````
+
+##### List of orders
+````
+curl http://localhost:9000/api/v1/orders -i -k --location-trusted -u ivan:order_best_pass
+````
+````
+curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:order_best_pass
+````
+
+##### Get order by ID (Вставить UUID)
+````
+curl http://localhost:9000/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k --location-trusted -u ivan:order_best_pass
+````
+````
+curl https://localhost:9001/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k -u ivan:order_best_pass
+````
+
+##### Update order (Вставить UUID)
+````
+curl -X PUT http://localhost:9000/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
+    "ClientID": "3bdc65d0-3e6a-406f-9ed1-b52962b5faf8",
+    "StoresTill": "13.11.2025 22:01"
+}'
+````
+````
+curl -X PUT https://localhost:9001/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
+    "ClientID": "3bdc65d0-3e6a-406f-9ed1-b52962b5faf8",
+    "StoresTill": "13.11.2025 22:01"
+}'
+````
+
+##### Delete order (Вставить UUID)
+````
+curl -X DELETE http://localhost:9000/api/v1/orders/5ae15592-7ef2-41b2-a1f1-959d6e935c -i -k --location-trusted -u ivan:order_best_pass
+````
+````
+curl -X DELETE https://localhost:9001/api/v1/orders/5ae15592-7ef2-41b2-a1f1-959d6e935c -i -k -u ivan:order_best_pass
 ````
 
 ##### Дополнительные флаги
@@ -87,29 +139,7 @@ curl -X DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094
     -v (--verbose) Выводит подробную информацию о заголовках и тело ответа
 
 
-## Входные данные ДЗ-2
-
-##### Запустить интерактивный режим
-
-    go run cmd/cli/main.go interactive_mode
-
-Далее следовать его командам.
-
-
-## Входные данные ДЗ-1
-
-    Принять заказ (создать):
-        go run cmd/cli/main.go -clientid=9886 -storestill=15.09.2024 create
-    Вернуть заказ курьеру (удалить):
-        go run cmd/cli/main.go -id=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 delete
-    Выдать заказ клиенту:
-        go run cmd/cli/main.go -ids=[9967bb48-bd6f-4ad0-924d-8c9094c4d8d3,9967bb48-bd6f-4ad0-924d-8c9094c4d8c2] giveout
-    Получить список заказов:
-        go run cmd/cli/main.go -clientid=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -lastn=2 -inpvz=true list
-    Возврат заказа клиентом:
-        go run cmd/cli/main.go -id=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -clientid=9967bb48-bd6f-4ad0-924d-8c9094c4d8r1 return
-    Получить список возвращенных товаров:
-        go run cmd/cli/main.go -pagenum=1 -itemsonpage=2 listofreturned
+## Консольный режим
 
 go run cmd/cli/main.go help
 
@@ -130,3 +160,24 @@ go run cmd/cli/main.go help
             command:
                 add       Create PVZ
                 get       Get the information about PVZ
+
+##### Входные данные для консольного режима
+
+    Принять заказ (создать):
+        go run cmd/cli/main.go -clientid=9886 -storestill=15.09.2024 create
+    Вернуть заказ курьеру (удалить):
+        go run cmd/cli/main.go -id=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 delete
+    Выдать заказ клиенту:
+        go run cmd/cli/main.go -ids=[9967bb48-bd6f-4ad0-924d-8c9094c4d8d3,9967bb48-bd6f-4ad0-924d-8c9094c4d8c2] giveout
+    Получить список заказов:
+        go run cmd/cli/main.go -clientid=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -lastn=2 -inpvz=true list
+    Возврат заказа клиентом:
+        go run cmd/cli/main.go -id=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -clientid=9967bb48-bd6f-4ad0-924d-8c9094c4d8r1 return
+    Получить список возвращенных товаров:
+        go run cmd/cli/main.go -pagenum=1 -itemsonpage=2 listofreturned
+
+##### Интерактивный режим
+
+    go run cmd/cli/main.go interactive_mode
+
+Далее следовать его командам.
