@@ -10,10 +10,10 @@ import (
 	"syscall"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app"
-	orderService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
-	pvzService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/order"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/pvz"
+	orderService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/cli/order"
+	pvzService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/cli/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/cli/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/cli/pvz"
 )
 
 func main() {

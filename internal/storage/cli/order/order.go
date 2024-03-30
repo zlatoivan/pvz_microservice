@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
@@ -99,7 +100,7 @@ func (s *Storage) Create(order model.Order) error {
 }
 
 // Delete deletes an order from storage by id
-func (s *Storage) Delete(id int) error {
+func (s *Storage) Delete(id uuid.UUID) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -132,13 +133,14 @@ func (s *Storage) Delete(id int) error {
 }
 
 // GiveOut gives out an orders to the client by orders ids
-func (s *Storage) GiveOut(ids []int) error {
+func (s *Storage) GiveOut(ids []uuid.UUID) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
 	}
 
-	clientId := -1
+	uuidNull, _ := uuid.Parse("00000000-0000-0000-0000-000000000000")
+	clientId := uuidNull
 	for _, id := range ids {
 		ok := false
 		for _, v := range all {
@@ -146,10 +148,10 @@ func (s *Storage) GiveOut(ids []int) error {
 				ok = true
 				// Проверка того, что срок заказа не истек
 				if v.StoresTill.Before(time.Now()) {
-					return fmt.Errorf("the orders period of order " + strconv.Itoa(v.ID) + " has expired")
+					return fmt.Errorf("the orders period of order %v has expired", v.ID)
 				}
 				// Проверка того, что все заказы принадлежат одному клиенту
-				if clientId == -1 {
+				if clientId == uuidNull {
 					clientId = v.ClientID
 				} else if clientId != v.ClientID {
 					return fmt.Errorf("not all orders belong to the same client")
@@ -176,13 +178,13 @@ func (s *Storage) GiveOut(ids []int) error {
 }
 
 // List gets a list of all orders of a specific client
-func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
+func (s *Storage) List(id uuid.UUID, lastN int, inPVZ bool) ([]uuid.UUID, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]int, 0)
+	list := make([]uuid.UUID, 0)
 	for i := len(all) - 1; i >= 0; i-- {
 		// Выбрать только последние n заказов клиента, если есть такое уточнение
 		if lastN != -1 && len(list) == lastN {
@@ -202,7 +204,7 @@ func (s *Storage) List(id int, lastN int, inPVZ bool) ([]int, error) {
 }
 
 // Return returns the order by order id and client id
-func (s *Storage) Return(id int, clientID int) error {
+func (s *Storage) Return(id uuid.UUID, clientID uuid.UUID) error {
 	all, err := s.listAll()
 	if err != nil {
 		return err
@@ -240,13 +242,13 @@ func (s *Storage) Return(id int, clientID int) error {
 }
 
 // ListOfReturned gets a list of returned orders. With pagination.
-func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]int, error) {
+func (s *Storage) ListOfReturned(pagenum int, itemsonpage int) ([]uuid.UUID, error) {
 	all, err := s.listAll()
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]int, 0)
+	list := make([]uuid.UUID, 0)
 	start := (pagenum - 1) * itemsonpage
 	for i := start; i < start+itemsonpage; i++ {
 		if i == len(all) {

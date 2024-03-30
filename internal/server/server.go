@@ -1,51 +1,45 @@
 package server
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
-	repo2 "gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
-type repo interface {
+type pvzService interface {
 	CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error)
-	GetListOfPVZ(ctx context.Context) ([]model.PVZ, error)
+	ListPVZs(ctx context.Context) ([]model.PVZ, error)
 	GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error)
 	UpdatePVZ(ctx context.Context, updPVZ model.PVZ) error
 	DeletePVZ(ctx context.Context, id uuid.UUID) error
 }
 
+type orderService interface {
+	CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error)
+	ListOrders(ctx context.Context) ([]model.Order, error)
+	GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error)
+	UpdateOrder(ctx context.Context, updPVZ model.Order) error
+	DeleteOrder(ctx context.Context, id uuid.UUID) error
+}
+
 type Server struct {
-	repo repo
+	pvzService   pvzService
+	orderService orderService
 }
 
-func New(repo repo) Server {
-	return Server{repo: repo}
-}
-
-type respID struct {
-	ID uuid.UUID
-}
-
-type respComment struct {
-	Comment string
-}
-
-func writeComment(w http.ResponseWriter, comment string) {
-	_ = json.NewEncoder(w).Encode(respComment{Comment: comment})
+func New(pvzService pvzService, orderService orderService) Server {
+	server := Server{
+		pvzService:   pvzService,
+		orderService: orderService,
+	}
+	return server
 }
 
 func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
@@ -92,272 +86,4 @@ func (s Server) Run(ctx context.Context, cfg config.Config) error {
 	log.Println("[servers] shut down successfully")
 
 	return nil
-}
-
-// createRouter creates http router
-func (s Server) createRouter(cfg config.Config) *chi.Mux {
-	pvzCreds := map[string]string{cfg.Server.Login: cfg.Server.Password}
-
-	r := chi.NewRouter()
-
-	r.NotFound(s.notFound)
-
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.RedirectSlashes)
-	//r.Use(middleware.Logger)
-
-	r.Get("/", s.mainPage)
-
-	r.Route("/api/v1/pvzs", func(r chi.Router) {
-		r.Use(middleware.BasicAuth("pvzs", pvzCreds))
-		r.Use(mwLogger)
-		r.Post("/", s.createPVZ) // Create
-		r.Get("/", s.ListPVZs)   // List
-		r.Route("/{pvzID}", func(r chi.Router) {
-			r.Get("/", s.getPVZByID)   // GetById
-			r.Put("/", s.updatePVZ)    // Update
-			r.Delete("/", s.deletePVZ) // Delete
-		})
-	})
-
-	return r
-}
-
-// notFound informs that the page is not found
-func (s Server) notFound(w http.ResponseWriter, _ *http.Request) {
-	log.Println("Page not found")
-	w.WriteHeader(http.StatusNotFound)
-	writeComment(w, "Page not found")
-}
-
-// mainPage shows the main page
-func (s Server) mainPage(w http.ResponseWriter, _ *http.Request) {
-	log.Println("Got main page")
-	w.WriteHeader(http.StatusOK)
-	writeComment(w, "This is the main page")
-}
-
-func getIDFromURL(req *http.Request) (uuid.UUID, error) {
-	idStr := chi.URLParam(req, "pvzID")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("uuid.Parse: %w", err)
-	}
-	return id, nil
-}
-
-func getPVZFromReq(req *http.Request) (model.PVZ, error) {
-	var pvz model.PVZ
-	data, err := io.ReadAll(req.Body)
-	if err != nil {
-		return model.PVZ{}, fmt.Errorf("io.ReadAll: %w", err)
-	}
-	err = req.Body.Close()
-	if err != nil {
-		log.Printf("[error] req.Body.Close: %v", err)
-	}
-	err = json.Unmarshal(data, &pvz)
-	if err != nil {
-		return model.PVZ{}, fmt.Errorf("json.Unmarshal: %w", err)
-	}
-	req.Body = io.NopCloser(bytes.NewBuffer(data))
-	return pvz, nil
-}
-
-func getDataFromReq(req *http.Request) (model.PVZ, error) {
-	id, err := getIDFromURL(req)
-	if err != nil {
-		return model.PVZ{}, fmt.Errorf("getIDFromURL: %w", err)
-	}
-	pvz, err := getPVZFromReq(req)
-	if err != nil {
-		return model.PVZ{}, fmt.Errorf("getPVZFromReq: %w", err)
-	}
-	pvz.ID = id
-	return pvz, nil
-}
-
-func prepToPrint(pvz model.PVZ) string {
-	if pvz.ID == uuid.Nil {
-		return fmt.Sprintf("   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.Name, pvz.Address, pvz.Contacts)
-	}
-	return fmt.Sprintf("   Id: %s\n   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.ID, pvz.Name, pvz.Address, pvz.Contacts)
-}
-
-func mwLogger(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		switch req.Method {
-		case http.MethodGet:
-			log.Printf("[MW]: GET request.\n")
-		case http.MethodPost:
-			pvz, err := getPVZFromReq(req)
-			if err != nil {
-				log.Printf("[mwLogger] getPVZFromReq: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data")
-				return
-			}
-			log.Printf("[MW]: POST request:\n" + prepToPrint(pvz))
-		case http.MethodPut:
-			pvz, err := getDataFromReq(req)
-			if err != nil {
-				log.Printf("[mwLogger] getDataFromReq: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data")
-				return
-			}
-			log.Printf("[MW]: PUT request:\n" + prepToPrint(pvz))
-		case http.MethodDelete:
-			id, err := getIDFromURL(req)
-			if err != nil {
-				log.Printf("[mwLogger] getIDFromURL: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data")
-				return
-			}
-			log.Printf("[MW]: DELETE request:\nid = %s\n", id)
-		}
-		next.ServeHTTP(w, req)
-	})
-}
-
-// createPVZ creates PVZ
-func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
-	newPVZ, err := getPVZFromReq(req)
-	if err != nil {
-		log.Printf("[createPVZ] getPVZFromReq: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data")
-		return
-	}
-
-	id, err := s.repo.CreatePVZ(req.Context(), newPVZ)
-	if err != nil {
-		log.Printf("[createPVZ] s.repo.CreatePVZ: %v\n", err)
-		if errors.Is(err, repo2.ErrorAlreadyExists) {
-			w.WriteHeader(http.StatusConflict)
-			writeComment(w, "ID already exists")
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("PVZ created! id = %s", id)
-
-	err = json.NewEncoder(w).Encode(respID{ID: id})
-	if err != nil {
-		log.Printf("[ListPVZs] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-}
-
-// ListPVZs gets list of PVZ
-func (s Server) ListPVZs(w http.ResponseWriter, req *http.Request) {
-	list, err := s.repo.GetListOfPVZ(req.Context())
-	if err != nil {
-		log.Printf("[ListPVZs] s.repo.GetListOfPVZ: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	log.Println("Got PVZ list!")
-
-	err = json.NewEncoder(w).Encode(list)
-	if err != nil {
-		log.Printf("[ListPVZs] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// getPVZByID gets PVZ by ID
-func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
-	id, err := getIDFromURL(req)
-	if err != nil {
-		log.Printf("[getPVZByID] getIDFromURL: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data")
-		return
-	}
-
-	pvz, err := s.repo.GetPVZByID(req.Context(), id)
-	if err != nil {
-		log.Printf("[getPVZByID] s.repo.GetPVZByID: %v\n", err)
-		if errors.Is(err, repo2.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "PVZ not found by this ID")
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	log.Printf("PVZ by ID:\n" + prepToPrint(pvz))
-
-	err = json.NewEncoder(w).Encode(pvz)
-	if err != nil {
-		log.Printf("[getPVZByID] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// updatePVZ updates PVZ
-func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
-	updPVZ, err := getDataFromReq(req)
-	if err != nil {
-		log.Printf("[updatePVZ] getDataFromReq: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data")
-		return
-	}
-
-	err = s.repo.UpdatePVZ(req.Context(), updPVZ)
-	if err != nil {
-		log.Printf("[updatePVZ] s.repo.UpdatePVZ: %v\n", err)
-		if errors.Is(err, repo2.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "PVZ not found by this ID")
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	log.Println("PVZ updated!")
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// deletePVZ deletes PVZ
-func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
-	id, err := getIDFromURL(req)
-	if err != nil {
-		log.Printf("[deletePVZ] getIDFromURL: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data")
-		return
-	}
-
-	err = s.repo.DeletePVZ(req.Context(), id)
-	if err != nil {
-		log.Printf("[deletePVZ] s.repo.DeletePVZ: %v\n", err)
-		if errors.Is(err, repo2.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "PVZ not found by this ID")
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	log.Println("PVZ deleted!")
-
-	w.WriteHeader(http.StatusOK)
 }

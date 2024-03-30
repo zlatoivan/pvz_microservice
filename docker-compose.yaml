@@ -1,26 +1,32 @@
 services:
-  postgres:
+  pg_db:
     image: postgres:13
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
-    networks:
-      - default
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]  # -d pg_db
+      interval: 10s
+      timeout: 5s
+      retries: 5
+#    volumes:
+#       - pg-data:/var/lib/postgresql/data
 
-  app:
-    build: .
-    restart: always
-    depends_on:
-      - postgres
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    networks:
-      - default
+#  app:
+#    build: .
+#    restart: unless-stopped
+#    environment:
+#      - CONFIG_PATH
+#    depends_on:
+#      pg_db:
+#        condition: service_healthy
+#    ports:
+#      - '9000:9000'
+#      - '9001:9001'
 
-networks:
-  default:
+#volumes:
+#  pg-data:

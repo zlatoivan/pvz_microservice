@@ -1,12 +1,16 @@
 package model
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Order struct {
-	ID          int       // the id of order
-	ClientID    int       // the id of client
-	StoresTill  time.Time // the storage period of order
-	IsDeleted   bool      // marker, the order has been deleted or not
-	GiveOutTime time.Time // date and time of order give out
-	IsReturned  bool      // marker, the order has been returned or not
+	ID          uuid.UUID `db:"id"`            // the id of order
+	ClientID    uuid.UUID `db:"client_id"`     // the id of client
+	StoresTill  time.Time `db:"stores_till"`   // the storage period of order
+	IsDeleted   bool      `db:"is_deleted"`    // marker, the order has been deleted or not
+	GiveOutTime time.Time `db:"give_out_time"` // date and time of order give out
+	IsReturned  bool      `db:"is_returned"`   // marker, the order has been returned or not
 }

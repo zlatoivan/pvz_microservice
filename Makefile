@@ -1,12 +1,12 @@
-POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=postgres port=5432 sslmode=disable
+POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost port=5432 sslmode=disable
 MIGRATION_FOLDER=$(CURDIR)/migrations
 MIGRATION_NAME=pvz
 
 .PHONY: compose-up
 compose-up:
-	docker compose up --build
-#	docker compose up -d postgres
-#	docker compose build
+	#docker compose up --build
+	docker compose up -d pg_db
+	docker compose build
 
 .PHONY: compose-down
 compose-down:
