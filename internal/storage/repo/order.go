@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -31,7 +32,7 @@ func (repo Repo) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID,
 	return id, nil
 }
 
-const querySelectOrder = `SELECT id, client_id, stores_till, is_deleted, give_out_time, is_returned FROM "order";`
+const querySelectOrder = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE is_deleted = FALSE;`
 
 // ListOrders gets list of Order from repo
 func (repo Repo) ListOrders(ctx context.Context) ([]model.Order, error) {
@@ -44,12 +45,12 @@ func (repo Repo) ListOrders(ctx context.Context) ([]model.Order, error) {
 	return orders, nil
 }
 
-const querySelectPBZByID = `SELECT id, client_id, stores_till, is_deleted, give_out_time, is_returned FROM "order" WHERE id = $1;`
+const querySelectOrderByID = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE id = $1 AND is_deleted = FALSE;`
 
 // GetOrderByID gets Order by ID from repo
 func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error) {
 	var order model.Order
-	err := repo.db.Get(ctx, &order, querySelectPBZByID, id)
+	err := repo.db.Get(ctx, &order, querySelectOrderByID, id)
 	if err != nil {
 		return model.Order{}, ErrorNotFound
 	}
@@ -57,11 +58,11 @@ func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, e
 	return order, nil
 }
 
-const queryUpdateOrder = `UPDATE "order" SET client_id = $2, stores_till = $3, is_deleted = $4, give_out_time = $5, is_returned = $6 WHERE id = $1;`
+const queryUpdateOrder = `UPDATE "order" SET client_id = $2, stores_till = $3 WHERE id = $1 AND is_deleted = FALSE;`
 
 // UpdateOrder updates Order in repo
 func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
-	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ID, updOrder.ClientID, updOrder.StoresTill, updOrder.IsDeleted, updOrder.GiveOutTime, updOrder.IsReturned)
+	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ID, updOrder.ClientID, updOrder.StoresTill)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
@@ -72,11 +73,11 @@ func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
 	return nil
 }
 
-const queryDeleteOrder = `DELETE FROM "order" WHERE id = $1;`
+const queryUpdateSoftDelete = `UPDATE "order" SET is_deleted = TRUE WHERE id = $1;`
 
 // DeleteOrder deletes Order from repo
 func (repo Repo) DeleteOrder(ctx context.Context, id uuid.UUID) error {
-	t, err := repo.db.Exec(ctx, queryDeleteOrder, id)
+	t, err := repo.db.Exec(ctx, queryUpdateSoftDelete, id)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
@@ -85,4 +86,60 @@ func (repo Repo) DeleteOrder(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+const querySelectClientOrders = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE client_id = $1 AND is_deleted = FALSE;`
+
+// ListClientOrders gets list of Order from repo
+func (repo Repo) ListClientOrders(ctx context.Context, id uuid.UUID) ([]model.Order, error) {
+	var orders []model.Order
+	err := repo.db.Select(ctx, &orders, querySelectClientOrders, id)
+	if err != nil {
+		return nil, fmt.Errorf("repo.db.Select: %w", err)
+	}
+
+	return orders, nil
+}
+
+const queryUpdateGiveOut = `UPDATE "order" SET give_out_time = $3 WHERE client_id = $1 AND id = $2 AND is_deleted = FALSE;`
+
+// GiveOutOrder gives out a client order
+func (repo Repo) GiveOutOrder(ctx context.Context, clientID uuid.UUID, id uuid.UUID) error {
+	t, err := repo.db.Exec(ctx, queryUpdateGiveOut, clientID, id, time.Now())
+	if err != nil {
+		return fmt.Errorf("repo.db.Exec: %w", err)
+	}
+	if t.RowsAffected() == 0 {
+		return ErrorNotFound
+	}
+
+	return nil
+}
+
+const queryUpdateReturn = `UPDATE "order" SET is_returned = TRUE WHERE client_id = $1 AND id = $2 AND is_returned = FALSE AND is_deleted = FALSE;`
+
+// ReturnOrder gives out a client order
+func (repo Repo) ReturnOrder(ctx context.Context, clientID uuid.UUID, id uuid.UUID) error {
+	t, err := repo.db.Exec(ctx, queryUpdateReturn, clientID, id)
+	if err != nil {
+		return fmt.Errorf("repo.db.Exec: %w", err)
+	}
+	if t.RowsAffected() == 0 {
+		return ErrorNotFound
+	}
+
+	return nil
+}
+
+const querySelectReturnedOrders = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE is_returned = TRUE AND is_deleted = FALSE;`
+
+// ListReturnedOrders gives out a list of returned orders
+func (repo Repo) ListReturnedOrders(ctx context.Context) ([]model.Order, error) {
+	var orders []model.Order
+	err := repo.db.Select(ctx, &orders, querySelectReturnedOrders)
+	if err != nil {
+		return nil, fmt.Errorf("repo.db.Select: %w", err)
+	}
+
+	return orders, nil
 }

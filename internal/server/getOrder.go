@@ -14,8 +14,24 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
+func PrepToPrintOrder(order model.Order) string {
+	if order.ID == uuid.Nil {
+		return fmt.Sprintf("   ClientID: %s\n   StoresTill: %s\n   GiveOutTime: %s   IsReturned: %t\n", order.ClientID, order.StoresTill, order.GiveOutTime, order.IsReturned)
+	}
+	return fmt.Sprintf("   Id: %s\n   ClientID: %s\n   StoresTill: %s\n   GiveOutTime: %s   IsReturned: %t\n", order.ID, order.ClientID, order.StoresTill, order.GiveOutTime, order.IsReturned)
+}
+
 func GetOrderIDFromURL(req *http.Request) (uuid.UUID, error) {
 	idStr := chi.URLParam(req, "orderID")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("uuid.Parse: %w", err)
+	}
+	return id, nil
+}
+
+func GetClientIDFromURL(req *http.Request) (uuid.UUID, error) {
+	idStr := chi.URLParam(req, "clientID")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("uuid.Parse: %w", err)
@@ -70,9 +86,70 @@ func GetOrderFromReq(req *http.Request) (model.Order, error) {
 	return order, nil
 }
 
-func PrepToPrintOrder(order model.Order) string {
-	if order.ID == uuid.Nil {
-		return fmt.Sprintf("   ClientID: %s\n   StoresTill: %s\n   IsDeleted: %t   GiveOutTime: %s   IsReturned: %t\n", order.ClientID, order.StoresTill, order.IsDeleted, order.GiveOutTime, order.IsReturned)
+func GetClientOrdersIDsFromReq(req *http.Request) ([]uuid.UUID, error) {
+	data, err := io.ReadAll(req.Body)
+	if err != nil {
+		return nil, fmt.Errorf("io.ReadAll: %w", err)
 	}
-	return fmt.Sprintf("   Id: %s\n   ClientID: %s\n   StoresTill: %s\n   IsDeleted: %t   GiveOutTime: %s   IsReturned: %t\n", order.ID, order.ClientID, order.StoresTill, order.IsDeleted, order.GiveOutTime, order.IsReturned)
+	err = req.Body.Close()
+	if err != nil {
+		return nil, fmt.Errorf("req.Body.Close: %w", err)
+	}
+
+	var reqClientOrders requestClientOrders
+	err = json.Unmarshal(data, &reqClientOrders)
+	if err != nil {
+		return nil, fmt.Errorf("json.Unmarshal: %w", err)
+	}
+	req.Body = io.NopCloser(bytes.NewBuffer(data))
+
+	return reqClientOrders.IDs, nil
+}
+
+func GetDataForGiveOut(req *http.Request) (uuid.UUID, []uuid.UUID, error) {
+	clientID, err := GetClientIDFromURL(req)
+	if err != nil {
+		return uuid.UUID{}, nil, fmt.Errorf("GetClientIDFromURL: %w", err)
+	}
+
+	ids, err := GetClientOrdersIDsFromReq(req)
+	if err != nil {
+		return uuid.UUID{}, nil, fmt.Errorf("GetClientOrdersIDsFromReq: %w", err)
+	}
+
+	return clientID, ids, nil
+}
+
+func GetOrderIDFromReq(req *http.Request) (uuid.UUID, error) {
+	data, err := io.ReadAll(req.Body)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("io.ReadAll: %w", err)
+	}
+	err = req.Body.Close()
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("req.Body.Close: %w", err)
+	}
+
+	var reqOrderID requestOrderID
+	err = json.Unmarshal(data, &reqOrderID)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("json.Unmarshal: %w", err)
+	}
+	req.Body = io.NopCloser(bytes.NewBuffer(data))
+
+	return reqOrderID.ID, nil
+}
+
+func GetDataForReturnOrder(req *http.Request) (uuid.UUID, uuid.UUID, error) {
+	clientID, err := GetClientIDFromURL(req)
+	if err != nil {
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("GetClientIDFromURL: %w", err)
+	}
+
+	id, err := GetOrderIDFromReq(req)
+	if err != nil {
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("GetClientOrdersIDsFromReq: %w", err)
+	}
+
+	return clientID, id, nil
 }

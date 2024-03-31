@@ -10,7 +10,8 @@
 
 ## Запросы к серверу
 
-Первый запрос - для HTTP, второй - для HTTPS.
+Первый запрос - для HTTP.
+Второй запрос - для HTTPS.
 
 ##### Main Page
 ````
@@ -175,9 +176,5 @@ go run cmd/cli/main.go help
         go run cmd/cli/main.go -id=9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -clientid=9967bb48-bd6f-4ad0-924d-8c9094c4d8r1 return
     Получить список возвращенных товаров:
         go run cmd/cli/main.go -pagenum=1 -itemsonpage=2 listofreturned
-
-##### Интерактивный режим
-
-    go run cmd/cli/main.go interactive_mode
-
-Далее следовать его командам.
+    Интерактивный режим (Включить, далее следовать его командам)
+        go run cmd/cli/main.go interactive_mode

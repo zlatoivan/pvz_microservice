@@ -16,3 +16,11 @@ type requestOrder struct {
 	ClientID   uuid.UUID `db:"client_id"`   // the id of client
 	StoresTill string    `db:"stores_till"` // the storage period of order
 }
+
+type requestClientOrders struct {
+	IDs []uuid.UUID `json:"ids"`
+}
+
+type requestOrderID struct {
+	ID uuid.UUID `json:"id"`
+}

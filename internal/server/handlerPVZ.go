@@ -52,7 +52,7 @@ func (s Server) listPVZs(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Println("Got PVZ list!")
+	log.Printf("Got PVZ list! Length = %d.\n", len(list))
 
 	w.Header().Set("Content-Type", "application/json")
 	if len(list) == 0 {

@@ -27,6 +27,10 @@ type orderService interface {
 	GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error)
 	UpdateOrder(ctx context.Context, updPVZ model.Order) error
 	DeleteOrder(ctx context.Context, id uuid.UUID) error
+	ListClientOrders(ctx context.Context, id uuid.UUID) ([]model.Order, error)
+	GiveOutOrders(ctx context.Context, id uuid.UUID, ids []uuid.UUID) error
+	ReturnOrder(ctx context.Context, clientID uuid.UUID, id uuid.UUID) error
+	ListReturnedOrders(ctx context.Context) ([]model.Order, error)
 }
 
 type Server struct {

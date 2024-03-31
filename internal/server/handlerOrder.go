@@ -27,6 +27,7 @@ func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
 			writeComment(w, "ID already exists")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -37,6 +38,7 @@ func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[createOrder] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -49,10 +51,11 @@ func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[listOrders] s.orderService.ListOrders: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
-	log.Println("Got order list!")
+	log.Println("Got list of orders!")
 
 	w.Header().Set("Content-Type", "application/json")
 	if len(list) == 0 {
@@ -65,6 +68,7 @@ func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[listOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -89,6 +93,7 @@ func (s Server) getOrderByID(w http.ResponseWriter, req *http.Request) {
 			writeComment(w, "Order not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -99,6 +104,7 @@ func (s Server) getOrderByID(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[getOrderByID] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -123,6 +129,7 @@ func (s Server) updateOrder(w http.ResponseWriter, req *http.Request) {
 			writeComment(w, "Order not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
@@ -149,10 +156,131 @@ func (s Server) deleteOrder(w http.ResponseWriter, req *http.Request) {
 			writeComment(w, "Order not found by this ID")
 		}
 		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
 		return
 	}
 
 	log.Println("Order deleted!")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// listClientOrders gets list of client orders
+func (s Server) listClientOrders(w http.ResponseWriter, req *http.Request) {
+	id, err := GetClientIDFromURL(req)
+	if err != nil {
+		log.Printf("[listClientOrders] GetClientIDFromURL: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data: "+err.Error())
+		return
+	}
+
+	list, err := s.orderService.ListClientOrders(req.Context(), id)
+	if err != nil {
+		log.Printf("[listClientOrders] s.orderService.ListClientOrders: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
+
+	log.Printf("Got list of clients orders! Length = %d.\n", len(list))
+
+	w.Header().Set("Content-Type", "application/json")
+	if len(list) == 0 {
+		w.WriteHeader(http.StatusOK)
+		writeComment(w, "No orders in database")
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(list)
+	if err != nil {
+		log.Printf("[listClientOrders] json.NewEncoder().Encode: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// giveOutOrders gives out a list of orders
+func (s Server) giveOutOrders(w http.ResponseWriter, req *http.Request) {
+	clientID, ids, err := GetDataForGiveOut(req)
+	if err != nil {
+		log.Printf("[giveOutOrders] GetDataForGiveOut: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data: "+err.Error())
+		return
+	}
+
+	err = s.orderService.GiveOutOrders(req.Context(), clientID, ids)
+	if err != nil {
+		log.Printf("[giveOutOrders] s.orderService.GiveOutOrders: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
+
+	log.Println("Orders are given out")
+
+	w.Header().Set("Content-Type", "application/json")
+	writeComment(w, "Orders are given out")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// returnOrder returns order
+func (s Server) returnOrder(w http.ResponseWriter, req *http.Request) {
+	clientID, id, err := GetDataForReturnOrder(req)
+	if err != nil {
+		log.Printf("[returnOrder] GetDataForGiveOut: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		writeComment(w, "Invalid data: "+err.Error())
+		return
+	}
+
+	err = s.orderService.ReturnOrder(req.Context(), clientID, id)
+	if err != nil {
+		log.Printf("[returnOrder] s.orderService.ReturnOrder: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
+
+	log.Println("Order is returned")
+
+	w.Header().Set("Content-Type", "application/json")
+	writeComment(w, "Order is returned")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// returnOrder returns order
+func (s Server) listReturnedOrders(w http.ResponseWriter, req *http.Request) {
+	list, err := s.orderService.ListReturnedOrders(req.Context())
+	if err != nil {
+		log.Printf("[listReturnedOrders] s.orderService.ListReturnedOrders: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
+
+	log.Printf("Got list of returned orders! Length = %d.\n", len(list))
+
+	w.Header().Set("Content-Type", "application/json")
+	if len(list) == 0 {
+		w.WriteHeader(http.StatusOK)
+		writeComment(w, "No returned orders in database")
+		return
+	}
+
+	err = json.NewEncoder(w).Encode(list)
+	if err != nil {
+		log.Printf("[listReturnedOrders] json.NewEncoder().Encode: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		writeComment(w, err.Error())
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 }

@@ -36,6 +36,7 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 				r.Delete("/", s.deletePVZ) // Delete
 			})
 		})
+
 		r.Route("/orders", func(r chi.Router) {
 			r.Use(middleware.BasicAuth("orders", orderCreds))
 			r.Post("/", s.createOrder) // Create
@@ -45,6 +46,12 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 				r.Put("/", s.updateOrder)    // Update
 				r.Delete("/", s.deleteOrder) // Delete
 			})
+			r.Route("/client/{clientID}", func(r chi.Router) {
+				r.Get("/", s.listClientOrders)  // List of client orders
+				r.Put("/", s.giveOutOrders)     // GiveOutOrders orders
+				r.Put("/return", s.returnOrder) // Return order
+			})
+			r.Get("/returned", s.listReturnedOrders) // List of returned orders
 		})
 	})
 

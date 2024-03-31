@@ -124,7 +124,7 @@ func (s *Service) GiveOut(idsStr string) error {
 
 	err := s.store.GiveOut(ids)
 	if err != nil {
-		return fmt.Errorf("s.store.GiveOut: %w", err)
+		return fmt.Errorf("s.store.GiveOutOrders: %w", err)
 	}
 
 	fmt.Println("orders have been given out to the client")

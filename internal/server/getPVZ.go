@@ -14,6 +14,13 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
+func PrepToPrintPVZ(pvz model.PVZ) string {
+	if pvz.ID == uuid.Nil {
+		return fmt.Sprintf("   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.Name, pvz.Address, pvz.Contacts)
+	}
+	return fmt.Sprintf("   Id: %s\n   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.ID, pvz.Name, pvz.Address, pvz.Contacts)
+}
+
 func GetPVZIDFromURL(req *http.Request) (uuid.UUID, error) {
 	idStr := chi.URLParam(req, "pvzID")
 	id, err := uuid.Parse(idStr)
@@ -52,11 +59,4 @@ func GetPVZFromReq(req *http.Request) (model.PVZ, error) {
 	}
 	pvz.ID = id
 	return pvz, nil
-}
-
-func PrepToPrintPVZ(pvz model.PVZ) string {
-	if pvz.ID == uuid.Nil {
-		return fmt.Sprintf("   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.Name, pvz.Address, pvz.Contacts)
-	}
-	return fmt.Sprintf("   Id: %s\n   Name: %s\n   Address: %s\n   Contacts: %s\n", pvz.ID, pvz.Name, pvz.Address, pvz.Contacts)
 }
