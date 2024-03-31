@@ -34,7 +34,7 @@ func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Order created! id = %s", id)
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(ResponseID{ID: id})
+	err = json.NewEncoder(w).Encode(responseID{ID: id})
 	if err != nil {
 		log.Printf("[createOrder] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -64,7 +64,18 @@ func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(list)
+	respList := make([]responseOrder, 0)
+	for _, order := range list {
+		respOrder := responseOrder{
+			ID:          order.ID,
+			ClientID:    order.ClientID,
+			StoresTill:  order.StoresTill,
+			GiveOutTime: order.GiveOutTime,
+			IsReturned:  order.IsReturned,
+		}
+		respList = append(respList, respOrder)
+	}
+	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -100,7 +111,14 @@ func (s Server) getOrderByID(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Order by ID:\n" + PrepToPrintOrder(order))
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(order)
+	respOrder := responseOrder{
+		ID:          order.ID,
+		ClientID:    order.ClientID,
+		StoresTill:  order.StoresTill,
+		GiveOutTime: order.GiveOutTime,
+		IsReturned:  order.IsReturned,
+	}
+	err = json.NewEncoder(w).Encode(respOrder)
 	if err != nil {
 		log.Printf("[getOrderByID] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -134,6 +152,7 @@ func (s Server) updateOrder(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Println("Order updated!")
+	writeComment(w, "Order updated!")
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -161,6 +180,7 @@ func (s Server) deleteOrder(w http.ResponseWriter, req *http.Request) {
 	}
 
 	log.Println("Order deleted!")
+	writeComment(w, "Order deleted!")
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -192,7 +212,18 @@ func (s Server) listClientOrders(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(list)
+	respList := make([]responseOrder, 0)
+	for _, order := range list {
+		respOrder := responseOrder{
+			ID:          order.ID,
+			ClientID:    order.ClientID,
+			StoresTill:  order.StoresTill,
+			GiveOutTime: order.GiveOutTime,
+			IsReturned:  order.IsReturned,
+		}
+		respList = append(respList, respOrder)
+	}
+	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listClientOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -274,7 +305,18 @@ func (s Server) listReturnedOrders(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(list)
+	respList := make([]responseOrder, 0)
+	for _, l := range list {
+		respOrder := responseOrder{
+			ID:          l.ID,
+			ClientID:    l.ClientID,
+			StoresTill:  l.StoresTill,
+			GiveOutTime: l.GiveOutTime,
+			IsReturned:  l.IsReturned,
+		}
+		respList = append(respList, respOrder)
+	}
+	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listReturnedOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
