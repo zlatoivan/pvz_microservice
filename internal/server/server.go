@@ -22,7 +22,7 @@ type pvzService interface {
 }
 
 type orderService interface {
-	CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error)
+	CreateOrder(ctx context.Context, packagingType string, order model.Order) (uuid.UUID, error)
 	ListOrders(ctx context.Context) ([]model.Order, error)
 	GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error)
 	UpdateOrder(ctx context.Context, updPVZ model.Order) error
@@ -34,14 +34,14 @@ type orderService interface {
 }
 
 type Server struct {
-	pvzService   pvzService
-	orderService orderService
+	PvzService   pvzService
+	OrderService orderService
 }
 
 func New(pvzService pvzService, orderService orderService) Server {
 	server := Server{
-		pvzService:   pvzService,
-		orderService: orderService,
+		PvzService:   pvzService,
+		OrderService: orderService,
 	}
 	return server
 }

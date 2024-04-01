@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
+	repo2 "gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
 type repo interface {
@@ -30,11 +31,26 @@ func New(repo repo) Service {
 	return Service{repo: repo}
 }
 
-func (s Service) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error) {
-	id, err := s.repo.CreateOrder(ctx, order)
+func (s Service) CreateOrder(ctx context.Context, packagingType string, order model.Order) (uuid.UUID, error) {
+	_, err := s.repo.GetOrderByID(ctx, order.ID)
+	if err != nil {
+		return uuid.UUID{}, repo2.ErrorAlreadyExists
+	}
+
+	if order.StoresTill.Before(time.Now()) {
+		return uuid.UUID{}, fmt.Errorf("the stores period of the order has expired")
+	}
+
+	newOrder, err := checkPackaging(packagingType, order)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("checkPackaging: %w", err)
+	}
+
+	id, err := s.repo.CreateOrder(ctx, newOrder)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("s.repo.CreateOrder: %w", err)
 	}
+
 	return id, nil
 }
 
@@ -93,7 +109,7 @@ func (s Service) GiveOutOrders(ctx context.Context, clientID uuid.UUID, ids []uu
 
 		// Проверка того, что срок хранения заказа не истек
 		if order.StoresTill.Before(time.Now()) {
-			return fmt.Errorf("the stores period of order has expired. ID = %s", order.ID)
+			return fmt.Errorf("the stores period of the order has expired. ID = %s", order.ID)
 		}
 	}
 

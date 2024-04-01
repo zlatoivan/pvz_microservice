@@ -6,39 +6,41 @@ import (
 	"log"
 	"net/http"
 
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/server/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
 // createOrder creates order
 func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
-	newOrder, err := GetOrderWithoutIDFromReq(req)
+	newOrder, packagingType, err := delivery.GetOrderWithoutIDFromReq(req)
 	if err != nil {
 		log.Printf("[createOrder] GetOrderWithoutIDFromReq: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	id, err := s.orderService.CreateOrder(req.Context(), newOrder)
+	id, err := s.OrderService.CreateOrder(req.Context(), packagingType, newOrder)
 	if err != nil {
-		log.Printf("[createOrder] s.orderService.createOrder: %v\n", err)
+		log.Printf("[createOrder] s.OrderService.createOrder: %v\n", err)
 		if errors.Is(err, repo.ErrorAlreadyExists) {
 			w.WriteHeader(http.StatusConflict)
-			writeComment(w, "ID already exists")
+			WriteComment(w, "ID already exists")
+			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
 	log.Printf("Order created! id = %s", id)
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(responseID{ID: id})
+	err = json.NewEncoder(w).Encode(ResponseID{ID: id})
 	if err != nil {
 		log.Printf("[createOrder] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -47,11 +49,11 @@ func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
 
 // listOrders gets list of orders
 func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
-	list, err := s.orderService.ListOrders(req.Context())
+	list, err := s.OrderService.ListOrders(req.Context())
 	if err != nil {
-		log.Printf("[listOrders] s.orderService.ListOrders: %v\n", err)
+		log.Printf("[listOrders] s.OrderService.ListOrders: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -60,26 +62,16 @@ func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if len(list) == 0 {
 		w.WriteHeader(http.StatusOK)
-		writeComment(w, "No orders in database")
+		WriteComment(w, "No orders in database")
 		return
 	}
 
-	respList := make([]responseOrder, 0)
-	for _, order := range list {
-		respOrder := responseOrder{
-			ID:          order.ID,
-			ClientID:    order.ClientID,
-			StoresTill:  order.StoresTill,
-			GiveOutTime: order.GiveOutTime,
-			IsReturned:  order.IsReturned,
-		}
-		respList = append(respList, respOrder)
-	}
+	respList := delivery.MakeRespList(list)
 	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -88,41 +80,36 @@ func (s Server) listOrders(w http.ResponseWriter, req *http.Request) {
 
 // getOrderByID gets Order by ID
 func (s Server) getOrderByID(w http.ResponseWriter, req *http.Request) {
-	id, err := GetOrderIDFromURL(req)
+	id, err := delivery.GetOrderIDFromURL(req)
 	if err != nil {
 		log.Printf("[getOrderByID] GetOrderIDFromURL: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	order, err := s.orderService.GetOrderByID(req.Context(), id)
+	order, err := s.OrderService.GetOrderByID(req.Context(), id)
 	if err != nil {
-		log.Printf("[getOrderByID] s.orderService.GetOrderByID: %v\n", err)
+		log.Printf("[getOrderByID] s.OrderService.GetOrderByID: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "Order not found by this ID")
+			WriteComment(w, "Order not found by this ID")
+			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
-	log.Printf("Order by ID:\n" + PrepToPrintOrder(order))
+	log.Printf("Order by ID:\n" + delivery.PrepToPrintOrder(order))
 
 	w.Header().Set("Content-Type", "application/json")
-	respOrder := responseOrder{
-		ID:          order.ID,
-		ClientID:    order.ClientID,
-		StoresTill:  order.StoresTill,
-		GiveOutTime: order.GiveOutTime,
-		IsReturned:  order.IsReturned,
-	}
+	respOrder := delivery.MakeRespOrder(order)
 	err = json.NewEncoder(w).Encode(respOrder)
 	if err != nil {
 		log.Printf("[getOrderByID] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -131,75 +118,77 @@ func (s Server) getOrderByID(w http.ResponseWriter, req *http.Request) {
 
 // updateOrder updates Order
 func (s Server) updateOrder(w http.ResponseWriter, req *http.Request) {
-	updOrder, err := GetOrderFromReq(req)
+	updOrder, err := delivery.GetOrderFromReq(req)
 	if err != nil {
 		log.Printf("[updateOrder] GetOrderFromReq: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	err = s.orderService.UpdateOrder(req.Context(), updOrder)
+	err = s.OrderService.UpdateOrder(req.Context(), updOrder)
 	if err != nil {
-		log.Printf("[updateOrder] s.orderService.UpdateOrder: %v\n", err)
+		log.Printf("[updateOrder] s.OrderService.UpdateOrder: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "Order not found by this ID")
+			WriteComment(w, "Order not found by this ID")
+			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
 	log.Println("Order updated!")
-	writeComment(w, "Order updated!")
+	WriteComment(w, "Order updated!")
 
 	w.WriteHeader(http.StatusOK)
 }
 
 // deleteOrder deletes Order
 func (s Server) deleteOrder(w http.ResponseWriter, req *http.Request) {
-	id, err := GetOrderIDFromURL(req)
+	id, err := delivery.GetOrderIDFromURL(req)
 	if err != nil {
 		log.Printf("[deleteOrder] GetOrderIDFromURL: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	err = s.orderService.DeleteOrder(req.Context(), id)
+	err = s.OrderService.DeleteOrder(req.Context(), id)
 	if err != nil {
-		log.Printf("[deleteOrder] s.orderService.DeleteOrder: %v\n", err)
+		log.Printf("[deleteOrder] s.OrderService.DeleteOrder: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
 			w.WriteHeader(http.StatusNotFound)
-			writeComment(w, "Order not found by this ID")
+			WriteComment(w, "Order not found by this ID")
+			return
 		}
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
 	log.Println("Order deleted!")
-	writeComment(w, "Order deleted!")
+	WriteComment(w, "Order deleted!")
 
 	w.WriteHeader(http.StatusOK)
 }
 
 // listClientOrders gets list of client orders
 func (s Server) listClientOrders(w http.ResponseWriter, req *http.Request) {
-	id, err := GetClientIDFromURL(req)
+	id, err := delivery.GetClientIDFromURL(req)
 	if err != nil {
 		log.Printf("[listClientOrders] GetClientIDFromURL: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	list, err := s.orderService.ListClientOrders(req.Context(), id)
+	list, err := s.OrderService.ListClientOrders(req.Context(), id)
 	if err != nil {
-		log.Printf("[listClientOrders] s.orderService.ListClientOrders: %v\n", err)
+		log.Printf("[listClientOrders] s.OrderService.ListClientOrders: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -208,26 +197,16 @@ func (s Server) listClientOrders(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if len(list) == 0 {
 		w.WriteHeader(http.StatusOK)
-		writeComment(w, "No orders in database")
+		WriteComment(w, "No orders in database")
 		return
 	}
 
-	respList := make([]responseOrder, 0)
-	for _, order := range list {
-		respOrder := responseOrder{
-			ID:          order.ID,
-			ClientID:    order.ClientID,
-			StoresTill:  order.StoresTill,
-			GiveOutTime: order.GiveOutTime,
-			IsReturned:  order.IsReturned,
-		}
-		respList = append(respList, respOrder)
-	}
+	respList := delivery.MakeRespList(list)
 	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listClientOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -236,63 +215,63 @@ func (s Server) listClientOrders(w http.ResponseWriter, req *http.Request) {
 
 // giveOutOrders gives out a list of orders
 func (s Server) giveOutOrders(w http.ResponseWriter, req *http.Request) {
-	clientID, ids, err := GetDataForGiveOut(req)
+	clientID, ids, err := delivery.GetDataForGiveOut(req)
 	if err != nil {
 		log.Printf("[giveOutOrders] GetDataForGiveOut: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	err = s.orderService.GiveOutOrders(req.Context(), clientID, ids)
+	err = s.OrderService.GiveOutOrders(req.Context(), clientID, ids)
 	if err != nil {
-		log.Printf("[giveOutOrders] s.orderService.GiveOutOrders: %v\n", err)
+		log.Printf("[giveOutOrders] s.OrderService.GiveOutOrders: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
 	log.Println("Orders are given out")
 
 	w.Header().Set("Content-Type", "application/json")
-	writeComment(w, "Orders are given out")
+	WriteComment(w, "Orders are given out")
 
 	w.WriteHeader(http.StatusOK)
 }
 
 // returnOrder returns order
 func (s Server) returnOrder(w http.ResponseWriter, req *http.Request) {
-	clientID, id, err := GetDataForReturnOrder(req)
+	clientID, id, err := delivery.GetDataForReturnOrder(req)
 	if err != nil {
 		log.Printf("[returnOrder] GetDataForGiveOut: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
-		writeComment(w, "Invalid data: "+err.Error())
+		WriteComment(w, "Invalid data: "+err.Error())
 		return
 	}
 
-	err = s.orderService.ReturnOrder(req.Context(), clientID, id)
+	err = s.OrderService.ReturnOrder(req.Context(), clientID, id)
 	if err != nil {
-		log.Printf("[returnOrder] s.orderService.ReturnOrder: %v\n", err)
+		log.Printf("[returnOrder] s.OrderService.ReturnOrder: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
 	log.Println("Order is returned")
 
 	w.Header().Set("Content-Type", "application/json")
-	writeComment(w, "Order is returned")
+	WriteComment(w, "Order is returned")
 
 	w.WriteHeader(http.StatusOK)
 }
 
 // returnOrder returns order
 func (s Server) listReturnedOrders(w http.ResponseWriter, req *http.Request) {
-	list, err := s.orderService.ListReturnedOrders(req.Context())
+	list, err := s.OrderService.ListReturnedOrders(req.Context())
 	if err != nil {
-		log.Printf("[listReturnedOrders] s.orderService.ListReturnedOrders: %v\n", err)
+		log.Printf("[listReturnedOrders] s.OrderService.ListReturnedOrders: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 
@@ -301,26 +280,16 @@ func (s Server) listReturnedOrders(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if len(list) == 0 {
 		w.WriteHeader(http.StatusOK)
-		writeComment(w, "No returned orders in database")
+		WriteComment(w, "No returned orders in database")
 		return
 	}
 
-	respList := make([]responseOrder, 0)
-	for _, l := range list {
-		respOrder := responseOrder{
-			ID:          l.ID,
-			ClientID:    l.ClientID,
-			StoresTill:  l.StoresTill,
-			GiveOutTime: l.GiveOutTime,
-			IsReturned:  l.IsReturned,
-		}
-		respList = append(respList, respOrder)
-	}
+	respList := delivery.MakeRespList(list)
 	err = json.NewEncoder(w).Encode(respList)
 	if err != nil {
 		log.Printf("[listReturnedOrders] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		writeComment(w, err.Error())
+		WriteComment(w, err.Error())
 		return
 	}
 

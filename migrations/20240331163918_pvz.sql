@@ -1,10 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS pvz (
-    id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL DEFAULT '',
-    address TEXT NOT NULL DEFAULT '',
-    contacts TEXT NOT NULL DEFAULT ''
+                                   id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+                                   name TEXT NOT NULL DEFAULT '',
+                                   address TEXT NOT NULL DEFAULT '',
+                                   contacts TEXT NOT NULL DEFAULT ''
 );
 
 COMMENT ON TABLE pvz IS 'Таблица ПВЗ';
@@ -14,17 +14,21 @@ COMMENT ON COLUMN pvz.address IS 'Адрес ПВЗ';
 COMMENT ON COLUMN pvz.contacts IS 'Контакты ПВЗ';
 
 CREATE TABLE IF NOT EXISTS "order" (
-    id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
-    client_id UUID NOT NULL DEFAULT gen_random_uuid(),
-    stores_till TIMESTAMP NOT NULL DEFAULT now(),
-    give_out_time TIMESTAMP NOT NULL DEFAULT now(),
-    is_returned BOOL NOT NULL DEFAULT FALSE,
-    is_deleted BOOL NOT NULL DEFAULT FALSE
+                                       id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+                                       client_id UUID NOT NULL DEFAULT gen_random_uuid(),
+                                       weight INT NOT NULL DEFAULT 0,
+                                       cost INT NOT NULL DEFAULT 0,
+                                       stores_till TIMESTAMP NOT NULL DEFAULT now(),
+                                       give_out_time TIMESTAMP NOT NULL DEFAULT now(),
+                                       is_returned BOOL NOT NULL DEFAULT FALSE,
+                                       is_deleted BOOL NOT NULL DEFAULT FALSE
 );
 
 COMMENT ON TABLE "order" IS 'Таблица заказов';
 COMMENT ON COLUMN "order".id IS 'Уникальный идентификатор заказа';
 COMMENT ON COLUMN "order".client_id IS 'Идентификатор клиента';
+COMMENT ON COLUMN "order".weight IS 'Вес заказа';
+COMMENT ON COLUMN "order".cost IS 'Стоимость заказа';
 COMMENT ON COLUMN "order".stores_till IS 'Конечная дата хранения заказа';
 COMMENT ON COLUMN "order".give_out_time IS 'Дата выдачи заказа';
 COMMENT ON COLUMN "order".is_returned IS 'Флаг, возвращен ли заказ';

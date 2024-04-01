@@ -10,29 +10,21 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-const queryInsertOrder = `INSERT INTO "order" (client_id, stores_till, is_deleted, give_out_time, is_returned) VALUES ($1, $2, $3, $4, $5) RETURNING id;`
-const queryCheckInsertOrder = `SELECT COUNT(*) FROM "order" WHERE id = $1;`
+const queryInsertOrder = `INSERT INTO "order" (client_id, weight, cost, stores_till, give_out_time) VALUES ($1, $2, $3, $4, $5) RETURNING id;`
 
 // CreateOrder creates Order in repo
 func (repo Repo) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error) {
 	var id uuid.UUID
-	err := repo.db.QueryRow(ctx, queryInsertOrder, order.ClientID, order.StoresTill, order.IsDeleted, order.GiveOutTime, order.IsReturned).Scan(&id)
+	var timeNull time.Time
+	err := repo.db.QueryRow(ctx, queryInsertOrder, order.ClientID, order.Weight, order.Cost, order.StoresTill, timeNull).Scan(&id)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
-	}
-
-	t, err := repo.db.Exec(ctx, queryCheckInsertOrder, id)
-	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("repo.db.Exec: %w", err)
-	}
-	if t.RowsAffected() == 0 {
-		return uuid.UUID{}, ErrorAlreadyExists
 	}
 
 	return id, nil
 }
 
-const querySelectOrder = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE is_deleted = FALSE;`
+const querySelectOrder = `SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned FROM "order" WHERE is_deleted = FALSE;`
 
 // ListOrders gets list of Order from repo
 func (repo Repo) ListOrders(ctx context.Context) ([]model.Order, error) {
@@ -45,7 +37,7 @@ func (repo Repo) ListOrders(ctx context.Context) ([]model.Order, error) {
 	return orders, nil
 }
 
-const querySelectOrderByID = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE id = $1 AND is_deleted = FALSE;`
+const querySelectOrderByID = `SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned FROM "order" WHERE id = $1 AND is_deleted = FALSE;`
 
 // GetOrderByID gets Order by ID from repo
 func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error) {
@@ -58,11 +50,11 @@ func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, e
 	return order, nil
 }
 
-const queryUpdateOrder = `UPDATE "order" SET client_id = $2, stores_till = $3 WHERE id = $1 AND is_deleted = FALSE;`
+const queryUpdateOrder = `UPDATE "order" SET client_id = $2, weight = $3, cost = $4, stores_till = $5 WHERE id = $1 AND is_deleted = FALSE;`
 
 // UpdateOrder updates Order in repo
 func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
-	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ID, updOrder.ClientID, updOrder.StoresTill)
+	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ID, updOrder.Weight, updOrder.Cost, updOrder.ClientID, updOrder.StoresTill)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
@@ -88,7 +80,7 @@ func (repo Repo) DeleteOrder(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-const querySelectClientOrders = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE client_id = $1 AND is_deleted = FALSE;`
+const querySelectClientOrders = `SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned FROM "order" WHERE client_id = $1 AND is_deleted = FALSE;`
 
 // ListClientOrders gets list of Order from repo
 func (repo Repo) ListClientOrders(ctx context.Context, id uuid.UUID) ([]model.Order, error) {
@@ -131,7 +123,7 @@ func (repo Repo) ReturnOrder(ctx context.Context, clientID uuid.UUID, id uuid.UU
 	return nil
 }
 
-const querySelectReturnedOrders = `SELECT id, client_id, stores_till, give_out_time, is_returned FROM "order" WHERE is_returned = TRUE AND is_deleted = FALSE;`
+const querySelectReturnedOrders = `SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned FROM "order" WHERE is_returned = TRUE AND is_deleted = FALSE;`
 
 // ListReturnedOrders gives out a list of returned orders
 func (repo Repo) ListReturnedOrders(ctx context.Context) ([]model.Order, error) {

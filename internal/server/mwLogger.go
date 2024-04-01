@@ -3,6 +3,8 @@ package server
 import (
 	"log"
 	"net/http"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/server/delivery"
 )
 
 func mwLogger(next http.Handler) http.Handler {
@@ -11,29 +13,29 @@ func mwLogger(next http.Handler) http.Handler {
 		case http.MethodGet:
 			log.Printf("[MW]: GET request.\n")
 		case http.MethodPost:
-			pvz, err := GetPVZWithoutIDFromReq(req)
+			pvz, err := delivery.GetPVZWithoutIDFromReq(req)
 			if err != nil {
 				log.Printf("[mwLogger] getPVZFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data: "+err.Error())
+				WriteComment(w, "Invalid data: "+err.Error())
 				return
 			}
-			log.Printf("[MW]: POST request:\n" + PrepToPrintPVZ(pvz))
+			log.Printf("[MW]: POST request:\n" + delivery.PrepToPrintPVZ(pvz))
 		case http.MethodPut:
-			pvz, err := GetPVZFromReq(req)
+			pvz, err := delivery.GetPVZFromReq(req)
 			if err != nil {
 				log.Printf("[mwLogger] getDataFromReq: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data: "+err.Error())
+				WriteComment(w, "Invalid data: "+err.Error())
 				return
 			}
-			log.Printf("[MW]: PUT request:\n" + PrepToPrintPVZ(pvz))
+			log.Printf("[MW]: PUT request:\n" + delivery.PrepToPrintPVZ(pvz))
 		case http.MethodDelete:
-			id, err := GetPVZIDFromURL(req)
+			id, err := delivery.GetPVZIDFromURL(req)
 			if err != nil {
 				log.Printf("[mwLogger] getIDFromURL: %v", err)
 				w.WriteHeader(http.StatusBadRequest)
-				writeComment(w, "Invalid data: "+err.Error())
+				WriteComment(w, "Invalid data: "+err.Error())
 				return
 			}
 			log.Printf("[MW]: DELETE request:\nid = %s\n", id)

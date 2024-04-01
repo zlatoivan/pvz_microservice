@@ -1,5 +1,20 @@
 # Утилита для работы с ПВЗ
 
+## UML диаграмма
+
+Для описания архитектуры решения по проверке типа упаковки был выбран стандарт "Sequence diagram"
+Документация: https://mermaid.js.org/syntax/sequenceDiagram.html
+
+Финальная версия диаграммы находится в папке /uml:
+[GOHW-4, UML.mmd](uml%2FGOHW-4%2C%20UML.mmd)
+
+И имеет следующий вид:
+![GOHW-4, UML dark.svg](uml%2FGOHW-4%2C%20UML%20dark.svg)
+![GOHW-4, UML dark.svg](uml%2FGOHW-4%2C%20UML%20dark.svg)
+![GOHW-4, UML.png](uml%2FGOHW-4%2C%20UML.png)
+![GOHW-4, UML.svg](uml%2FGOHW-4%2C%20UML.svg)
+
+
 ## Запуск программы
 
     make compose-up
@@ -24,16 +39,16 @@ curl https://localhost:9001 -i -k
 ##### Create PVZ
 ````
 curl --post301 http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
-    "Name": "Ozon Tech",
-    "Address": "Moscow, Presnenskaya nab. 10, block С",
-    "Contacts": "+7 958 400-00-05, add 76077"
+    "name": "Ozon Tech",
+    "address": "Moscow, Presnenskaya nab. 10, block С",
+    "contacts": "+7 958 400-00-05, add 76077"
 }'
 ````
 ````    
 curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
-    "Name": "Ozon Tech",
-    "Address": "Moscow, Presnenskaya nab. 10, block С",
-    "Contacts": "+7 958 400-00-05, add 76077"
+    "name": "Ozon Tech",
+    "address": "Moscow, Presnenskaya nab. 10, block С",
+    "contacts": "+7 958 400-00-05, add 76077"
 }'
 ````
 
@@ -56,16 +71,16 @@ curl https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i 
 ##### Update PVZ
 ````
 curl -X PUT http://localhost:9000/api/v1/pvzs/86595598-f70d-4ffa-bc2b-29e11de41df8 -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
-    "Name": "Ozon Company",
-    "Address": "Moscow, Arbat, 27",
-    "Contacts": "+7 999 888 11 11"
+    "name": "Ozon Company",
+    "address": "Moscow, Arbat, 27",
+    "contacts": "+7 999 888 11 11"
 }'
 ````
 ````
 curl -X PUT https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094c4d8c2 -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
-    "Name": "Ozon Company",
-    "Address": "Moscow, Arbat, 27",
-    "Contacts": "+7 999 888 11 11"
+    "name": "Ozon Company",
+    "address": "Moscow, Arbat, 27",
+    "contacts": "+7 999 888 11 11"
 }'
 ````
 
@@ -80,14 +95,20 @@ curl -X DELETE https://localhost:9001/api/v1/pvzs/9967bb48-bd6f-4ad0-924d-8c9094
 ##### Create Order
 ````
 curl --post301 http://localhost:9000/api/v1/orders -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "ClientID": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
-    "StoresTill": "22.04.2024 13:14"
+    "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "stores_till": "22.04.2024 13:14",
+    "weight": 29,
+    "cost": 1100,
+    "packaging_type": "box"
 }'
 ````
 ````    
-curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "ClientID": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
-    "StoresTill": "22.04.2024 13:14"
+curl -X POST http://localhost:9000/api/v1/orders -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
+    "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "stores_till": "22.04.2024 13:14",
+    "weight": 29,
+    "cost": 1100,
+    "packaging_type": "box"
 }'
 ````
 
@@ -110,14 +131,20 @@ curl https://localhost:9001/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -
 ##### Update order
 ````
 curl -X PUT http://localhost:9000/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "ClientID": "3bdc65d0-3e6a-406f-9ed1-b52962b5faf8",
-    "StoresTill": "13.11.2025 22:01"
+    "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "stores_till": "22.04.2024 13:14",
+    "weight": 15,
+    "cost": 500,
+    "packaging_type": "tape"
 }'
 ````
 ````
 curl -X PUT https://localhost:9001/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "ClientID": "3bdc65d0-3e6a-406f-9ed1-b52962b5faf8",
-    "StoresTill": "13.11.2025 22:01"
+    "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
+    "stores_till": "22.04.2024 13:14",
+    "weight": 15,
+    "cost": 500,
+    "packaging_type": "tape"
 }'
 ````
 

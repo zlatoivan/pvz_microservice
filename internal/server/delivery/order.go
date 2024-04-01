@@ -1,4 +1,4 @@
-package server
+package delivery
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/server"
 )
 
 func PrepToPrintOrder(order model.Order) string {
@@ -41,36 +42,38 @@ func GetClientIDFromURL(req *http.Request) (uuid.UUID, error) {
 
 const dateLayout = "02.01.2006 15:04"
 
-func GetOrderWithoutIDFromReq(req *http.Request) (model.Order, error) {
+func GetOrderWithoutIDFromReq(req *http.Request) (model.Order, string, error) {
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		return model.Order{}, fmt.Errorf("io.ReadAll: %w", err)
+		return model.Order{}, "", fmt.Errorf("io.ReadAll: %w", err)
 	}
 	err = req.Body.Close()
 	if err != nil {
-		return model.Order{}, fmt.Errorf("req.Body.Close: %w", err)
+		return model.Order{}, "", fmt.Errorf("req.Body.Close: %w", err)
 	}
 
-	var order requestOrder
+	var order server.RequestOrder
 	err = json.Unmarshal(data, &order)
 	if err != nil {
-		return model.Order{}, fmt.Errorf("json.Unmarshal: %w", err)
+		return model.Order{}, "", fmt.Errorf("json.Unmarshal: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
 
 	if order.ClientID == uuid.Nil {
-		return model.Order{}, fmt.Errorf("ClientID is Nil")
+		return model.Order{}, "", fmt.Errorf("ClientID is Nil")
 	}
 	storesTill, err := time.Parse(dateLayout, order.StoresTill)
 	if err != nil {
-		return model.Order{}, fmt.Errorf("time.Parse: %w", err)
+		return model.Order{}, "", fmt.Errorf("time.Parse: %w", err)
 	}
 	newOrder := model.Order{
 		ClientID:   order.ClientID,
 		StoresTill: storesTill,
+		Weight:     order.Weight,
+		Cost:       order.Cost,
 	}
 
-	return newOrder, nil
+	return newOrder, order.PackagingType, nil
 }
 
 func GetOrderFromReq(req *http.Request) (model.Order, error) {
@@ -78,7 +81,7 @@ func GetOrderFromReq(req *http.Request) (model.Order, error) {
 	if err != nil {
 		return model.Order{}, fmt.Errorf("GetOrderIDFromURL: %w", err)
 	}
-	order, err := GetOrderWithoutIDFromReq(req)
+	order, _, err := GetOrderWithoutIDFromReq(req)
 	if err != nil {
 		return model.Order{}, fmt.Errorf("GetOrderWithoutIDFromReq: %w", err)
 	}
@@ -96,7 +99,7 @@ func GetClientOrdersIDsFromReq(req *http.Request) ([]uuid.UUID, error) {
 		return nil, fmt.Errorf("req.Body.Close: %w", err)
 	}
 
-	var reqClientOrders requestClientOrders
+	var reqClientOrders server.RequestClientOrders
 	err = json.Unmarshal(data, &reqClientOrders)
 	if err != nil {
 		return nil, fmt.Errorf("json.Unmarshal: %w", err)
@@ -130,7 +133,7 @@ func GetOrderIDFromReq(req *http.Request) (uuid.UUID, error) {
 		return uuid.UUID{}, fmt.Errorf("req.Body.Close: %w", err)
 	}
 
-	var reqOrderID requestOrderID
+	var reqOrderID server.RequestOrderID
 	err = json.Unmarshal(data, &reqOrderID)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("json.Unmarshal: %w", err)
@@ -152,4 +155,34 @@ func GetDataForReturnOrder(req *http.Request) (uuid.UUID, uuid.UUID, error) {
 	}
 
 	return clientID, id, nil
+}
+
+func MakeRespList(list []model.Order) []server.ResponseOrder {
+	respList := make([]server.ResponseOrder, 0)
+	for _, order := range list {
+		respOrder := server.ResponseOrder{
+			ID:          order.ID,
+			ClientID:    order.ClientID,
+			Weight:      order.Weight,
+			Cost:        order.Cost,
+			StoresTill:  order.StoresTill,
+			GiveOutTime: order.GiveOutTime,
+			IsReturned:  order.IsReturned,
+		}
+		respList = append(respList, respOrder)
+	}
+	return respList
+}
+
+func MakeRespOrder(order model.Order) server.ResponseOrder {
+	respOrder := server.ResponseOrder{
+		ID:          order.ID,
+		ClientID:    order.ClientID,
+		Weight:      order.Weight,
+		Cost:        order.Cost,
+		StoresTill:  order.StoresTill,
+		GiveOutTime: order.GiveOutTime,
+		IsReturned:  order.IsReturned,
+	}
+	return respOrder
 }
