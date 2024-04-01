@@ -2,6 +2,7 @@ package model
 
 import "github.com/google/uuid"
 
+// PVZ = punkt vidachi zakazov
 type PVZ struct {
 	ID       uuid.UUID `db:"id"`       // the id of PVZ
 	Name     string    `db:"name"`     // the name of PVZ

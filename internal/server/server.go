@@ -46,9 +46,9 @@ func New(pvzService pvzService, orderService orderService) Server {
 	return server
 }
 
-func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
-	http.Redirect(w, req, "https://localhost:9001"+req.RequestURI, http.StatusMovedPermanently)
-}
+//func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
+//	http.Redirect(w, req, "https://localhost:9001"+req.RequestURI, http.StatusMovedPermanently)
+//}
 
 // Run starts the server
 func (s Server) Run(ctx context.Context, cfg config.Config) error {

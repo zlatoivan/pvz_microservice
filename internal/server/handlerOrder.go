@@ -36,7 +36,7 @@ func (s Server) createOrder(w http.ResponseWriter, req *http.Request) {
 	log.Printf("Order created! id = %s", id)
 
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(ResponseID{ID: id})
+	err = json.NewEncoder(w).Encode(delivery.ResponseID{ID: id})
 	if err != nil {
 		log.Printf("[createOrder] json.NewEncoder().Encode: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)

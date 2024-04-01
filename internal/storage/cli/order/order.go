@@ -20,7 +20,7 @@ const storagePath = "db_files/order_db.txt"
 
 // New creates a new order storage
 func New() (*Storage, error) {
-	file, err := os.OpenFile(storagePath, os.O_CREATE, 0777)
+	file, err := os.OpenFile(storagePath, os.O_CREATE, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("os.OpenFile: %w", err)
 	}
@@ -66,7 +66,7 @@ func rewriteStorageFile(all []model.Order) error {
 		return err
 	}
 
-	err = os.WriteFile(storagePath, bytes, 0644)
+	err = os.WriteFile(storagePath, bytes, 0600)
 
 	return err
 }

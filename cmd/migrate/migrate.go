@@ -25,6 +25,9 @@ func New(ctx context.Context, database postgres.Database) error {
 		db,
 		os.DirFS("migrations"),
 	)
+	if err != nil {
+		return fmt.Errorf("goose.NewProvider: %w", err)
+	}
 	results, err := provider.Up(ctx)
 	if err != nil {
 		return fmt.Errorf("provider.Up: %w", err)
