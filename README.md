@@ -9,9 +9,6 @@
 [GOHW-4, UML.mmd](uml%2FGOHW-4%2C%20UML.mmd)
 
 И имеет следующий вид:
-![GOHW-4, UML dark.svg](uml%2FGOHW-4%2C%20UML%20dark.svg)
-![GOHW-4, UML dark.svg](uml%2FGOHW-4%2C%20UML%20dark.svg)
-![GOHW-4, UML.png](uml%2FGOHW-4%2C%20UML.png)
 ![GOHW-4, UML.svg](uml%2FGOHW-4%2C%20UML.svg)
 
 
