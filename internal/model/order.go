@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Order is the order of the client
+// Order of the client
 type Order struct {
 	ID          uuid.UUID `json:"id"`            // the id of order
 	ClientID    uuid.UUID `json:"client_id"`     // the id of client
