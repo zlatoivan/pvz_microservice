@@ -52,7 +52,6 @@ func checkPackaging(packagingType string, order model.Order) (model.Order, error
 	if err != nil {
 		return model.Order{}, fmt.Errorf("newChecker.check: %w", err)
 	}
-	order = newOrder
 
-	return order, nil
+	return newOrder, nil
 }
