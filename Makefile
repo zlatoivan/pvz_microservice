@@ -33,3 +33,11 @@ gen-ssl-cert:
 	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
 	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
 	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certs
+
+..PHONY: linter
+linter:
+	golangci-lint run
+
+..PHONY: build
+build:
+	go build cmd/server/main.go
