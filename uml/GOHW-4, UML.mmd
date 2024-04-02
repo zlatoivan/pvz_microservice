@@ -5,7 +5,7 @@ sequenceDiagram
     Middleware->>Middleware: Логгирование запроса
     Middleware->>+Delivery: GetOrderWithoutIDFromReq
 
-    Delivery->>Delivery: Дессериализиация и <br> валидация данных
+    Delivery->>Delivery: Десериализиация и <br> валидация данных
     Delivery->>+Service: s.OrderService.CreateOrder
 
     Service->>+Repo: s.repo.GetOrderByID

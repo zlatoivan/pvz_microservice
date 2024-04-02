@@ -16,12 +16,21 @@
 
     docker compose up --build
 
-или
+или не в контейнере:
 
-    make compose-up
+    В config/config.yaml postgres: host: сделать localhost.
+    Оставить в docker-compose.yaml только pg_db
+    Затем:
+
+    docker compose up -d pg_db
+	docker compose build
     make gen-ssl-cert  (если нужны свежие сертификаты)
     make migration-up
     make run
+
+## Остановка программы
+
+    doocker compose down
 
 
 ## Запросы к серверу

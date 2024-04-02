@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -20,18 +19,10 @@ func New(ctx context.Context, database postgres.Database) error {
 			log.Printf("db.Close: %v\n", err)
 		}
 	}()
-	provider, err := goose.NewProvider(
-		goose.DialectPostgres,
-		db,
-		os.DirFS("migrations"),
-	)
+
+	err := goose.RunContext(ctx, "up", db, "migrations")
 	if err != nil {
-		return fmt.Errorf("goose.NewProvider: %w", err)
+		return fmt.Errorf("goose.RunContext: %w", err)
 	}
-	results, err := provider.Up(ctx)
-	if err != nil {
-		return fmt.Errorf("provider.Up: %w", err)
-	}
-	log.Println("migration result:", results)
 	return nil
 }
