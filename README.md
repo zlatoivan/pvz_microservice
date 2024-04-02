@@ -14,6 +14,10 @@
 
 ## Запуск программы
 
+    docker compose up --build
+
+или
+
     make compose-up
     make gen-ssl-cert  (если нужны свежие сертификаты)
     make migration-up
