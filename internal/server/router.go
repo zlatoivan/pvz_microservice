@@ -14,14 +14,13 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 
 	r := chi.NewRouter()
 
-	r.NotFound(s.notFound)
-
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RedirectSlashes)
 	//r.Use(mw.Logger)
 
+	r.NotFound(s.notFound)
 	r.Get("/", s.mainPage)
 
 	r.Route("/api/v1", func(r chi.Router) {

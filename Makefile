@@ -4,9 +4,9 @@ MIGRATION_NAME=pvz
 
 .PHONY: compose-up
 compose-up:
-	#docker compose up --build
-	docker compose up -d pg_db
-	docker compose build
+	docker compose up --build
+	#docker compose up -d pg_db
+	#docker compose build
 
 .PHONY: compose-down
 compose-down:

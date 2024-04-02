@@ -4,7 +4,6 @@ LABEL authors="ivan"
 COPY go.mod go.sum ./
 RUN go mod download
 
-#RUN go install -v ./...
 RUN go install github.com/pressly/goose/cmd/goose
 
 COPY . .
