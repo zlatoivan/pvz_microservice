@@ -7,8 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/cmd/migrate"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/migrate"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/server"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
