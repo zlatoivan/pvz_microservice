@@ -9,7 +9,7 @@ sequenceDiagram
     Delivery->>+Service: s.OrderService.CreateOrder
 
     Service->>+Repo: s.repo.GetOrderByID
-    Repo->>+Database: repo.db.Get <br> SQL query (SELECT)
+    Repo->>+Database: repo.db.GetOrderByID <br> SQL query (SELECT)
     Database-->>-Repo: Данные
     Repo-->>-Service: Данные
 
@@ -18,7 +18,7 @@ sequenceDiagram
     Service->>Service: Корректировка цены <br> заказа в зависимости от <br> его веса и типа упаковки
 
     Service->>+Repo: s.repo.CreateOrder
-    Repo->>+Database: repo.db.Get <br> SQL query (INSERT)
+    Repo->>+Database: repo.db.CreateOrder <br> SQL query (INSERT)
     Database-->>-Repo: Данные
     Repo-->>-Service: Данные
 
