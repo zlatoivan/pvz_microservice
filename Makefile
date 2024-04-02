@@ -14,9 +14,9 @@ compose-up: ### run docker compose
 compose-down: ### down docker compose
 	docker compose down
 
+.PHONY: docker-rm-volume
 docker-rm-volume: ### remove docker volume
 	docker volume rm pg-data
-.PHONY: docker-rm-volume
 
 .PHONY: migration-create
 migration-create: ### create new migration
