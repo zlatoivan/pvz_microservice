@@ -26,10 +26,6 @@ type ResponseID struct {
 	ID uuid.UUID
 }
 
-type ResponseComment struct {
-	Comment string
-}
-
 type ResponseOrder struct {
 	ID          uuid.UUID `json:"id"`            // the id of order
 	ClientID    uuid.UUID `json:"client_id"`     // the id of client
@@ -38,4 +34,17 @@ type ResponseOrder struct {
 	StoresTill  time.Time `json:"stores_till"`   // the storage period of order
 	GiveOutTime time.Time `json:"give_out_time"` // date and time of order give out
 	IsReturned  bool      `json:"is_returned"`   // marker, the order has been returned or not
+}
+
+type ResponsePVZ struct {
+	ID       uuid.UUID `json:"id"`       // the id of PVZ
+	Name     string    `json:"name"`     // the name of PVZ
+	Address  string    `json:"address"`  // the address of PVZ
+	Contacts string    `json:"contacts"` // the contacts of PVZ
+}
+
+type ResponseError struct {
+	HTTPStatusCode int    `json:"http_status_code"`
+	StatusText     string `json:"status_text"`
+	ErrorText      string `json:"error_text"`
 }

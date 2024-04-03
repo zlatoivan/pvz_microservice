@@ -18,6 +18,7 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RedirectSlashes)
+	//r.Use(render.SetContentType(render.ContentTypeJSON))
 	//r.Use(mw.Logger)
 
 	r.NotFound(s.notFound)

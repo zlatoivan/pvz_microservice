@@ -3,11 +3,12 @@ package server
 import (
 	"log"
 	"net/http"
+
+	"github.com/go-chi/render"
 )
 
 // MainPage shows the main page
-func (s Server) mainPage(w http.ResponseWriter, _ *http.Request) {
+func (s Server) mainPage(w http.ResponseWriter, req *http.Request) {
 	log.Println("Got main page")
-	WriteComment(w, "This is the main page")
-	w.WriteHeader(http.StatusOK)
+	render.JSON(w, req, "This is the main page")
 }

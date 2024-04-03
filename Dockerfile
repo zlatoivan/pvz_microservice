@@ -18,7 +18,7 @@ CMD ["./main"]
 
 
 #WORKDIR /Homework
-#RUN go get github.com/pressly/goose/cmd/goose
+#RUN go get github.com/pressly/goose/cmd/goose@latest
 #ENV CONFIG_PATH=config/config.yaml
 #RUN go get -d -v ./...
 #RUN go install -v ./...

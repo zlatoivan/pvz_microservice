@@ -16,8 +16,7 @@ func mwLogger(next http.Handler) http.Handler {
 			pvz, err := delivery.GetPVZWithoutIDFromReq(req)
 			if err != nil {
 				log.Printf("[mwLogger] getPVZFromReq: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				WriteComment(w, "Invalid data: "+err.Error())
+				delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 				return
 			}
 			log.Printf("[MW]: POST request:\n" + delivery.PrepToPrintPVZ(pvz))
@@ -25,8 +24,7 @@ func mwLogger(next http.Handler) http.Handler {
 			pvz, err := delivery.GetPVZFromReq(req)
 			if err != nil {
 				log.Printf("[mwLogger] getDataFromReq: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				WriteComment(w, "Invalid data: "+err.Error())
+				delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 				return
 			}
 			log.Printf("[MW]: PUT request:\n" + delivery.PrepToPrintPVZ(pvz))
@@ -34,8 +32,7 @@ func mwLogger(next http.Handler) http.Handler {
 			id, err := delivery.GetPVZIDFromURL(req)
 			if err != nil {
 				log.Printf("[mwLogger] getIDFromURL: %v", err)
-				w.WriteHeader(http.StatusBadRequest)
-				WriteComment(w, "Invalid data: "+err.Error())
+				delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 				return
 			}
 			log.Printf("[MW]: DELETE request:\nid = %s\n", id)

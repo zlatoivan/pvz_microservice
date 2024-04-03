@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -33,8 +34,12 @@ func New(repo repo) Service {
 
 func (s Service) CreateOrder(ctx context.Context, packagingType string, order model.Order) (uuid.UUID, error) {
 	_, err := s.repo.GetOrderByID(ctx, order.ID)
-	if err != nil {
-		return uuid.UUID{}, repo2.ErrorAlreadyExists
+	if !errors.Is(err, repo2.ErrorNotFound) {
+		if err == nil {
+			return uuid.UUID{}, repo2.ErrorAlreadyExists
+		} else {
+			return uuid.UUID{}, fmt.Errorf("s.repo.GetOrderByID: %w", err)
+		}
 	}
 
 	if order.StoresTill.Before(time.Now()) {

@@ -155,33 +155,3 @@ func GetDataForReturnOrder(req *http.Request) (uuid.UUID, uuid.UUID, error) {
 
 	return clientID, id, nil
 }
-
-func MakeRespList(list []model.Order) []ResponseOrder {
-	respList := make([]ResponseOrder, 0)
-	for _, order := range list {
-		respOrder := ResponseOrder{
-			ID:          order.ID,
-			ClientID:    order.ClientID,
-			Weight:      order.Weight,
-			Cost:        order.Cost,
-			StoresTill:  order.StoresTill,
-			GiveOutTime: order.GiveOutTime,
-			IsReturned:  order.IsReturned,
-		}
-		respList = append(respList, respOrder)
-	}
-	return respList
-}
-
-func MakeRespOrder(order model.Order) ResponseOrder {
-	respOrder := ResponseOrder{
-		ID:          order.ID,
-		ClientID:    order.ClientID,
-		Weight:      order.Weight,
-		Cost:        order.Cost,
-		StoresTill:  order.StoresTill,
-		GiveOutTime: order.GiveOutTime,
-		IsReturned:  order.IsReturned,
-	}
-	return respOrder
-}

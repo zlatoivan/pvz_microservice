@@ -4,7 +4,10 @@ go 1.22.0
 
 require (
 	github.com/georgysavva/scany/v2 v2.1.1
+	github.com/go-chi/chi v1.5.5
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/go-chi/docgen v1.2.0
+	github.com/go-chi/render v1.0.3
 	github.com/google/uuid v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
@@ -15,6 +18,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/ClickHouse/clickhouse-go v1.5.4 // indirect
+	github.com/ajg/form v1.5.1 // indirect
 	github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
 	github.com/go-sql-driver/mysql v1.8.0 // indirect

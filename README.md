@@ -19,7 +19,7 @@
 или не в контейнере:
 
     В config/config.yaml postgres: host: сделать localhost.
-    Оставить в docker-compose.yaml только pg_db
+    Оставить в docker-compose.yaml только pg_db и изменить там порт на 5432:5432
     Затем:
 
     docker compose up -d pg_db

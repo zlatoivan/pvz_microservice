@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -15,8 +14,7 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	newPVZ, err := delivery.GetPVZWithoutIDFromReq(req)
 	if err != nil {
 		log.Printf("[createPVZ] GetPVZWithoutIDFromReq: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		WriteComment(w, "Invalid data: "+err.Error())
+		delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 		return
 	}
 
@@ -24,24 +22,14 @@ func (s Server) createPVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[createPVZ] s.PvzService.CreatePVZ: %v\n", err)
 		if errors.Is(err, repo.ErrorAlreadyExists) {
-			w.WriteHeader(http.StatusConflict)
-			WriteComment(w, "ID already exists")
+			delivery.RenderResponse(w, req, http.StatusConflict, delivery.MakeRespErrAlreadyExists(err))
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
 
-	log.Printf("PVZ created! id = %s", id)
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(delivery.ResponseID{ID: id})
-	if err != nil {
-		log.Printf("[createPVZ] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
+	log.Printf("PVZ created. id = %s\n", id)
+	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespId(id))
 }
 
 // listPVZs gets list of PVZ
@@ -49,27 +37,12 @@ func (s Server) listPVZs(w http.ResponseWriter, req *http.Request) {
 	list, err := s.PvzService.ListPVZs(req.Context())
 	if err != nil {
 		log.Printf("[listPVZs] s.PvzService.ListPVZs: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
 
-	log.Printf("Got PVZ list! Length = %d.\n", len(list))
-
-	w.Header().Set("Content-Type", "application/json")
-	if len(list) == 0 {
-		w.WriteHeader(http.StatusOK)
-		WriteComment(w, "No PVZ in database")
-		return
-	}
-
-	err = json.NewEncoder(w).Encode(list)
-	if err != nil {
-		log.Printf("[listPVZs] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	log.Printf("Got list of PVZs. Length = %d.\n", len(list))
+	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespPVZList(list))
 }
 
 // getPVZByID gets PVZ by ID
@@ -77,8 +50,7 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	id, err := delivery.GetPVZIDFromURL(req)
 	if err != nil {
 		log.Printf("[getPVZByID] GetPVZIDFromURL: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		WriteComment(w, "Invalid data: "+err.Error())
+		delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 		return
 	}
 
@@ -86,24 +58,15 @@ func (s Server) getPVZByID(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[getPVZByID] s.PvzService.GetPVZByID: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			WriteComment(w, "PVZ not found by this ID")
+			delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespErrNotFoundByID(err))
+			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
 
-	log.Printf("PVZ by ID:\n" + delivery.PrepToPrintPVZ(pvz))
-
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(pvz)
-	if err != nil {
-		log.Printf("[getPVZByID] json.NewEncoder().Encode: %v\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	log.Printf("Got PVZ by ID\n")
+	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespPVZ(pvz))
 }
 
 // updatePVZ updates PVZ
@@ -111,8 +74,7 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	updPVZ, err := delivery.GetPVZFromReq(req)
 	if err != nil {
 		log.Printf("[updatePVZ] GetPVZFromReq: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		WriteComment(w, "Invalid data: "+err.Error())
+		delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 		return
 	}
 
@@ -120,16 +82,15 @@ func (s Server) updatePVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[updatePVZ] s.PvzService.UpdatePVZ: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			WriteComment(w, "PVZ not found by this ID")
+			delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespErrNotFoundByID(err))
+			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
 
-	log.Println("PVZ updated!")
-
-	w.WriteHeader(http.StatusOK)
+	log.Println("PVZ updated")
+	delivery.RenderResponse(w, req, http.StatusOK, "PVZ updated")
 }
 
 // deletePVZ deletes PVZ
@@ -137,8 +98,7 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	id, err := delivery.GetPVZIDFromURL(req)
 	if err != nil {
 		log.Printf("[deletePVZ] GetPVZIDFromURL: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		WriteComment(w, "Invalid data: "+err.Error())
+		delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 		return
 	}
 
@@ -146,14 +106,13 @@ func (s Server) deletePVZ(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Printf("[deletePVZ] s.PvzService.DeletePVZ: %v\n", err)
 		if errors.Is(err, repo.ErrorNotFound) {
-			w.WriteHeader(http.StatusNotFound)
-			WriteComment(w, "PVZ not found by this ID")
+			delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespErrNotFoundByID(err))
+			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
 
-	log.Println("PVZ deleted!")
-
-	w.WriteHeader(http.StatusOK)
+	log.Println("PVZ deleted")
+	delivery.RenderResponse(w, req, http.StatusOK, "PVZ deleted")
 }

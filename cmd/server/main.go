@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/migrate"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/migration"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/server"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
@@ -40,7 +40,7 @@ func bootstrap(ctx context.Context) error {
 	}
 	defer database.GetPool(ctx).Close()
 
-	err = migrate.New(ctx, database)
+	err = migration.New(ctx, database)
 	if err != nil {
 		return fmt.Errorf("migration.New: %w", err)
 	}

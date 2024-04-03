@@ -2,10 +2,12 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
@@ -44,7 +46,10 @@ func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, e
 	var order model.Order
 	err := repo.db.Get(ctx, &order, querySelectOrderByID, id)
 	if err != nil {
-		return model.Order{}, ErrorNotFound
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.Order{}, ErrorNotFound
+		}
+		return model.Order{}, fmt.Errorf("repo.db.Get: %w", err)
 	}
 
 	return order, nil

@@ -9,6 +9,8 @@ help: ## display this help screen
 .PHONY: compose-up
 compose-up: ### run docker compose
 	docker compose up --build
+	#docker compose up -d pg_db
+	#docker compose build
 
 .PHONY: compose-down
 compose-down: ### down docker compose
@@ -36,9 +38,14 @@ gen-ssl-cert: ### generate fresh ssl certificate
 	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
 	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certs
 
-..PHONY: linter
+.PHONY: linter
 linter: ### check by golangci linter
 	golangci-lint run
+
+#.PHONY: test
+test: ### run tests
+	go test -v ./...
+
 
 
 # ---------- no need ----------
@@ -51,5 +58,3 @@ run:
 build:
 	go build -o main cmd/server/main.go
 
-#docker compose up -d pg_db
-#docker compose build
