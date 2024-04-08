@@ -8,14 +8,14 @@ import (
 
 type tape struct{}
 
-func (_ tape) check(order model.Order) (model.Order, error) {
+func (_ tape) apply(order model.Order) (model.Order, error) {
 	order.Cost = order.Cost + 1
 	return order, nil
 }
 
 type pack struct{}
 
-func (_ pack) check(order model.Order) (model.Order, error) {
+func (_ pack) apply(order model.Order) (model.Order, error) {
 	if order.Weight > 10 {
 		return model.Order{}, fmt.Errorf("the weight of the order is too large for such packaging")
 	}
@@ -25,7 +25,7 @@ func (_ pack) check(order model.Order) (model.Order, error) {
 
 type box struct{}
 
-func (_ box) check(order model.Order) (model.Order, error) {
+func (_ box) apply(order model.Order) (model.Order, error) {
 	if order.Weight > 30 {
 		return model.Order{}, fmt.Errorf("the weight of the order is too large for such packaging")
 	}
@@ -33,24 +33,24 @@ func (_ box) check(order model.Order) (model.Order, error) {
 	return order, nil
 }
 
-type checker interface {
-	check(order model.Order) (model.Order, error)
+type applyer interface {
+	apply(order model.Order) (model.Order, error)
 }
 
-func checkPackaging(packagingType string, order model.Order) (model.Order, error) {
-	var newChecker checker
-	switch packagingType {
+func applyPackaging(order model.Order) (model.Order, error) {
+	var newApplyer applyer
+	switch order.PackagingType {
 	case "box":
-		newChecker = box{}
+		newApplyer = box{}
 	case "pack":
-		newChecker = pack{}
+		newApplyer = pack{}
 	case "tape":
-		newChecker = tape{}
+		newApplyer = tape{}
 	}
 
-	newOrder, err := newChecker.check(order)
+	newOrder, err := newApplyer.apply(order)
 	if err != nil {
-		return model.Order{}, fmt.Errorf("newChecker.check: %w", err)
+		return model.Order{}, fmt.Errorf("newApplyer.apply: %w", err)
 	}
 
 	return newOrder, nil

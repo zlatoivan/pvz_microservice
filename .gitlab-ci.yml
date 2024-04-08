@@ -1,6 +1,6 @@
 variables:
-  GO_VERSION: "1.22"
-  LINT_VERSION: "1.56.2"
+  GO_VERSION: "render.22"
+  LINT_VERSION: "render.56.2"
 
 stages:
   - build

@@ -1,14 +1,8 @@
-# Утилита для работы с ПВЗ
+# Бэкенд для работы с ПВЗ
 
-## UML диаграмма
+## Архитектура
 
-Для описания архитектуры решения по проверке типа упаковки был выбран стандарт "Sequence diagram" <br/>
-Документация: https://mermaid.js.org/syntax/sequenceDiagram.html
-
-Финальная версия диаграммы находится в папке /uml: <br/>
-[GOHW-4, UML.mmd](uml%2FGOHW-4%2C%20UML.mmd)
-
-И имеет следующий вид:
+Демонстрация архитектуры сервера показана на примере этапов запроса создания нового заказа: <br/>
 ![GOHW-4, UML.svg](uml%2FGOHW-4%2C%20UML.svg)
 
 
@@ -132,10 +126,12 @@ curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:order_best_pass
 
 ##### Get order by ID
 ````
-curl http://localhost:9000/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k --location-trusted -u ivan:order_best_pass
+curl http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u ivan:order_best_pass
+ID: 165dbe30-d0c4-4727-9504-827db76d214e
 ````
 ````
-curl https://localhost:9001/api/v1/orders/165dbe30-d0c4-4727-9504-827db76d214e -i -k -u ivan:order_best_pass
+curl https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pass
+165dbe30-d0c4-4727-9504-827db76d214e
 ````
 
 ##### Update order

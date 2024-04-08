@@ -9,11 +9,11 @@ import (
 	"os/signal"
 	"syscall"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/cli"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/cli/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/cli/pvz"
 	orderService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/cli/order"
 	pvzService_ "gitlab.ozon.dev/zlatoivan4/homework/internal/service/cli/pvz"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/cli/order"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/cli/pvz"
 )
 
 func main() {
@@ -74,7 +74,7 @@ func bootstrap(ctx context.Context) error {
 		return fmt.Errorf("pvzService_.New: %v", err)
 	}
 
-	app, err := app.New(orderService, pvzService)
+	app, err := cli.New(orderService, pvzService)
 	if err != nil {
 		return fmt.Errorf("app.New: %v", err)
 	}

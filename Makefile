@@ -1,4 +1,5 @@
 POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost port=5433 sslmode=disable
+POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=pg_db_test port=5431 sslmode=disable
 MIGRATION_FOLDER=$(CURDIR)/migrations
 MIGRATION_NAME=pvz
 
@@ -8,9 +9,9 @@ help: ## display this help screen
 
 .PHONY: compose-up
 compose-up: ### run docker compose
-	docker compose up --build
-	#docker compose up -d pg_db
-	#docker compose build
+	#docker compose up --build
+	docker compose up -d pg_db
+	docker compose build
 
 .PHONY: compose-down
 compose-down: ### down docker compose
@@ -32,11 +33,15 @@ migration-up: ### migration up
 migration-down: ### migration down
 	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP)" down
 
+.PHONY: migration-up-test
+migration-up-test: ### migration up
+	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" up
+
 .PHONY: gen-ssl-cert
 gen-ssl-cert: ### generate fresh ssl certificate
 	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
 	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
-	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certs
+	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificates
 
 .PHONY: linter
 linter: ### check by golangci linter

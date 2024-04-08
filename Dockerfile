@@ -10,10 +10,7 @@ COPY . .
 
 RUN go build -o main cmd/server/main.go
 
-EXPOSE 9000
-EXPOSE 9001
-
-CMD ["./main"]
+CMD ["make migration-up && ./main"]
 
 
 

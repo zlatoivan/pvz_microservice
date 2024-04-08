@@ -7,8 +7,8 @@ server:
   order_auth_password: order_best_pass
 
 postgres:
-  host: pg_db
-  port: 5432
+  host: localhost
+  port: 5433
   dbname: postgres
   user: postgres
   password: postgres

@@ -7,13 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/migration"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/server"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/postgres"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/storage/repo"
 )
 
 func main() {
@@ -39,11 +38,6 @@ func bootstrap(ctx context.Context) error {
 		return fmt.Errorf("postgres.New: %w", err)
 	}
 	defer database.GetPool(ctx).Close()
-
-	err = migration.New(ctx, database)
-	if err != nil {
-		return fmt.Errorf("migration.New: %w", err)
-	}
 
 	mainRepo := repo.New(database)
 
