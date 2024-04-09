@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
-	repo2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo"
+	repo2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 )
 
 func (s Service) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error) {
@@ -26,9 +26,9 @@ func (s Service) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID,
 		return uuid.UUID{}, fmt.Errorf("the stores period of the order has expired")
 	}
 
-	newOrder, err := applyPackaging(order)
+	newOrder, err := ApplyPackaging(order)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("applyPackaging: %w", err)
+		return uuid.UUID{}, fmt.Errorf("ApplyPackaging: %w", err)
 	}
 
 	id, err := s.repo.CreateOrder(ctx, newOrder)

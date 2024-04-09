@@ -24,7 +24,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5431:5431"
+      - "5431:5432"
 
 #  app:
 #    build: .

@@ -1,0 +1,14 @@
+server:
+  http_port: 9000
+  https_port: 9001
+  pvz_auth_login: ivan
+  pvz_auth_password: pvz_best_pass
+  order_auth_login: ivan
+  order_auth_password: order_best_pass
+
+postgres:
+  host: pg_db_test
+  port: 5431
+  dbname: test
+  user: postgres
+  password: postgres

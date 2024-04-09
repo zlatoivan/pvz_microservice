@@ -37,7 +37,7 @@ type applyer interface {
 	apply(order model.Order) (model.Order, error)
 }
 
-func applyPackaging(order model.Order) (model.Order, error) {
+func ApplyPackaging(order model.Order) (model.Order, error) {
 	var newApplyer applyer
 	switch order.PackagingType {
 	case "box":

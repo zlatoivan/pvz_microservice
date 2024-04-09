@@ -1,6 +1,6 @@
 //go:generate minimock -i postgres -o mock/postgres_mock.go -p mock -g
 
-package repo
+package order
 
 import (
 	"context"

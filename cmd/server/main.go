@@ -9,8 +9,9 @@ import (
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo"
+	order2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
+	pvz2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
 )
@@ -39,10 +40,11 @@ func bootstrap(ctx context.Context) error {
 	}
 	defer database.GetPool(ctx).Close()
 
-	mainRepo := repo.New(database)
+	pvzRepo := pvz2.New(database)
+	orderRepo := order2.New(database)
 
-	pvzService := pvz.New(mainRepo)
-	orderService := order.New(mainRepo)
+	pvzService := pvz.New(pvzRepo)
+	orderService := order.New(orderRepo)
 
 	mainServer := server.New(pvzService, orderService)
 

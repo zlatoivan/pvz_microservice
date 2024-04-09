@@ -1,5 +1,5 @@
 POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost port=5433 sslmode=disable
-POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=pg_db_test port=5431 sslmode=disable
+POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=localhost port=5431 sslmode=disable
 MIGRATION_FOLDER=$(CURDIR)/migrations
 MIGRATION_NAME=pvz
 
@@ -47,19 +47,29 @@ gen-ssl-cert: ### generate fresh ssl certificate
 linter: ### check by golangci linter
 	golangci-lint run
 
-#.PHONY: test
+
+# ---------- tests ----------
+
+.PHONY: test
 test: ### run tests
-	go test -v ./...
+	go test -v -count=2 -p=3 ./...
+
+.PHONY: test-integration
+test-integration: run-test ### run integration tests
+	go test -v -tags=integration ./...
+
+.PHONY: run-test
+run-test: ### run with tests
+	CONFIG_PATH=config/config_test.yaml go run cmd/server/main.go
 
 
-
-# ---------- no need ----------
+# ---------- local ----------
 
 .PHONY: run
-run:
+run: ### run local
 	CONFIG_PATH=config/config.yaml go run cmd/server/main.go
 
 ..PHONY: build
-build:
+build: ### build local
 	go build -o main cmd/server/main.go
 

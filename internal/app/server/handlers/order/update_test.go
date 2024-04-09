@@ -63,8 +63,8 @@ func TestHandler_UpdateOrder(t *testing.T) {
 		name            string
 		service         Service
 		req             *http.Request
-		wantStatus      int
-		wantRespComment interface{}
+		wantStatus int
+		wantJSON   interface{}
 	}{
 		{
 			name: "success",
@@ -72,16 +72,16 @@ func TestHandler_UpdateOrder(t *testing.T) {
 				UpdateOrderMock.
 				Expect(ctx, validOrder).
 				Return(nil),
-			req:             genHTTPUpdateOrderReq(t, reqOrderGood),
-			wantStatus:      http.StatusOK,
-			wantRespComment: delivery.MakeRespComment("Order updated"),
+			req:        genHTTPUpdateOrderReq(t, reqOrderGood),
+			wantStatus: http.StatusOK,
+			wantJSON:   delivery.MakeRespComment("Order updated"),
 		},
 		{
-			name:            "bad request",
-			service:         mock.NewServiceMock(mc),
-			req:             genHTTPUpdateOrderReq(t, reqOrderBadReq),
-			wantStatus:      http.StatusBadRequest,
-			wantRespComment: delivery.MakeRespErrInvalidData(errors.New("client id is nil")),
+			name:       "bad request",
+			service:    mock.NewServiceMock(mc),
+			req:        genHTTPUpdateOrderReq(t, reqOrderBadReq),
+			wantStatus: http.StatusBadRequest,
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("client id is nil")),
 		},
 		{
 			name: "not found",
@@ -89,9 +89,9 @@ func TestHandler_UpdateOrder(t *testing.T) {
 				UpdateOrderMock.
 				Expect(ctx, validOrder).
 				Return(ErrNotFound),
-			req:             genHTTPUpdateOrderReq(t, reqOrderGood),
-			wantStatus:      http.StatusNotFound,
-			wantRespComment: delivery.MakeRespErrNotFoundByID(errors.New("not found")),
+			req:        genHTTPUpdateOrderReq(t, reqOrderGood),
+			wantStatus: http.StatusNotFound,
+			wantJSON:   delivery.MakeRespErrNotFoundByID(errors.New("not found")),
 		},
 		{
 			name: "server error",
@@ -99,13 +99,14 @@ func TestHandler_UpdateOrder(t *testing.T) {
 				UpdateOrderMock.
 				Expect(ctx, validOrder).
 				Return(errors.New("")),
-			req:             genHTTPUpdateOrderReq(t, reqOrderGood),
-			wantStatus:      http.StatusInternalServerError,
-			wantRespComment: delivery.MakeRespErrInternalServer(errors.New("")),
+			req:        genHTTPUpdateOrderReq(t, reqOrderGood),
+			wantStatus: http.StatusInternalServerError,
+			wantJSON:   delivery.MakeRespErrInternalServer(errors.New("")),
 		},
 	}
 
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -121,7 +122,7 @@ func TestHandler_UpdateOrder(t *testing.T) {
 
 			// assert
 			assert.Equal(t, tt.wantStatus, respStatus)
-			assert.Equal(t, tt.wantRespComment, respJSON)
+			assert.Equal(t, tt.wantJSON, respJSON)
 		})
 	}
 }

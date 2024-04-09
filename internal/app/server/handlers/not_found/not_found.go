@@ -10,5 +10,5 @@ import (
 // NotFound informs that the page is not found
 func NotFound(w http.ResponseWriter, req *http.Request) {
 	log.Println("Page not found")
-	delivery.RenderResponse(w, req, http.StatusNotFound, "Page not found")
+	delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespComment("Page not found"))
 }
