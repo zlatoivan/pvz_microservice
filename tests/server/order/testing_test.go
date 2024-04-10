@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 var (
@@ -47,6 +49,23 @@ func getOrderIDFromRespOrder(t *testing.T, res *http.Response) uuid.UUID {
 	err := json.NewDecoder(res.Body).Decode(&respID)
 	require.NoError(t, err)
 	return respID.ID
+}
+
+func getOrdersFromRespListOrders(t *testing.T, res *http.Response) []model.Order {
+	defer func() {
+		err := res.Body.Close()
+		require.NoError(t, err)
+	}()
+	var respOrders []delivery.ResponseOrder
+	err := json.NewDecoder(res.Body).Decode(&respOrders)
+	require.NoError(t, err)
+
+	orders := make([]model.Order, 0)
+	for _, r := range respOrders {
+		orders = append(orders, delivery.GetOrderFromRespOrder(r))
+	}
+
+	return orders
 }
 
 func getResp(t *testing.T, res *http.Response, respType string) (int, interface{}) {
@@ -96,4 +115,18 @@ func getResp(t *testing.T, res *http.Response, respType string) (int, interface{
 	}
 
 	return res.StatusCode, respJSON
+}
+
+func checkIn(t *testing.T, order model.Order, orders []model.Order) bool {
+	for _, r := range orders {
+		fmt.Println(order)
+		fmt.Println("VS")
+		fmt.Println(r)
+		fmt.Print("\n\n-------------\n\n")
+		if order == r {
+			return true
+		}
+	}
+	fmt.Print("\n\n\n")
+	return false
 }

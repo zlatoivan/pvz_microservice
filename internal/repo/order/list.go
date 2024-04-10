@@ -8,7 +8,7 @@ import (
 )
 
 const querySelectOrder = `
-SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned 
+SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned, packaging_type 
 FROM orders 
 WHERE is_deleted = FALSE;`
 
