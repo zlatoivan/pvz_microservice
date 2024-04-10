@@ -4,10 +4,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"testing"
@@ -21,27 +18,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func genHTTPUpdateOrderReq(t *testing.T, reqOrder delivery.RequestOrder) *http.Request {
-	body, err := json.Marshal(reqOrder)
-	require.NoError(t, err)
-	req, err := http.NewRequest(
-		http.MethodPut,
-		"http://localhost:9000/api/v1/orders/id",
-		bytes.NewReader(body),
-	)
-	require.NoError(t, err)
-	username := "ivan"
-	password := "order_best_pass"
-	auth := username + ":" + password
-	base64Auth := base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Authorization", "Basic "+base64Auth)
-	return req
-}
-
 func TestServer_UpdateOrder(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodPut
+	endpoint := "/api/v1/orders/id"
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -53,7 +35,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 		reqUpdateOrderGood := fixtures.ReqCreateOrderGood
 		reqUpdateOrderGood.ID = id
 		reqUpdateOrderGood.Cost = 499
-		req := genHTTPUpdateOrderReq(t, reqUpdateOrderGood)
+		req := genHTTPReq(t, method, endpoint, reqUpdateOrderGood)
 		wantRespComment := delivery.MakeRespComment("Order updated")
 
 		// act
@@ -77,7 +59,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 		// arrange
 		reqUpdateOrderBadReq := fixtures.ReqCreateOrderGood
 		reqUpdateOrderBadReq.ClientID = uuid.Nil
-		req := genHTTPUpdateOrderReq(t, reqUpdateOrderBadReq)
+		req := genHTTPReq(t, method, endpoint, reqUpdateOrderBadReq)
 		wantRespComment := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act

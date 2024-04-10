@@ -5,5 +5,7 @@ ALTER TABLE orders ADD packaging_type TEXT NOT NULL DEFAULT '';
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE IF EXISTS pvzs;
+
+DROP TABLE IF EXISTS orders;
 -- +goose StatementEnd

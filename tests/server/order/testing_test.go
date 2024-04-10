@@ -4,7 +4,9 @@
 package order
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -20,7 +22,29 @@ import (
 
 var (
 	client http.Client
+	url    = "http://localhost:9000"
 )
+
+func addAuthHeaders(t *testing.T, req *http.Request) {
+	username := "ivan"
+	password := "order_best_pass"
+	auth := username + ":" + password
+	base64Auth := base64.StdEncoding.EncodeToString([]byte(auth))
+	req.Header.Add("Authorization", "Basic "+base64Auth)
+}
+
+func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{}) *http.Request {
+	body, err := json.Marshal(reqData)
+	require.NoError(t, err)
+	req, err := http.NewRequest(
+		method,
+		url+endpoint,
+		bytes.NewReader(body),
+	)
+	require.NoError(t, err)
+	addAuthHeaders(t, req)
+	return req
+}
 
 const queryInsertOrder = `
 INSERT INTO orders (client_id, weight, cost, stores_till, give_out_time, packaging_type)

@@ -4,10 +4,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -22,23 +19,6 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func genHTTPCreateOrderReq(t *testing.T, reqOrder delivery.RequestOrder) *http.Request {
-	body, err := json.Marshal(reqOrder)
-	require.NoError(t, err)
-	req, err := http.NewRequest(
-		http.MethodPost,
-		"http://localhost:9000/api/v1/orders",
-		bytes.NewReader(body),
-	)
-	require.NoError(t, err)
-	username := "ivan"
-	password := "order_best_pass"
-	auth := username + ":" + password
-	base64Auth := base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Authorization", "Basic "+base64Auth)
-	return req
-}
-
 func TestServer_CreateOrder(t *testing.T) {
 	t.Parallel()
 
@@ -48,7 +28,7 @@ func TestServer_CreateOrder(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		req := genHTTPCreateOrderReq(t, fixtures.ReqCreateOrderGood)
+		req := genHTTPReq(t, http.MethodPost, "/api/v1/orders", fixtures.ReqCreateOrderGood)
 
 		// act
 		res, err := client.Do(req)
@@ -76,7 +56,7 @@ func TestServer_CreateOrder(t *testing.T) {
 		reqCreateOrderBadReq := delivery.RequestOrder{
 			ClientID: uuid.Nil,
 		}
-		req := genHTTPCreateOrderReq(t, reqCreateOrderBadReq)
+		req := genHTTPReq(t, http.MethodPost, "/api/v1/orders", reqCreateOrderBadReq)
 		wantJSON := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act

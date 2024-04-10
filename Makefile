@@ -17,9 +17,8 @@ compose-up: ### run docker compose
 compose-down: ### down docker compose
 	docker compose down
 
-.PHONY: docker-rm-volume
-docker-rm-volume: ### remove docker volume
-	docker volume rm pg-data
+
+# ---------- migrations ----------
 
 .PHONY: migration-create
 migration-create: ### create new migration
@@ -34,18 +33,12 @@ migration-down: ### migration down
 	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP)" down
 
 .PHONY: migration-up-test
-migration-up-test: ### migration up
+migration-up-test: ### migration up test
 	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" up
 
-.PHONY: gen-ssl-cert
-gen-ssl-cert: ### generate fresh ssl certificate
-	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
-	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
-	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificates
-
-.PHONY: linter
-linter: ### check by golangci linter
-	golangci-lint run
+.PHONY: migration-down-test
+migration-down-test: ### migration down test
+	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" down
 
 
 # ---------- tests ----------
@@ -73,3 +66,19 @@ run: ### run local
 build: ### build local
 	go build -o main cmd/server/main.go
 
+
+# ---------- rare ----------
+
+.PHONY: linter
+linter: ### check by golangci linter
+	golangci-lint run
+
+.PHONY: docker-rm-volume
+docker-rm-volume: ### remove docker volume
+	docker volume rm pg-data
+
+.PHONY: gen-ssl-cert
+gen-ssl-cert: ### generate fresh ssl certificate
+	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
+	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
+	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificates

@@ -4,10 +4,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -21,27 +18,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func genHTTPDeleteOrderReq(t *testing.T, reqOrder delivery.RequestID) *http.Request {
-	body, err := json.Marshal(reqOrder)
-	require.NoError(t, err)
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		"http://localhost:9000/api/v1/orders/id",
-		bytes.NewReader(body),
-	)
-	require.NoError(t, err)
-	username := "ivan"
-	password := "order_best_pass"
-	auth := username + ":" + password
-	base64Auth := base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Authorization", "Basic "+base64Auth)
-	return req
-}
-
 func TestHandler_DeleteOrder(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodDelete
+	endpoint := "/api/v1/orders/id"
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
@@ -51,7 +33,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		require.NoError(t, err)
 		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
-		req := genHTTPDeleteOrderReq(t, reqIDGood)
+		req := genHTTPReq(t, method, endpoint, reqIDGood)
 		wantJSON := delivery.MakeRespComment("Order deleted")
 
 		// act
@@ -73,7 +55,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 
 		// arrange
 		reqIDBadReq := delivery.RequestID{ID: uuid.Nil}
-		req := genHTTPDeleteOrderReq(t, reqIDBadReq)
+		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
 		wantJSON := delivery.MakeRespErrInvalidData(errors.New("id is nil"))
 
 		// act

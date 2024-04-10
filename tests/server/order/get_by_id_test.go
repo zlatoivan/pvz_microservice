@@ -4,10 +4,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"testing"
@@ -20,27 +17,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func genHTTPGetOrderByIDReq(t *testing.T, reqID interface{}) *http.Request {
-	body, err := json.Marshal(reqID)
-	require.NoError(t, err)
-	req, err := http.NewRequest(
-		http.MethodGet,
-		"http://localhost:9000/api/v1/orders/id",
-		bytes.NewReader(body),
-	)
-	require.NoError(t, err)
-	username := "ivan"
-	password := "order_best_pass"
-	auth := username + ":" + password
-	base64Auth := base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Authorization", "Basic "+base64Auth)
-	return req
-}
-
 func TestServer_GetOrderByID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodGet
+	endpoint := "/api/v1/orders/id"
 
 	t.Run("success", func(t *testing.T) {
 		//t.Parallel()
@@ -50,7 +32,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		require.NoError(t, err)
 		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
-		req := genHTTPGetOrderByIDReq(t, reqIDGood)
+		req := genHTTPReq(t, method, endpoint, reqIDGood)
 		respGetByIDOrder := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
 		respGetByIDOrder.ID = id
 		respGetByIDOrder.StoresTill = fixtures.StoresTill
@@ -76,7 +58,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		require.NoError(t, err)
 		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDBadReq := ""
-		req := genHTTPGetOrderByIDReq(t, reqIDBadReq)
+		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
 		wantResp := delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID"))
 
 		// act
