@@ -64,10 +64,10 @@ func TestServer_CreateOrder(t *testing.T) {
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		_, respErr := getResp(t, res, "")
+		respStatus, respJSON := getResp(t, res, "")
 
 		// assert
-		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
-		assert.Equal(t, wantJSON, respErr)
+		assert.Equal(t, http.StatusBadRequest, respStatus)
+		assert.Equal(t, wantJSON, respJSON)
 	})
 }

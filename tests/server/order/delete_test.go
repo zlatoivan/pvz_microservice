@@ -45,7 +45,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		postgres.TearDown(ctx, db)
 
 		// assert
-		assert.Equal(t, respStatus, http.StatusOK)
+		assert.Equal(t, http.StatusOK, respStatus)
 		assert.Equal(t, wantJSON, respJSON)
 		assert.True(t, deletedOrderFromDB.IsDeleted)
 	})
@@ -64,7 +64,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		respStatus, respJSON := getResp(t, res, "")
 
 		// assert
-		assert.Equal(t, respStatus, http.StatusBadRequest)
+		assert.Equal(t, http.StatusBadRequest, respStatus)
 		assert.Equal(t, wantJSON, respJSON)
 	})
 }

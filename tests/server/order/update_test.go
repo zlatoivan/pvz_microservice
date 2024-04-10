@@ -36,7 +36,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 		reqUpdateOrderGood.ID = id
 		reqUpdateOrderGood.Cost = 499
 		req := genHTTPReq(t, method, endpoint, reqUpdateOrderGood)
-		wantRespComment := delivery.MakeRespComment("Order updated")
+		wantJSON := delivery.MakeRespComment("Order updated")
 
 		// act
 		res, err := client.Do(req)
@@ -49,7 +49,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 
 		// assert
 		assert.Equal(t, http.StatusOK, respStatus)
-		assert.Equal(t, wantRespComment, respJSON)
+		assert.Equal(t, wantJSON, respJSON)
 		assert.Equal(t, updatedOrder, updatedOrderFromDB)
 	})
 
@@ -60,7 +60,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 		reqUpdateOrderBadReq := fixtures.ReqCreateOrderGood
 		reqUpdateOrderBadReq.ClientID = uuid.Nil
 		req := genHTTPReq(t, method, endpoint, reqUpdateOrderBadReq)
-		wantRespComment := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
+		wantJSON := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act
 		res, err := client.Do(req)
@@ -69,6 +69,6 @@ func TestServer_UpdateOrder(t *testing.T) {
 
 		// assert
 		assert.Equal(t, http.StatusBadRequest, respStatus)
-		assert.Equal(t, wantRespComment, respJSON)
+		assert.Equal(t, wantJSON, respJSON)
 	})
 }
