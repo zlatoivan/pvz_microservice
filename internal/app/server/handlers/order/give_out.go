@@ -10,9 +10,9 @@ import (
 
 // GiveOutOrders gives out a list of orders
 func (s Handler) GiveOutOrders(w http.ResponseWriter, req *http.Request) {
-	clientID, ids, err := delivery.GetGiveOutDataFromReq(req)
+	clientID, ids, err := delivery.GetDataForGiveOutFromReq(req)
 	if err != nil {
-		log.Printf("[GiveOutOrders] GetGiveOutDataFromReq: %v", err)
+		log.Printf("[GiveOutOrders] GetDataForGiveOutFromReq: %v", err)
 		delivery.RenderResponse(w, req, http.StatusBadRequest, delivery.MakeRespErrInvalidData(err))
 		return
 	}

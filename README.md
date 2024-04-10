@@ -10,17 +10,17 @@
 
     docker compose up --build
 
-или не в контейнере:
+или не в контейнере, а локально:
 
     В config/config.yaml postgres: host: сделать localhost.
-    Оставить в docker-compose.yaml только pg_db и изменить там порт на 5432:5432
+    Оставить в docker-compose.yaml только pg_db (для тестов pg_db_test)
     Затем:
 
-    docker compose up -d pg_db
+    docker compose up -d pg_db   (для тестов pg_tb_test)
 	docker compose build
-    make gen-ssl-cert  (если нужны свежие сертификаты)
-    make migration-up
-    make run
+    make gen-ssl-cert            (если нужны свежие сертификаты)
+    make migration-up            (для тестов migration-test-up)
+    make run                     (для тестов run-test)
 
 ## Остановка программы
 

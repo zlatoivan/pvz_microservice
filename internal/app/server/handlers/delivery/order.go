@@ -8,19 +8,33 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-func GetClientIDFromURL(req *http.Request) (uuid.UUID, error) {
-	idStr := chi.URLParam(req, "clientID")
-	id, err := uuid.Parse(idStr)
+func GetIDFromReq(req *http.Request) (uuid.UUID, error) {
+	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("uuid.Parse: %w", err)
+		return uuid.UUID{}, fmt.Errorf("io.ReadAll: %w", err)
 	}
-	return id, nil
+	err = req.Body.Close()
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("req.Body.Close: %w", err)
+	}
+
+	var reqID RequestID
+	err = json.Unmarshal(data, &reqID)
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("json.Unmarshal: %w", err)
+	}
+	req.Body = io.NopCloser(bytes.NewBuffer(data))
+
+	if reqID.ID == uuid.Nil {
+		return uuid.UUID{}, fmt.Errorf("id is nil")
+	}
+
+	return reqID.ID, nil
 }
 
 func GetOrderFromReq(req *http.Request) (model.Order, error) {
@@ -59,7 +73,7 @@ func GetOrderFromReq(req *http.Request) (model.Order, error) {
 	return newOrder, nil
 }
 
-func GetGiveOutDataFromReq(req *http.Request) (uuid.UUID, []uuid.UUID, error) {
+func GetDataForGiveOutFromReq(req *http.Request) (uuid.UUID, []uuid.UUID, error) {
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
 		return uuid.UUID{}, nil, fmt.Errorf("io.ReadAll: %w", err)
@@ -79,40 +93,30 @@ func GetGiveOutDataFromReq(req *http.Request) (uuid.UUID, []uuid.UUID, error) {
 	return reqGiveOut.ClientID, reqGiveOut.IDs, nil
 }
 
-func GetIDFromReq(req *http.Request) (uuid.UUID, error) {
+func GetDataForReturnFromReq(req *http.Request) (uuid.UUID, uuid.UUID, error) {
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("io.ReadAll: %w", err)
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("io.ReadAll: %w", err)
 	}
 	err = req.Body.Close()
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("req.Body.Close: %w", err)
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("req.Body.Close: %w", err)
 	}
 
-	var reqID RequestID
-	err = json.Unmarshal(data, &reqID)
+	var reqReturn RequestReturn
+	err = json.Unmarshal(data, &reqReturn)
 	if err != nil {
-		return uuid.UUID{}, fmt.Errorf("json.Unmarshal: %w", err)
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("json.Unmarshal: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
 
-	if reqID.ID == uuid.Nil {
-		return uuid.UUID{}, fmt.Errorf("id is nil")
+	if reqReturn.ClientID == uuid.Nil {
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("client id is nil")
 	}
 
-	return reqID.ID, nil
-}
-
-func GetDataForReturnOrder(req *http.Request) (uuid.UUID, uuid.UUID, error) {
-	clientID, err := GetClientIDFromURL(req)
-	if err != nil {
-		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("GetClientIDFromURL: %w", err)
+	if reqReturn.ID == uuid.Nil {
+		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("id is nil")
 	}
 
-	id, err := GetIDFromReq(req)
-	if err != nil {
-		return uuid.UUID{}, uuid.UUID{}, fmt.Errorf("GetClientOrdersIDsFromReq: %w", err)
-	}
-
-	return clientID, id, nil
+	return reqReturn.ClientID, reqReturn.ID, nil
 }

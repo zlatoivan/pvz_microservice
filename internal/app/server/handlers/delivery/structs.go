@@ -35,6 +35,11 @@ type RequestGiveOut struct {
 	IDs      []uuid.UUID `json:"ids"`
 }
 
+type RequestReturn struct {
+	ClientID uuid.UUID `json:"client_id"`
+	ID       uuid.UUID `json:"id"`
+}
+
 type ResponseID struct {
 	ID uuid.UUID
 }

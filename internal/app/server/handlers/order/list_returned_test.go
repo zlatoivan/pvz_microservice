@@ -21,7 +21,7 @@ func TestHandler_ListReturnedOrders(t *testing.T) {
 
 	ctx := context.Background()
 	method := http.MethodGet
-	endpoint := "/api/v1/orders/client/id/return"
+	endpoint := "/api/v1/orders/returned"
 	mc := minimock.NewController(t)
 
 	validOrders := []model.Order{
