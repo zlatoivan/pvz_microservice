@@ -37,12 +37,12 @@ func TestServer_CreateOrder(t *testing.T) {
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respID := getOrderIDFromRespOrder(t, res)
-		createdOrder.ID = respID
+		id := getOrderIDFromRespOrder(t, res)
+		createdOrder.ID = id
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		createdOrderFromDB := postgres.GetByIDOrder(t, ctx, db, respID)
-		postgres.DeleteOrder(t, ctx, db, respID)
+		createdOrderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
+		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
