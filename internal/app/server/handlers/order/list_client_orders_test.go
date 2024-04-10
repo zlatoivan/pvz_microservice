@@ -1,9 +1,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,7 +10,6 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/order/mock"
@@ -20,21 +17,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 )
 
-func genHTTPListClientOrdersReq(t *testing.T, reqID delivery.RequestID) *http.Request {
-	body, err := json.Marshal(reqID)
-	require.NoError(t, err)
-	req := httptest.NewRequest(
-		http.MethodGet,
-		"http://localhost:9000/api/v1/orders/client/id",
-		bytes.NewReader(body),
-	)
-	return req
-}
-
 func TestHandler_ListClientOrders(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodGet
+	endpoint := "/api/v1/orders/client/id"
 	mc := minimock.NewController(t)
 
 	reqIDGood := delivery.RequestID{ID: fixtures.ClientID}
@@ -57,14 +45,14 @@ func TestHandler_ListClientOrders(t *testing.T) {
 				ListClientOrdersMock.
 				Expect(ctx, fixtures.ClientID).
 				Return(validOrders, nil),
-			req:        genHTTPListClientOrdersReq(t, reqIDGood),
+			req:        genHTTPReq(t, method, endpoint, reqIDGood),
 			wantStatus: http.StatusOK,
 			wantJSON:   delivery.MakeRespOrderList(validOrders),
 		},
 		{
 			name:       "bad request",
 			service:    mock.NewServiceMock(mc),
-			req:        genHTTPListClientOrdersReq(t, reqIDBadReq),
+			req:        genHTTPReq(t, method, endpoint, reqIDBadReq),
 			wantStatus: http.StatusBadRequest,
 			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("id is nil")),
 		},
@@ -74,7 +62,7 @@ func TestHandler_ListClientOrders(t *testing.T) {
 				ListClientOrdersMock.
 				Expect(ctx, fixtures.ClientID).
 				Return(nil, errors.New("")),
-			req:        genHTTPListClientOrdersReq(t, reqIDGood),
+			req:        genHTTPReq(t, method, endpoint, reqIDGood),
 			wantStatus: http.StatusInternalServerError,
 			wantJSON:   delivery.MakeRespErrInternalServer(errors.New("")),
 		},

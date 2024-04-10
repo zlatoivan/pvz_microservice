@@ -1,6 +1,7 @@
 package order
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,18 @@ import (
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
 )
+
+var (
+	url = "http://localhost:9000"
+)
+
+func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{}) *http.Request {
+	body, err := json.Marshal(reqData)
+	require.NoError(t, err)
+	req, err := http.NewRequest(method, url+endpoint, bytes.NewReader(body))
+	require.NoError(t, err)
+	return req
+}
 
 func getResp(t *testing.T, w *httptest.ResponseRecorder, respType string) (int, interface{}) {
 	res := w.Result()

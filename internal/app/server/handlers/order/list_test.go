@@ -16,19 +16,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 )
 
-func genHTTPListOrdersReq(t *testing.T) *http.Request {
-	req := httptest.NewRequest(
-		http.MethodGet,
-		"http://localhost:9000/api/v1/orders",
-		nil,
-	)
-	return req
-}
-
 func TestHandler_ListOrders(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodGet
+	endpoint := "/api/v1/orders"
 	mc := minimock.NewController(t)
 
 	validOrders := []model.Order{
@@ -49,7 +42,7 @@ func TestHandler_ListOrders(t *testing.T) {
 				ListOrdersMock.
 				Expect(ctx).
 				Return(validOrders, nil),
-			req:        genHTTPListOrdersReq(t),
+			req:        genHTTPReq(t, method, endpoint, ""),
 			wantStatus: http.StatusOK,
 			wantJSON:   delivery.MakeRespOrderList(validOrders),
 		},
@@ -59,7 +52,7 @@ func TestHandler_ListOrders(t *testing.T) {
 				ListOrdersMock.
 				Expect(ctx).
 				Return([]model.Order{}, errors.New("")),
-			req:        genHTTPListOrdersReq(t),
+			req:        genHTTPReq(t, method, endpoint, ""),
 			wantStatus: http.StatusInternalServerError,
 			wantJSON:   delivery.MakeRespErrInternalServer(errors.New("")),
 		},

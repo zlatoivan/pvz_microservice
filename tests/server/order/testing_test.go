@@ -32,11 +32,7 @@ func addAuthHeaders(t *testing.T, req *http.Request) {
 func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{}) *http.Request {
 	body, err := json.Marshal(reqData)
 	require.NoError(t, err)
-	req, err := http.NewRequest(
-		method,
-		url+endpoint,
-		bytes.NewReader(body),
-	)
+	req, err := http.NewRequest(method, url+endpoint, bytes.NewReader(body))
 	require.NoError(t, err)
 	addAuthHeaders(t, req)
 	return req

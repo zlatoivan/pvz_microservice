@@ -1,9 +1,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +9,6 @@ import (
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/order/mock"
@@ -19,21 +16,12 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 )
 
-func genHTTPGetOrderByIDReq(t *testing.T, reqID interface{}) *http.Request {
-	body, err := json.Marshal(reqID)
-	require.NoError(t, err)
-	req := httptest.NewRequest(
-		http.MethodGet,
-		"http://localhost:9000/api/v1/orders/id",
-		bytes.NewReader(body),
-	)
-	return req
-}
-
 func TestHandler_GetOrderByID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodGet
+	endpoint := "/api/v1/orders/id"
 	mc := minimock.NewController(t)
 
 	reqIDGood := delivery.RequestID{ID: fixtures.ID}
@@ -53,14 +41,14 @@ func TestHandler_GetOrderByID(t *testing.T) {
 				GetOrderByIDMock.
 				Expect(ctx, fixtures.ID).
 				Return(validOrder, nil),
-			req:        genHTTPGetOrderByIDReq(t, reqIDGood),
+			req:        genHTTPReq(t, method, endpoint, reqIDGood),
 			wantStatus: http.StatusOK,
 			wantJSON:   delivery.MakeRespOrder(validOrder),
 		},
 		{
 			name:       "bad request",
 			service:    mock.NewServiceMock(mc),
-			req:        genHTTPGetOrderByIDReq(t, reqIDBadReq),
+			req:        genHTTPReq(t, method, endpoint, reqIDBadReq),
 			wantStatus: http.StatusBadRequest,
 			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID")),
 		},
@@ -69,7 +57,7 @@ func TestHandler_GetOrderByID(t *testing.T) {
 			service: mock.NewServiceMock(mc).
 				GetOrderByIDMock.
 				Return(model.Order{}, ErrNotFound),
-			req:        genHTTPGetOrderByIDReq(t, reqIDGood),
+			req:        genHTTPReq(t, method, endpoint, reqIDGood),
 			wantStatus: http.StatusNotFound,
 			wantJSON:   delivery.MakeRespErrNotFoundByID(errors.New("not found")),
 		},
@@ -78,7 +66,7 @@ func TestHandler_GetOrderByID(t *testing.T) {
 			service: mock.NewServiceMock(mc).
 				GetOrderByIDMock.
 				Return(model.Order{}, errors.New("")),
-			req:        genHTTPGetOrderByIDReq(t, reqIDGood),
+			req:        genHTTPReq(t, method, endpoint, reqIDGood),
 			wantStatus: http.StatusInternalServerError,
 			wantJSON:   delivery.MakeRespErrInternalServer(errors.New("")),
 		},

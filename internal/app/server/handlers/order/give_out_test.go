@@ -1,9 +1,7 @@
 package order
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -12,28 +10,18 @@ import (
 	"github.com/gojuno/minimock/v3"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/order/mock"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 )
 
-func genHTTPGiveOutReq(t *testing.T, reqID interface{}) *http.Request {
-	body, err := json.Marshal(reqID)
-	require.NoError(t, err)
-	req := httptest.NewRequest(
-		http.MethodGet,
-		"http://localhost:9000/api/v1/orders/id",
-		bytes.NewReader(body),
-	)
-	return req
-}
-
 func TestHandler_GiveOutOrders(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodGet
+	endpoint := "/api/v1/orders/id"
 	mc := minimock.NewController(t)
 
 	reqGood := delivery.RequestGiveOut{
@@ -55,14 +43,14 @@ func TestHandler_GiveOutOrders(t *testing.T) {
 				GiveOutOrdersMock.
 				Expect(ctx, reqGood.ClientID, reqGood.IDs).
 				Return(nil),
-			req:        genHTTPGiveOutReq(t, reqGood),
+			req:        genHTTPReq(t, method, endpoint, reqGood),
 			wantStatus: http.StatusOK,
 			wantJSON:   delivery.MakeRespComment("Orders are given out"),
 		},
 		{
 			name:       "bad request",
 			service:    mock.NewServiceMock(mc),
-			req:        genHTTPGiveOutReq(t, reqBadReq),
+			req:        genHTTPReq(t, method, endpoint, reqBadReq),
 			wantStatus: http.StatusBadRequest,
 			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestGiveOut")),
 		},
@@ -72,7 +60,7 @@ func TestHandler_GiveOutOrders(t *testing.T) {
 				GiveOutOrdersMock.
 				Expect(ctx, reqGood.ClientID, reqGood.IDs).
 				Return(ErrNotFound),
-			req:        genHTTPGiveOutReq(t, reqGood),
+			req:        genHTTPReq(t, method, endpoint, reqGood),
 			wantStatus: http.StatusNotFound,
 			wantJSON:   delivery.MakeRespErrNotFoundByID(ErrNotFound),
 		},
@@ -82,7 +70,7 @@ func TestHandler_GiveOutOrders(t *testing.T) {
 				GiveOutOrdersMock.
 				Expect(ctx, reqGood.ClientID, reqGood.IDs).
 				Return(errors.New("")),
-			req:        genHTTPGiveOutReq(t, reqGood),
+			req:        genHTTPReq(t, method, endpoint, reqGood),
 			wantStatus: http.StatusInternalServerError,
 			wantJSON:   delivery.MakeRespErrInternalServer(errors.New("")),
 		},
