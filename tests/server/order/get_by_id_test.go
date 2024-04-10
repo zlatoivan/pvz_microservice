@@ -33,43 +33,35 @@ func TestServer_GetOrderByID(t *testing.T) {
 		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
 		req := genHTTPReq(t, method, endpoint, reqIDGood)
-		respGetByIDOrder := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
-		respGetByIDOrder.ID = id
-		respGetByIDOrder.StoresTill = fixtures.StoresTill
-		wantJSON := delivery.MakeRespOrder(respGetByIDOrder)
+		orderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "Order")
+		respOrder := getOrderFromResp(t, res)
 		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
-		assert.Equal(t, http.StatusOK, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, orderFromDB, respOrder)
 	})
 
 	t.Run("bad request", func(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		db, err := postgres.SetUp(ctx)
-		require.NoError(t, err)
-		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDBadReq := ""
 		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
-		wantJSON := delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID"))
+		wantErr := delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID"))
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "")
-		postgres.DeleteOrder(t, ctx, db, id)
-		postgres.TearDown(ctx, db)
+		respErr := getErrorFromResp(t, res)
 
 		// assert
-		assert.Equal(t, http.StatusBadRequest, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, wantErr, respErr)
 	})
 }

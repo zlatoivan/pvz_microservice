@@ -32,43 +32,41 @@ func TestServer_UpdateOrder(t *testing.T) {
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
 		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
-		reqUpdateOrderGood := fixtures.ReqCreateOrderGood
+		reqUpdateOrderGood := postgres.GetByIDOrder(t, ctx, db, id)
 		reqUpdateOrderGood.ID = id
 		reqUpdateOrderGood.Cost = 499
 		req := genHTTPReq(t, method, endpoint, reqUpdateOrderGood)
-		wantJSON := delivery.MakeRespComment("Order updated")
+		wantComment := delivery.MakeRespComment("Order updated")
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "Comment")
-		updatedOrder := delivery.GetOrderFromReqOrder(reqUpdateOrderGood)
+		respComment := getCommentFromResp(t, res)
 		updatedOrderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
 		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
-		assert.Equal(t, http.StatusOK, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
-		assert.Equal(t, updatedOrder, updatedOrderFromDB)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, wantComment, respComment)
+		assert.Equal(t, reqUpdateOrderGood, updatedOrderFromDB)
 	})
 
 	t.Run("bad request", func(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		reqUpdateOrderBadReq := fixtures.ReqCreateOrderGood
-		reqUpdateOrderBadReq.ClientID = uuid.Nil
+		reqUpdateOrderBadReq := delivery.RequestOrder{ClientID: uuid.Nil}
 		req := genHTTPReq(t, method, endpoint, reqUpdateOrderBadReq)
-		wantJSON := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
+		wantErr := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "")
+		respErr := getErrorFromResp(t, res)
 
 		// assert
-		assert.Equal(t, http.StatusBadRequest, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, wantErr, respErr)
 	})
 }

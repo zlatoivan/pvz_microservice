@@ -12,7 +12,7 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func TestHandler_ListOrders(t *testing.T) {
+func TestServer_ListOrders(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()

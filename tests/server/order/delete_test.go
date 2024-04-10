@@ -18,7 +18,7 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
-func TestHandler_DeleteOrder(t *testing.T) {
+func TestServer_DeleteOrder(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -39,14 +39,14 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "Comment")
+		respComment := getCommentFromResp(t, res)
 		deletedOrderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
 		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
-		assert.Equal(t, http.StatusOK, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusOK, res.StatusCode)
+		assert.Equal(t, wantJSON, respComment)
 		assert.True(t, deletedOrderFromDB.IsDeleted)
 	})
 
@@ -56,15 +56,15 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		// arrange
 		reqIDBadReq := delivery.RequestID{ID: uuid.Nil}
 		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
-		wantJSON := delivery.MakeRespErrInvalidData(errors.New("id is nil"))
+		wantErr := delivery.MakeRespErrInvalidData(errors.New("id is nil"))
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "")
+		respErr := getErrorFromResp(t, res)
 
 		// assert
-		assert.Equal(t, http.StatusBadRequest, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, wantErr, respErr)
 	})
 }

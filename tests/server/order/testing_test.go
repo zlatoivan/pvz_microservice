@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -40,6 +39,18 @@ func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{
 	return req
 }
 
+func getOrderFromResp(t *testing.T, res *http.Response) model.Order {
+	defer func() {
+		err := res.Body.Close()
+		require.NoError(t, err)
+	}()
+	var respOrder delivery.ResponseOrder
+	err := json.NewDecoder(res.Body).Decode(&respOrder)
+	require.NoError(t, err)
+	order := delivery.GetOrderFromRespOrder(respOrder)
+	return order
+}
+
 func getOrderIDFromRespOrder(t *testing.T, res *http.Response) uuid.UUID {
 	defer func() {
 		err := res.Body.Close()
@@ -68,65 +79,33 @@ func getOrdersFromRespListOrders(t *testing.T, res *http.Response) []model.Order
 	return orders
 }
 
-func getResp(t *testing.T, res *http.Response, respType string) (int, interface{}) {
+func getCommentFromResp(t *testing.T, res *http.Response) delivery.ResponseComment {
 	defer func() {
 		err := res.Body.Close()
 		require.NoError(t, err)
 	}()
+	var respComment delivery.ResponseComment
+	err := json.NewDecoder(res.Body).Decode(&respComment)
+	require.NoError(t, err)
+	return respComment
+}
 
-	var respJSON interface{}
-
-	switch res.StatusCode {
-	case http.StatusCreated:
-		respID := delivery.ResponseID{}
-		err := json.NewDecoder(res.Body).Decode(&respID)
+func getErrorFromResp(t *testing.T, res *http.Response) delivery.ResponseError {
+	defer func() {
+		err := res.Body.Close()
 		require.NoError(t, err)
-		respJSON = respID
-
-	case http.StatusOK:
-		switch respType {
-		case "ID":
-			respID := delivery.ResponseID{}
-			err := json.NewDecoder(res.Body).Decode(&respID)
-			require.NoError(t, err)
-			respJSON = respID
-		case "Comment":
-			var respComment delivery.ResponseComment
-			err := json.NewDecoder(res.Body).Decode(&respComment)
-			require.NoError(t, err)
-			respJSON = respComment
-		case "Order":
-			var respOrder delivery.ResponseOrder
-			err := json.NewDecoder(res.Body).Decode(&respOrder)
-			require.NoError(t, err)
-			respJSON = respOrder
-		case "ListOrders":
-			var respOrders []delivery.ResponseOrder
-			err := json.NewDecoder(res.Body).Decode(&respOrders)
-			require.NoError(t, err)
-			respJSON = respOrders
-		}
-
-	default:
-		var respErr delivery.ResponseError
-		err := json.NewDecoder(res.Body).Decode(&respErr)
-		require.NoError(t, err)
-		respJSON = respErr
-	}
-
-	return res.StatusCode, respJSON
+	}()
+	var respErr delivery.ResponseError
+	err := json.NewDecoder(res.Body).Decode(&respErr)
+	require.NoError(t, err)
+	return respErr
 }
 
 func checkIn(t *testing.T, order model.Order, orders []model.Order) bool {
 	for _, r := range orders {
-		fmt.Println(order)
-		fmt.Println("VS")
-		fmt.Println(r)
-		fmt.Print("\n\n-------------\n\n")
 		if order == r {
 			return true
 		}
 	}
-	fmt.Print("\n\n\n")
 	return false
 }

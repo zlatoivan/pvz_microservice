@@ -31,15 +31,14 @@ func TestServer_CreateOrder(t *testing.T) {
 
 		// arrange
 		req := genHTTPReq(t, method, endpoint, fixtures.ReqCreateOrderGood)
+		createdOrder, err := order.ApplyPackaging(delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood))
+		require.NoError(t, err)
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
 		respID := getOrderIDFromRespOrder(t, res)
-		createdOrderRaw := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
-		createdOrderRaw.ID = respID
-		createdOrder, err := order.ApplyPackaging(createdOrderRaw)
-		require.NoError(t, err)
+		createdOrder.ID = respID
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
 		createdOrderFromDB := postgres.GetByIDOrder(t, ctx, db, respID)
@@ -55,19 +54,17 @@ func TestServer_CreateOrder(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		reqCreateOrderBadReq := delivery.RequestOrder{
-			ClientID: uuid.Nil,
-		}
+		reqCreateOrderBadReq := delivery.RequestOrder{ClientID: uuid.Nil}
 		req := genHTTPReq(t, method, endpoint, reqCreateOrderBadReq)
-		wantJSON := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
+		wantErr := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "")
+		respErr := getErrorFromResp(t, res)
 
 		// assert
-		assert.Equal(t, http.StatusBadRequest, respStatus)
-		assert.Equal(t, wantJSON, respJSON)
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+		assert.Equal(t, wantErr, respErr)
 	})
 }
