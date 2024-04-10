@@ -30,7 +30,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		// arrange
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
+		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
 		req := genHTTPReq(t, method, endpoint, reqIDGood)
 		respGetByIDOrder := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
@@ -42,7 +42,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		res, err := client.Do(req)
 		require.NoError(t, err)
 		respStatus, respOrder := getResp(t, res, "Order")
-		dbDeleteOrder(t, ctx, db, id)
+		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
@@ -56,7 +56,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		// arrange
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
+		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDBadReq := ""
 		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
 		wantResp := delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID"))
@@ -65,7 +65,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		res, err := client.Do(req)
 		require.NoError(t, err)
 		respStatus, respOrder := getResp(t, res, "")
-		dbDeleteOrder(t, ctx, db, id)
+		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert

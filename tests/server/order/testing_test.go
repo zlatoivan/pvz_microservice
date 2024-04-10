@@ -5,19 +5,15 @@ package order
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
 )
 
 var (
@@ -44,41 +40,6 @@ func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{
 	require.NoError(t, err)
 	addAuthHeaders(t, req)
 	return req
-}
-
-const queryInsertOrder = `
-INSERT INTO orders (client_id, weight, cost, stores_till, give_out_time, packaging_type)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING id;`
-
-// Создать тестовый заказ, чтоб взять его ID
-func dbCreateOrder(t *testing.T, ctx context.Context, db postgres.Database, order delivery.RequestOrder) uuid.UUID {
-	var id uuid.UUID
-	var timeNull time.Time
-	err := db.QueryRow(ctx, queryInsertOrder, order.ClientID, order.Weight, order.Cost, order.StoresTill, timeNull, order.PackagingType).Scan(&id)
-	require.NoError(t, err)
-	return id
-}
-
-const queryDeleteOrder = `
-DELETE FROM orders
-WHERE id = $1;`
-
-func dbDeleteOrder(t *testing.T, ctx context.Context, db postgres.Database, id uuid.UUID) {
-	_, err := db.Exec(ctx, queryDeleteOrder, id)
-	require.NoError(t, err)
-}
-
-const querySelectOrderByID = `
-SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned, packaging_type, is_deleted
-FROM orders
-WHERE id = $1`
-
-func dbGetByIDOrder(t *testing.T, ctx context.Context, db postgres.Database, id uuid.UUID) model.Order {
-	var order model.Order
-	err := db.Get(ctx, &order, querySelectOrderByID, id)
-	require.NoError(t, err)
-	return order
 }
 
 func getOrderIDFromRespOrder(t *testing.T, res *http.Response) uuid.UUID {

@@ -31,7 +31,7 @@ func TestServer_UpdateOrder(t *testing.T) {
 		// arrange
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
+		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqUpdateOrderGood := fixtures.ReqCreateOrderGood
 		reqUpdateOrderGood.ID = id
 		reqUpdateOrderGood.Cost = 499
@@ -43,8 +43,8 @@ func TestServer_UpdateOrder(t *testing.T) {
 		require.NoError(t, err)
 		respStatus, respJSON := getResp(t, res, "Comment")
 		updatedOrder := delivery.GetOrderFromReqOrder(reqUpdateOrderGood)
-		updatedOrderFromDB := dbGetByIDOrder(t, ctx, db, id)
-		dbDeleteOrder(t, ctx, db, id)
+		updatedOrderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
+		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert

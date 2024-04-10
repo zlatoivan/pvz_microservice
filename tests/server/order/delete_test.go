@@ -31,7 +31,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		// arrange
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		id := dbCreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
+		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
 		req := genHTTPReq(t, method, endpoint, reqIDGood)
 		wantJSON := delivery.MakeRespComment("Order deleted")
@@ -40,8 +40,8 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		res, err := client.Do(req)
 		require.NoError(t, err)
 		respStatus, respJSON := getResp(t, res, "Comment")
-		deletedOrderFromDB := dbGetByIDOrder(t, ctx, db, id)
-		dbDeleteOrder(t, ctx, db, id)
+		deletedOrderFromDB := postgres.GetByIDOrder(t, ctx, db, id)
+		postgres.DeleteOrder(t, ctx, db, id)
 		postgres.TearDown(ctx, db)
 
 		// assert
@@ -61,7 +61,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 		// act
 		res, err := client.Do(req)
 		require.NoError(t, err)
-		respStatus, respJSON := getResp(t, res, "Comment")
+		respStatus, respJSON := getResp(t, res, "")
 
 		// assert
 		assert.Equal(t, respStatus, http.StatusBadRequest)

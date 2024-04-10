@@ -42,8 +42,8 @@ func TestServer_CreateOrder(t *testing.T) {
 		require.NoError(t, err)
 		db, err := postgres.SetUp(ctx)
 		require.NoError(t, err)
-		createdOrderFromDB := dbGetByIDOrder(t, ctx, db, respID)
-		dbDeleteOrder(t, ctx, db, respID)
+		createdOrderFromDB := postgres.GetByIDOrder(t, ctx, db, respID)
+		postgres.DeleteOrder(t, ctx, db, respID)
 		postgres.TearDown(ctx, db)
 
 		// assert
