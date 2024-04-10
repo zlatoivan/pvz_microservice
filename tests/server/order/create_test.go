@@ -23,12 +23,14 @@ func TestServer_CreateOrder(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
+	method := http.MethodPost
+	endpoint := "/api/v1/orders"
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		req := genHTTPReq(t, http.MethodPost, "/api/v1/orders", fixtures.ReqCreateOrderGood)
+		req := genHTTPReq(t, method, endpoint, fixtures.ReqCreateOrderGood)
 
 		// act
 		res, err := client.Do(req)
@@ -56,7 +58,7 @@ func TestServer_CreateOrder(t *testing.T) {
 		reqCreateOrderBadReq := delivery.RequestOrder{
 			ClientID: uuid.Nil,
 		}
-		req := genHTTPReq(t, http.MethodPost, "/api/v1/orders", reqCreateOrderBadReq)
+		req := genHTTPReq(t, method, endpoint, reqCreateOrderBadReq)
 		wantJSON := delivery.MakeRespErrInvalidData(errors.New("client id is nil"))
 
 		// act
