@@ -81,4 +81,4 @@ docker-rm-volume: ### remove docker volume
 gen-ssl-cert: ### generate fresh ssl certificate
 	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
 	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
-	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificates
+	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificate

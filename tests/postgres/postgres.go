@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"

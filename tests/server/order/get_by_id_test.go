@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
@@ -25,7 +25,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 	endpoint := "/api/v1/orders/id"
 
 	t.Run("success", func(t *testing.T) {
-		//t.Parallel()
+		t.Parallel()
 
 		// arrange
 		db, err := postgres.SetUp(ctx)

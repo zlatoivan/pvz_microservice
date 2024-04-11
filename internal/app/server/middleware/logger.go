@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/delivery"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
 )
 
 func Logger(next http.Handler) http.Handler {

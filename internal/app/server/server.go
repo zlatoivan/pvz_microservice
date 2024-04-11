@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/order"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
 
@@ -39,7 +39,7 @@ func (s Server) Run(ctx context.Context, cfg config.Config) error {
 
 	go func() {
 		log.Printf("[httpsServer] starting on %s\n", httpsPort)
-		err := httpsServer.ListenAndServeTLS("internal/app/server/certificates/server.crt", "internal/app/server/certificates/server.key")
+		err := httpsServer.ListenAndServeTLS("internal/app/server/certificate/server.crt", "internal/app/server/certificate/server.key")
 		if err != nil {
 			log.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
 		}

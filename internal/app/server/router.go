@@ -4,10 +4,10 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/main_page"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/not_found"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/order"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handlers/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/main_page"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/not_found"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
 	mw "gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
