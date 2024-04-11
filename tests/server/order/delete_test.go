@@ -34,7 +34,7 @@ func TestServer_DeleteOrder(t *testing.T) {
 		id := postgres.CreateOrder(t, ctx, db, fixtures.ReqCreateOrderGood)
 		reqIDGood := delivery.RequestID{ID: id}
 		req := genHTTPReq(t, method, endpoint, reqIDGood)
-		wantJSON := delivery.MakeRespComment("Order deleted")
+		wantComment := delivery.MakeRespComment("Order deleted")
 
 		// act
 		res, err := client.Do(req)
@@ -46,7 +46,7 @@ func TestServer_DeleteOrder(t *testing.T) {
 
 		// assert
 		assert.Equal(t, http.StatusOK, res.StatusCode)
-		assert.Equal(t, wantJSON, respComment)
+		assert.Equal(t, wantComment, respComment)
 		assert.True(t, deletedOrderFromDB.IsDeleted)
 	})
 
