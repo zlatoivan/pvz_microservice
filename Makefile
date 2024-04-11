@@ -9,9 +9,9 @@ help: ## display this help screen
 
 .PHONY: compose-up
 compose-up: ### run docker compose
-	#docker compose up --build
-	docker compose up -d pg_db
-	docker compose build
+	docker compose up --build
+	#docker compose up -d pg_db
+	#docker compose build
 
 .PHONY: compose-down
 compose-down: ### down docker compose
