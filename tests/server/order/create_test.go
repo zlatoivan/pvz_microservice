@@ -50,7 +50,7 @@ func TestServer_CreateOrder(t *testing.T) {
 		assert.Equal(t, createdOrder, createdOrderFromDB)
 	})
 
-	t.Run("success", func(t *testing.T) {
+	t.Run("bad request", func(t *testing.T) {
 		t.Parallel()
 
 		// arrange
