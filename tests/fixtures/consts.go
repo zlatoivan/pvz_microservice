@@ -19,16 +19,14 @@ var (
 	ClientID, _   = uuid.Parse("88cda6c0-36fc-4be4-b976-e11a8a7a8f7e")
 	Weight        = 29
 	Cost          = 1100
-	StoresTill, _ = time.Parse(time.RFC3339, "2024-04-22T13:14:00Z")
+	StoresTill, _ = time.Parse(time.RFC3339, "2024-04-22T12:12:00Z")
 	PackagingType = "box"
 	IsReturned    = false
 	IsDeleted     = false
 
-	StoresTillStr = "2024-04-22T13:14:00Z"
-
 	ReqCreateOrderGood = delivery.RequestOrder{
 		ClientID:      ClientID,
-		StoresTill:    StoresTillStr,
+		StoresTill:    StoresTill,
 		Weight:        Weight,
 		Cost:          Cost,
 		PackagingType: PackagingType,

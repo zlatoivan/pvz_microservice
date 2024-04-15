@@ -5,9 +5,11 @@ server:
   pvz_auth_password: pvz_best_pass
   order_auth_login: ivan
   order_auth_password: order_best_pass
+  brokers: ['localhost:9092']
+  topic: crud
 
 postgres:
-  host: localhost
+  host: pg_db_test
   port: 5431
   dbname: test
   user: postgres

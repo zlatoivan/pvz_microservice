@@ -73,7 +73,7 @@ func TestHandler_CreatePVZ(t *testing.T) {
 			service:    mock.NewServiceMock(mc),
 			req:        genHTTPCreatePVZReq(t, reqPVZBadReq),
 			wantStatus: http.StatusBadRequest,
-			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestPVZ")),
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestPVZ")),
 		},
 		{
 			name: "already exists",

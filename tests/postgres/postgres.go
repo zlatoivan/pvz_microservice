@@ -16,15 +16,6 @@ import (
 )
 
 func SetUp(ctx context.Context) (postgres.Database, error) {
-	//cfg := config.Config{
-	//	Pg: config.Pg{
-	//		Host:     "localhost",
-	//		Port:     "5431",
-	//		DBname:   "test",
-	//		User:     "postgres",
-	//		Password: "postgres",
-	//	},
-	//}
 	cfg, err := config.New()
 	if err != nil {
 		return postgres.Database{}, fmt.Errorf("config.New: %w", err)

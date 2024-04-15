@@ -21,12 +21,14 @@ type Pg struct {
 }
 
 type Server struct {
-	HttpPort      string `yaml:"http_port" env-default:"9000"`
-	HttpsPort     string `yaml:"https_port" env-default:"9001"`
-	PVZLogin      string `yaml:"pvz_auth_login" env-default:""`
-	PVZPassword   string `yaml:"pvz_auth_password" env-default:""`
-	OrderLogin    string `yaml:"order_auth_login" env-default:""`
-	OrderPassword string `yaml:"order_auth_password" env-default:""`
+	HttpPort      string   `yaml:"http_port" env-default:"9000"`
+	HttpsPort     string   `yaml:"https_port" env-default:"9001"`
+	PVZLogin      string   `yaml:"pvz_auth_login" env-default:""`
+	PVZPassword   string   `yaml:"pvz_auth_password" env-default:""`
+	OrderLogin    string   `yaml:"order_auth_login" env-default:""`
+	OrderPassword string   `yaml:"order_auth_password" env-default:""`
+	Brokers       []string `yaml:"brokers" env-default:""`
+	Topic         string   `yaml:"topic" env-default:""`
 }
 
 func New() (Config, error) {

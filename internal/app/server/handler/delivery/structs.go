@@ -16,7 +16,7 @@ type RequestPVZ struct {
 type RequestOrder struct {
 	ID            uuid.UUID `json:"id"`             // the id of order
 	ClientID      uuid.UUID `json:"client_id"`      // the id of client
-	StoresTill    string    `json:"stores_till"`    // the storage period of order
+	StoresTill    time.Time `json:"stores_till"`    // the storage period of order
 	Weight        int       `json:"weight"`         // order weight
 	Cost          int       `json:"cost"`           // order cost
 	PackagingType string    `json:"packaging_type"` // packaging of the order

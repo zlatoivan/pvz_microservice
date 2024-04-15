@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 	order2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
@@ -48,7 +49,12 @@ func bootstrap(ctx context.Context) error {
 
 	mainServer := server.New(pvzService, orderService)
 
-	err = mainServer.Run(ctx, cfg)
+	sender, err := kafka.New(cfg)
+	if err != nil {
+		return fmt.Errorf("kafka.New: %w", err)
+	}
+
+	err = mainServer.Run(ctx, cfg, sender)
 	if err != nil {
 		return fmt.Errorf("mainServer.Run: %w", err)
 	}

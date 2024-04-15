@@ -9,6 +9,7 @@ import (
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
 
@@ -25,13 +26,13 @@ func New(pvzService pvz.Service, orderService order.Service) Server {
 	return server
 }
 
-//func redirectToHTTPS(w http.ResponseWriter, req *http.Request) {
+//func redirectToHTTPS(w http.ResponseWriter, req *http.Data) {
 //	http.Redirect(w, req, "https://localhost:9001"+req.RequestURI, http.StatusMovedPermanently)
 //}
 
 // Run starts the server
-func (s Server) Run(ctx context.Context, cfg config.Config) error {
-	router := s.createRouter(cfg)
+func (s Server) Run(ctx context.Context, cfg config.Config, sender *kafka.Sender) error {
+	router := s.createRouter(cfg, sender)
 	httpsPort := cfg.Server.HttpsPort
 	httpPort := cfg.Server.HttpPort
 	httpsServer := &http.Server{Addr: "localhost:" + httpsPort, Handler: router}

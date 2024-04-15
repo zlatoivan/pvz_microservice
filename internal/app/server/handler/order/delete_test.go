@@ -48,7 +48,7 @@ func TestHandler_DeleteOrder(t *testing.T) {
 			service:    mock.NewServiceMock(mc),
 			req:        genHTTPReq(t, method, endpoint, reqIDBadReq),
 			wantStatus: http.StatusBadRequest,
-			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID")),
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestID")),
 		},
 		{
 			name: "not found",

@@ -53,7 +53,7 @@ func TestServer_GetOrderByID(t *testing.T) {
 		// arrange
 		reqIDBadReq := ""
 		req := genHTTPReq(t, method, endpoint, reqIDBadReq)
-		wantErr := delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID"))
+		wantErr := delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestID"))
 
 		// act
 		res, err := client.Do(req)

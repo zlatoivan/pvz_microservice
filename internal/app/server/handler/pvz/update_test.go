@@ -74,7 +74,7 @@ func TestHandler_UpdatePVZ(t *testing.T) {
 			service:    mock.NewServiceMock(mc),
 			req:        genHTTPUpdatePVZReq(t, reqPVZBadReq),
 			wantStatus: http.StatusBadRequest,
-			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestPVZ")),
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestPVZ")),
 		},
 		{
 			name: "not found",

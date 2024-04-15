@@ -62,7 +62,7 @@ func TestHandler_GetPVZByID(t *testing.T) {
 			service:    mock.NewServiceMock(mc),
 			req:        genHTTPGetPVZByIDReq(t, reqIDBadReq),
 			wantStatus: http.StatusBadRequest,
-			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestID")),
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestID")),
 		},
 		{
 			name: "not found",

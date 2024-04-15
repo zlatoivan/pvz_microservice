@@ -10,7 +10,7 @@ COPY . .
 
 RUN go build -o main cmd/server/main.go
 
-CMD ["make migration-up && ./main"]
+CMD ["./main"]
 
 
 

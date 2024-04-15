@@ -1,4 +1,4 @@
-POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=pg_db port=5433 sslmode=disable
+POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost port=5433 sslmode=disable
 POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=pg_db_test port=5431 sslmode=disable
 MIGRATION_FOLDER=$(CURDIR)/migrations
 MIGRATION_NAME=pvz

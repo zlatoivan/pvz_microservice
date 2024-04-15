@@ -52,7 +52,7 @@ func TestHandler_GiveOutOrders(t *testing.T) {
 			service:    mock.NewServiceMock(mc),
 			req:        genHTTPReq(t, method, endpoint, reqBadReq),
 			wantStatus: http.StatusBadRequest,
-			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("json.Unmarshal: json: cannot unmarshal string into Go value of type delivery.RequestGiveOut")),
+			wantJSON:   delivery.MakeRespErrInvalidData(errors.New("render.DecodeJSON: json: cannot unmarshal string into Go value of type delivery.RequestGiveOut")),
 		},
 		{
 			name: "not found",

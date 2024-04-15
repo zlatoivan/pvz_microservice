@@ -14,7 +14,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
@@ -31,8 +30,8 @@ func TestServer_CreateOrder(t *testing.T) {
 
 		// arrange
 		req := genHTTPReq(t, method, endpoint, fixtures.ReqCreateOrderGood)
-		createdOrder, err := order.ApplyPackaging(delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood))
-		require.NoError(t, err)
+		createdOrder := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
+		createdOrder.Cost += 20
 
 		// act
 		res, err := client.Do(req)

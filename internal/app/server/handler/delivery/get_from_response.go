@@ -1,8 +1,6 @@
 package delivery
 
 import (
-	"time"
-
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
@@ -21,13 +19,12 @@ func GetOrderFromRespOrder(respOrder ResponseOrder) model.Order {
 }
 
 func GetOrderFromReqOrder(reqOrder RequestOrder) model.Order {
-	st, _ := time.Parse(time.RFC3339, reqOrder.StoresTill)
 	return model.Order{
 		ID:            reqOrder.ID,
 		ClientID:      reqOrder.ClientID,
 		Weight:        reqOrder.Weight,
 		Cost:          reqOrder.Cost,
-		StoresTill:    st,
+		StoresTill:    reqOrder.StoresTill,
 		PackagingType: reqOrder.PackagingType,
 	}
 }

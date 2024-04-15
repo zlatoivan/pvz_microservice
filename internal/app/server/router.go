@@ -8,24 +8,29 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/not_found"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
-	mw "gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
+	mwlogger "gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
 
 // createRouter creates http router
-func (s Server) createRouter(cfg config.Config) *chi.Mux {
+func (s Server) createRouter(cfg config.Config, sender *kafka.Sender) *chi.Mux {
 	pvzHandlers := pvz.New(s.pvzService)
 	orderHandlers := order.New(s.orderService)
+	mw := mwlogger.New(sender)
 
 	pvzCreds := map[string]string{cfg.Server.PVZLogin: cfg.Server.PVZPassword}
 	orderCreds := map[string]string{cfg.Server.OrderLogin: cfg.Server.OrderPassword}
 
 	r := chi.NewRouter()
 
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.RedirectSlashes)
+	r.Use(
+		middleware.Recoverer,
+		middleware.RequestID,
+		middleware.RealIP,
+		middleware.RedirectSlashes,
+		mw.DataLogger,
+	)
 
 	r.NotFound(not_found.NotFound)
 	r.Get("/", main_page.MainPage)
@@ -33,7 +38,6 @@ func (s Server) createRouter(cfg config.Config) *chi.Mux {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Route("/pvzs", func(r chi.Router) {
 			r.Use(middleware.BasicAuth("pvzs", pvzCreds))
-			r.Use(mw.Logger)
 			r.Post("/", pvzHandlers.CreatePVZ) // Create
 			r.Get("/", pvzHandlers.ListPVZs)   // List
 			r.Route("/id", func(r chi.Router) {
