@@ -50,13 +50,3 @@ func (r *Receiver) Subscribe(topic string) error {
 
 	return nil
 }
-
-//func (r *Receiver) StartConsume(topic string) error {
-//	err := r.Subscribe(topic)
-//
-//	if err != nil {
-//		return fmt.Errorf("r.Subscribe: %w", err)
-//	}
-//
-//	return nil
-//}

@@ -36,7 +36,7 @@ func newSyncProducer(brokers []string) (sarama.SyncProducer, error) {
 func NewProducer(brokers []string) (*Producer, error) {
 	syncProducer, err := newSyncProducer(brokers)
 	if err != nil {
-		return nil, fmt.Errorf("error with sync kafkaTests-producer %w", err)
+		return nil, fmt.Errorf("newSyncProducer: %w", err)
 	}
 
 	producer := &Producer{
@@ -60,7 +60,7 @@ func (p *Producer) SendSyncMessage(message *sarama.ProducerMessage) error {
 func (p *Producer) SendSyncMessages(messages []*sarama.ProducerMessage) error {
 	err := p.syncProducer.SendMessages(messages)
 	if err != nil {
-		return fmt.Errorf("kafkaTests.Connector.SendMessages error %w", err)
+		return fmt.Errorf("p.syncProducer.SendMessages: %w", err)
 	}
 
 	return nil
@@ -70,7 +70,7 @@ func (p *Producer) SendSyncMessages(messages []*sarama.ProducerMessage) error {
 func (p *Producer) Close() error {
 	err := p.syncProducer.Close()
 	if err != nil {
-		return fmt.Errorf("kafkaTests.Connector.Close %w", err)
+		return fmt.Errorf("p.syncProducer.Close %w", err)
 	}
 
 	return nil
