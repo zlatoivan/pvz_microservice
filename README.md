@@ -151,7 +151,7 @@ curl -X GET https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pas
 curl -X PUT http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
-    "stores_till": "22.04.2024 13:14",
+    "stores_till": "2024-04-22T13:14:01Z",
     "weight": 15,
     "cost": 500,
     "packaging_type": "tape"
@@ -161,7 +161,7 @@ curl -X PUT http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u i
 curl -X PUT https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
-    "stores_till": "22.04.2024 13:14",
+    "stores_till": "2024-04-22T13:14:01Z",
     "weight": 15,
     "cost": 500,
     "packaging_type": "tape"
