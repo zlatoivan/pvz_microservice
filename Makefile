@@ -1,5 +1,5 @@
 POSTGRES_SETUP := user=postgres password=postgres dbname=postgres host=localhost port=5433 sslmode=disable
-POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=pg_db_test port=5431 sslmode=disable
+POSTGRES_SETUP_TEST := user=postgres password=postgres dbname=test host=localhost port=5431 sslmode=disable
 MIGRATION_FOLDER=$(CURDIR)/migrations
 MIGRATION_NAME=pvz
 
@@ -12,6 +12,7 @@ compose-up: ### run docker compose
 	docker compose up --build
 	#docker compose up -d pg_db
 	#docker compose build
+	#docker compose up -d pg_db pg_db_test zookeeper kafka2
 
 .PHONY: compose-down
 compose-down: ### down docker compose
@@ -48,8 +49,8 @@ test: ### run tests
 	go test -v -count=2 -p=3 ./...
 
 .PHONY: test-integration
-test-integration: run-test ### run integration tests
-	go test -v -tags=integration ./...
+test-integration: ### run integration tests
+	CONFIG_PATH=$(CURDIR)/config/config_test.yaml grc go test ./... -tags=integration -v
 
 .PHONY: run-test
 run-test: ### run with tests

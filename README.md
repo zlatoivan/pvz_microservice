@@ -8,9 +8,14 @@
 
 ## Запуск программы
 
-    docker compose up --build
+Локально приложение, остальное в докере (пока только так работает):
 
-или не в контейнере, а локально:
+    make compose-up
+    make migration-up-test
+    make run-test
+    make test-integration (в другой консоли)
+
+Локально приложение, остальное в докере (устаревшее):
 
     В config/config.yaml postgres: host: сделать localhost.
     Оставить в docker-compose.yaml только pg_db (для тестов pg_db_test)
