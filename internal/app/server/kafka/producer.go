@@ -24,7 +24,6 @@ func newSyncProducer(brokers []string) (sarama.SyncProducer, error) {
 	syncProducerConfig.Producer.Compression = sarama.CompressionGZIP
 
 	syncProducer, err := sarama.NewSyncProducer(brokers, syncProducerConfig)
-
 	if err != nil {
 		return nil, fmt.Errorf("sarama.NewSyncProducer: %w", err)
 	}

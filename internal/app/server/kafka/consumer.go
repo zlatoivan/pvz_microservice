@@ -21,9 +21,8 @@ func NewConsumer(brokers []string) (*Consumer, error) {
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
 	consumer, err := sarama.NewConsumer(brokers, config)
-
 	if err != nil {
-		return nil, fmt.Errorf("error NewConsumer: %w", err)
+		return nil, fmt.Errorf("sarama.NewConsumer: %w", err)
 	}
 
 	return &Consumer{
