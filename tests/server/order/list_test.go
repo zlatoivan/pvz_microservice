@@ -35,7 +35,7 @@ func TestServer_ListOrders(t *testing.T) {
 		res, err := client.Do(req)
 		require.NoError(t, err)
 		orders := getOrdersFromRespListOrders(t, res)
-		wantTrue := checkIn(t, orderFromDB1, orders) && checkIn(t, orderFromDB2, orders)
+		wantTrue := checkIn(orderFromDB1, orders) && checkIn(orderFromDB2, orders)
 		postgres.DeleteOrder(t, ctx, db, id1)
 		postgres.DeleteOrder(t, ctx, db, id2)
 		postgres.TearDown(ctx, db)

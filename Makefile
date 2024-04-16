@@ -10,9 +10,12 @@ help: ## display this help screen
 .PHONY: compose-up
 compose-up: ### run docker compose
 	docker compose up --build
+
+.PHONY: compose-up-local
+compose-up-local: ### run docker compose local
+	docker compose up pg_db pg_db_test zookeeper kafka2 -d
 	#docker compose up -d pg_db
 	#docker compose build
-	#docker compose up -d pg_db pg_db_test zookeeper kafka2
 
 .PHONY: compose-down
 compose-down: ### down docker compose
@@ -46,7 +49,7 @@ migration-down-test: ### migration down test
 
 .PHONY: test
 test: ### run tests
-	go test -v -count=2 -p=3 ./...
+	grc go test -v -count=2 -p=3 ./...
 
 .PHONY: test-integration
 test-integration: ### run integration tests
@@ -54,7 +57,7 @@ test-integration: ### run integration tests
 
 .PHONY: run-test
 run-test: ### run with tests
-	CONFIG_PATH=config/config_test.yaml go run cmd/server/main.go
+	CONFIG_PATH=config/config_test.yaml grc go run cmd/server/main.go
 
 
 # ---------- local ----------

@@ -22,7 +22,7 @@ var (
 	url    = "http://localhost:9000"
 )
 
-func addAuthHeaders(t *testing.T, req *http.Request) {
+func addAuthHeaders(req *http.Request) {
 	username := "ivan"
 	password := "order_best_pass"
 	auth := username + ":" + password
@@ -35,7 +35,7 @@ func genHTTPReq(t *testing.T, method string, endpoint string, reqData interface{
 	require.NoError(t, err)
 	req, err := http.NewRequest(method, url+endpoint, bytes.NewReader(body))
 	require.NoError(t, err)
-	addAuthHeaders(t, req)
+	addAuthHeaders(req)
 	return req
 }
 
@@ -101,7 +101,7 @@ func getErrorFromResp(t *testing.T, res *http.Response) delivery.ResponseError {
 	return respErr
 }
 
-func checkIn(t *testing.T, order model.Order, orders []model.Order) bool {
+func checkIn(order model.Order, orders []model.Order) bool {
 	for _, r := range orders {
 		if order == r {
 			return true

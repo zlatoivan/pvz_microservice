@@ -8,28 +8,52 @@
 
 ## Запуск программы
 
-Локально приложение, остальное в докере (пока только так работает):
+Локально приложение, остальное в докере (из-за кафки пока только так работает):
 
-    make compose-up
-    make migration-up-test
-    make run-test
-    make test-integration (в другой консоли)
+    Для тестов:
+        make compose-up-local
+        make run-test           
+        make migration-up-test  (в другой консоли)
+        make test-integration
+        curl-запросы
 
-Локально приложение, остальное в докере (устаревшее):
+    Не для тестов:
+        make compose-up-local
+        make run                
+        make migration-up       (в другой консоли)
+        curl-запросы
 
-    В config/config.yaml postgres: host: сделать localhost.
-    Оставить в docker-compose.yaml только pg_db (для тестов pg_db_test)
+Безуспешная попытка сделать все в докере:
+
+    Изменить в файлах:
+        config/config.yaml
+            postgres:
+                host: pg_db
+                port: 5432
+        config/config_test.yaml
+            postgres:
+                host: pg_db_test
+                port: 5432
+        Makefile
+            POSTGRES_SETUP
+                host=pg_db
+                port=5432
+            POSTGRES_SETUP
+                host=pg_db_test
+                port=5432
     Затем:
-
-    docker compose up -d pg_db   (для тестов pg_tb_test)
-	docker compose build
-    make gen-ssl-cert            (если нужны свежие сертификаты)
-    make migration-up            (для тестов migration-test-up)
-    make run                     (для тестов run-test)
+        make compose-up
+        make migration-up       (в другой консоли)
+        curl-запросы
 
 ## Остановка программы
 
     doocker compose down
+
+или
+
+    bash
+    docker rm $(docker ps -aq) -f
 
 
 ## Запросы к серверу
