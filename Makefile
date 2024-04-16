@@ -47,15 +47,15 @@ migration-down-test: ### migration down test
 
 .PHONY: test
 test: ### run tests
-	grc go test -v -count=2 -p=3 ./...
+	go test -v -count=2 -p=3 ./...
 
 .PHONY: test-integration
 test-integration: ### run integration tests
-	CONFIG_PATH=$(CURDIR)/config/config_test.yaml grc go test ./... -tags=integration -v
+	CONFIG_PATH=$(CURDIR)/config/config_test.yaml go test ./... -tags=integration -v
 
 .PHONY: run-test
 run-test: ### run with tests
-	CONFIG_PATH=config/config_test.yaml grc go run cmd/server/main.go
+	CONFIG_PATH=config/config_test.yaml go run cmd/server/main.go
 
 
 # ---------- local ----------
@@ -84,3 +84,15 @@ gen-ssl-cert: ### generate fresh ssl certificate
 	openssl genrsa -out server.key 2048  # Сгенерировать приватный ключ (.key)
 	openssl req -new -x509 -sha256 -key server.key -out server.crt -days 365 -nodes  # Сгенерировать публичный ключ (.crt), но основе приватного
 	mv -f server.key server.crt internal/server/certs/  # Поместить оба файла в папку /certificate
+
+
+
+# ---------- tests with grc ----------
+
+.PHONY: test-grc
+test-grc: ### run tests grc
+	grc go test -v -count=2 -p=3 ./...
+
+.PHONY: test-integration-grc
+test-integration-grc: ### run integration tests grc
+	CONFIG_PATH=$(CURDIR)/config/config_test.yaml grc go test ./... -tags=integration -v
