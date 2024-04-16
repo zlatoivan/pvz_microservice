@@ -2,7 +2,6 @@ package order
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -20,10 +19,7 @@ func (s Handler) GetOrderByID(w http.ResponseWriter, req *http.Request) {
 
 	order, err := s.service.GetOrderByID(req.Context(), id)
 	if err != nil {
-		log.Printf("[GetOrderByID] s.Service.GetOrderByID: %v\n", err)
-		fmt.Printf("[ERROR] = %v\n", err)
-		fmt.Println(errors.Is(err, ErrNotFound))
-		if errors.Is(err, ErrNotFound) {
+		if errors.Unwrap(err).Error() == ErrNotFound.Error() { // errors.Is(err, ErrNotFound) не работает
 			delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespErrNotFoundByID(err))
 			return
 		}
