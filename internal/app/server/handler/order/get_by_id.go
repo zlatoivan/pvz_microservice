@@ -19,7 +19,7 @@ func (s Handler) GetOrderByID(w http.ResponseWriter, req *http.Request) {
 
 	order, err := s.service.GetOrderByID(req.Context(), id)
 	if err != nil {
-		if errors.Unwrap(err).Error() == ErrNotFound.Error() { // errors.Is(err, ErrNotFound) не работает
+		if errors.Is(err, ErrNotFound) {
 			delivery.RenderResponse(w, req, http.StatusNotFound, delivery.MakeRespErrNotFoundByID(err))
 			return
 		}
