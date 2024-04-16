@@ -13,7 +13,7 @@ import (
 
 const querySelectOrderByID = `
 SELECT id, client_id, weight, cost, stores_till, give_out_time, is_returned, packaging_type
-FROM orders 
+FROM orders
 WHERE id = $1
 AND is_deleted = FALSE;`
 

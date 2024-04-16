@@ -62,22 +62,22 @@
 Второй запрос - для HTTPS.
 
 ##### Main Page
-````
+````bash
 curl http://localhost:9000 -i -k -L
 ````
-````
+````bash
 curl https://localhost:9001 -i -k
 ````
 
 ##### Create PVZ
-````
+````bash
 curl --post301 http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "name": "Ozon Tech",
     "address": "Moscow, Presnenskaya nab. 10, block С",
     "contacts": "+7 958 400-00-05, add 76077"
 }'
 ````
-````    
+````bash
 curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "name": "Ozon Tech",
     "address": "Moscow, Presnenskaya nab. 10, block С",
@@ -86,27 +86,27 @@ curl -X POST https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass -H '
 ````
 
 ##### List of PVZs
-````
+````bash
 curl http://localhost:9000/api/v1/pvzs -i -k --location-trusted -u ivan:pvz_best_pass
 ````
-````
+````bash
 curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:pvz_best_pass
 ````
 
 ##### Get PVZ by ID
-````
-curl http://localhost:9000/api/v1/pvzs/id -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
+````bash
+curl -X GET http://localhost:9000/api/v1/pvzs/id -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2"
 }'
 ````
-````
-curl https://localhost:9001/api/v1/pvzs/id -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
+````bash
+curl -X GET https://localhost:9001/api/v1/pvzs/id -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2"
 }'
 ````
 
 ##### Update PVZ
-````
+````bash
 curl -X PUT http://localhost:9000/api/v1/pvzs/id -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
     "name": "Ozon Company",
@@ -114,7 +114,7 @@ curl -X PUT http://localhost:9000/api/v1/pvzs/id -i -k --location-trusted -u iva
     "contacts": "+7 999 888 11 11"
 }'
 ````
-````
+````bash
 curl -X PUT https://localhost:9001/api/v1/pvzs/id -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
     "name": "Ozon Company",
@@ -124,19 +124,19 @@ curl -X PUT https://localhost:9001/api/v1/pvzs/id -i -k -u ivan:pvz_best_pass -H
 ````
 
 ##### Delete PVZ
-````
+````bash
 curl -X DELETE http://localhost:9000/api/v1/pvzs/id -i -k --location-trusted -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2"
 }'
 ````
-````
+````bash
 curl -X DELETE https://localhost:9001/api/v1/pvzs/id -i -k -u ivan:pvz_best_pass -H 'Content-Type: application/json' -d '{
     "id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2"
 }'
 ````
 
 ##### Create Order
-````
+````bash
 curl --post301 http://localhost:9000/api/v1/orders -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
     "stores_till": "2024-04-22T13:14:01Z",
@@ -145,7 +145,7 @@ curl --post301 http://localhost:9000/api/v1/orders -i -k --location-trusted -u i
     "packaging_type": "box"
 }'
 ````
-````    
+````bash
 curl -X POST http://localhost:9000/api/v1/orders -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
     "stores_till": "2024-04-22T13:14:01Z",
@@ -156,27 +156,27 @@ curl -X POST http://localhost:9000/api/v1/orders -i -k -u ivan:order_best_pass -
 ````
 
 ##### List of orders
-````
+````bash
 curl http://localhost:9000/api/v1/orders -i -k --location-trusted -u ivan:order_best_pass
 ````
-````
+````bash
 curl https://localhost:9001/api/v1/pvzs -i -k -u ivan:order_best_pass
 ````
 
 ##### Get order by ID
-````
+````bash
 curl -X GET http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
-````
+````bash
 curl -X GET https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
 
 ##### Update order
-````
+````bash
 curl -X PUT http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
@@ -186,7 +186,7 @@ curl -X PUT http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u i
     "packaging_type": "tape"
 }'
 ````
-````
+````bash
 curl -X PUT https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "client_id": "9967bb48-bd6f-4ad0-924d-8c9094c4d8c2",
@@ -198,31 +198,31 @@ curl -X PUT https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pas
 ````
 
 ##### Delete order
-````
+````bash
 curl -X DELETE http://localhost:9000/api/v1/orders/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
-````
+````bash
 curl -X DELETE https://localhost:9001/api/v1/orders/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
 
 ##### List of client orders
-````
+````bash
 curl -X GET http://localhost:9000/api/v1/orders/client/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
-````
+````bash
 curl -X GET https://localhost:9001/api/v1/orders/client/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
-    "id": "165dbe30-d0c4-4727-9504-827db76d214e",
+    "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
 
 ##### Give out orders
-````
+````bash
 curl -X PUT http://localhost:9000/api/v1/orders/client/id -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "ids": [
@@ -231,7 +231,7 @@ curl -X PUT http://localhost:9000/api/v1/orders/client/id -i -k --location-trust
     ]
 }'
 ````
-````
+````bash
 curl -X PUT https://localhost:9001/api/v1/orders/client/id -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "165dbe30-d0c4-4727-9504-827db76d214e",
     "ids": [
@@ -242,13 +242,13 @@ curl -X PUT https://localhost:9001/api/v1/orders/client/id -i -k -u ivan:order_b
 ````
 
 ##### Return order
-````
+````bash
 curl -X PUT http://localhost:9000/api/v1/orders/client/id/return -i -k --location-trusted -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "427bf09a-59ff-4e2d-b55f-19582037456d",
     "id": "165dbe30-d0c4-4727-9504-827db76d214e"
 }'
 ````
-````
+````bash
 curl -X PUT https://localhost:9001/api/v1/orders/client/id/return -i -k -u ivan:order_best_pass -H 'Content-Type: application/json' -d '{
     "client_id": "427bf09a-59ff-4e2d-b55f-19582037456d",
     "id": "165dbe30-d0c4-4727-9504-827db76d214e"
@@ -256,10 +256,10 @@ curl -X PUT https://localhost:9001/api/v1/orders/client/id/return -i -k -u ivan:
 ````
 
 ##### List of returned orders
-````
+````bash
 curl http://localhost:9000/api/v1/orders/returned -i -k --location-trusted -u ivan:order_best_pass
 ````
-````
+````bash
 curl https://localhost:9001/api/v1/orders/returned -i -k -u ivan:order_best_pass
 ````
 
