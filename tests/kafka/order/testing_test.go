@@ -4,14 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"testing"
 
 	"github.com/IBM/sarama"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
 )
 
 var (
@@ -19,7 +17,7 @@ var (
 	url    = "http://localhost:9000"
 )
 
-func addAuthHeaders(t *testing.T, req *http.Request) {
+func addAuthHeaders(req *http.Request) {
 	username := "ivan"
 	password := "order_best_pass"
 	auth := username + ":" + password
@@ -38,21 +36,19 @@ func consumerInit(channelKafka chan<- kafka.CrudMessage) error {
 		return fmt.Errorf("kafka.NewConsumer: %w", err)
 	}
 
-	handlers := map[string]kafka.HandleFunc{
-		cfg.Topic: func(message *sarama.ConsumerMessage) {
-			pm := kafka.CrudMessage{}
-			err = json.Unmarshal(message.Value, &pm)
-			if err != nil {
-				log.Println("Consumer error", err)
-			}
-			channelKafka <- pm
-		},
+	handler := func(message *sarama.ConsumerMessage) error {
+		pm := kafka.CrudMessage{}
+		err = json.Unmarshal(message.Value, &pm)
+		if err != nil {
+			return fmt.Errorf("[consumerInit] json.Unmarshal: %w", err)
+		}
+		channelKafka <- pm
+		return nil
 	}
 
-	receiver := kafka.NewReceiver(consumer, handlers)
-	err = receiver.Subscribe(cfg.Topic)
+	err = consumer.Subscribe(cfg.Topic, handler)
 	if err != nil {
-		return fmt.Errorf("receiver.Subscribe: %w", err)
+		return fmt.Errorf("consumer.Subscribe: %w", err)
 	}
 
 	return nil

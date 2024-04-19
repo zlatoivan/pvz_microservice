@@ -1,3 +1,5 @@
+//go:generate minimock -i Producer -o mock/data_logger_mock.go -p mock -g
+
 package middleware
 
 import (
@@ -6,32 +8,31 @@ import (
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
 )
 
-type MW struct {
-	Sender *kafka.Sender
+type Producer interface {
+	SendMessage(message kafka.CrudMessage) error
 }
 
-func New(sender *kafka.Sender) MW {
-	return MW{Sender: sender}
+type MW struct {
+	producer Producer
+}
+
+func New(producer Producer) MW {
+	return MW{producer: producer}
 }
 
 func (m *MW) DataLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		data, err := delivery.GetRawDataFromReq(req)
 		if err != nil {
-			err = m.Sender.SendMessage(kafka.CrudMessage{
-				TimeCreate: time.Now(),
-				Type:       req.Method,
-				Data:       fmt.Sprintf("[MW]: delivery.GetRawDataFromReq: %v", err),
-			})
-			return
+			data = fmt.Sprintf("[MW]: delivery.GetRawDataFromReq: %v", err)
 		}
-		err = m.Sender.SendMessage(kafka.CrudMessage{
+		err = m.producer.SendMessage(kafka.CrudMessage{
 			TimeCreate: time.Now(),
 			Type:       req.Method,
-			Data:       string(data),
+			Data:       data,
 		})
 
 		next.ServeHTTP(w, req)

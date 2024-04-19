@@ -11,17 +11,17 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
-func GetRawDataFromReq(req *http.Request) ([]byte, error) {
+func GetRawDataFromReq(req *http.Request) (string, error) {
 	data, err := io.ReadAll(req.Body)
 	if err != nil {
-		return nil, fmt.Errorf("io.ReadAll: %w", err)
+		return "", fmt.Errorf("io.ReadAll: %w", err)
 	}
 	err = req.Body.Close()
 	if err != nil {
-		return nil, fmt.Errorf("req.Body.Close: %w", err)
+		return "", fmt.Errorf("req.Body.Close: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewBuffer(data))
-	return data, nil
+	return string(data), nil
 }
 
 func GetPVZFromReq(req *http.Request) (model.PVZ, error) {

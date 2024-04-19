@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gojuno/minimock/v3"
 	"github.com/google/uuid"
@@ -24,7 +25,15 @@ func TestHandler_CreateOrder(t *testing.T) {
 	endpoint := "/api/v1/orders"
 	mc := minimock.NewController(t)
 
-	reqOrderGood := fixtures.ReqCreateOrderGood
+	ClientID, _ := uuid.Parse("88cda6c0-36fc-4be4-b976-e11a8a7a8f7e")
+	StoresTill, _ := time.Parse(time.RFC3339, "2024-04-22T12:12:00Z")
+	reqOrderGood := delivery.RequestOrder{
+		ClientID:      ClientID,
+		StoresTill:    StoresTill,
+		Weight:        29,
+		Cost:          1100,
+		PackagingType: "box",
+	}
 	reqOrderBadReq := delivery.RequestOrder{ClientID: uuid.Nil}
 	validOrder := delivery.GetOrderFromReqOrder(reqOrderGood)
 

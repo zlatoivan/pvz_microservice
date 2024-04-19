@@ -8,19 +8,18 @@ import (
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/not_found"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
 	mwlogger "gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
 
 // createRouter creates http router
-func (s Server) createRouter(cfg config.Config, sender *kafka.Sender) *chi.Mux {
+func (s Server) createRouter(cfg config.Server, producer mwlogger.Producer) *chi.Mux {
 	pvzHandlers := pvz.New(s.pvzService)
 	orderHandlers := order.New(s.orderService)
-	mw := mwlogger.New(sender)
+	mw := mwlogger.New(producer)
 
-	pvzCreds := map[string]string{cfg.Server.PVZLogin: cfg.Server.PVZPassword}
-	orderCreds := map[string]string{cfg.Server.OrderLogin: cfg.Server.OrderPassword}
+	pvzCreds := map[string]string{cfg.PVZLogin: cfg.PVZPassword}
+	orderCreds := map[string]string{cfg.OrderLogin: cfg.OrderPassword}
 
 	r := chi.NewRouter()
 

@@ -7,6 +7,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -14,7 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
-	"gitlab.ozon.dev/zlatoivan4/homework/tests/fixtures"
 	"gitlab.ozon.dev/zlatoivan4/homework/tests/postgres"
 )
 
@@ -29,8 +29,17 @@ func TestServer_CreateOrder(t *testing.T) {
 		t.Parallel()
 
 		// arrange
-		req := genHTTPReq(t, method, endpoint, fixtures.ReqCreateOrderGood)
-		createdOrder := delivery.GetOrderFromReqOrder(fixtures.ReqCreateOrderGood)
+		ClientID, _ := uuid.Parse("88cda6c0-36fc-4be4-b976-e11a8a7a8f7e")
+		StoresTill, _ := time.Parse(time.RFC3339, "2024-04-22T12:12:00Z")
+		reqOrder := delivery.RequestOrder{
+			ClientID:      ClientID,
+			StoresTill:    StoresTill,
+			Weight:        29,
+			Cost:          1100,
+			PackagingType: "box",
+		}
+		req := genHTTPReq(t, method, endpoint, reqOrder)
+		createdOrder := delivery.GetOrderFromReqOrder(reqOrder)
 		createdOrder.Cost += 20
 
 		// act

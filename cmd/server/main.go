@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
 	order2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
 	pvz2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/pvz"
@@ -35,7 +35,7 @@ func bootstrap(ctx context.Context) error {
 		return fmt.Errorf("config.New: %w", err)
 	}
 
-	database, err := postgres.New(ctx, cfg)
+	database, err := postgres.New(ctx, cfg.Pg)
 	if err != nil {
 		return fmt.Errorf("postgres.New: %w", err)
 	}
@@ -49,12 +49,27 @@ func bootstrap(ctx context.Context) error {
 
 	mainServer := server.New(pvzService, orderService)
 
-	sender, err := kafka.New(cfg)
+	producer, err := kafka.NewProducer(cfg.Brokers, cfg.Topic)
 	if err != nil {
-		return fmt.Errorf("kafka.New: %w", err)
+		return fmt.Errorf("kafka.NewProducer: %w", err)
+	}
+	defer func() {
+		err = producer.Close()
+		if err != nil {
+			log.Printf("producer.Close: %v", err)
+		}
+	}()
+	consumer, err := kafka.NewConsumer(cfg.Brokers)
+	if err != nil {
+		return fmt.Errorf("kafka.NewProducer: %w", err)
+	}
+	handler := kafka.GetLogHandler()
+	err = consumer.Subscribe(cfg.Topic, handler)
+	if err != nil {
+		return fmt.Errorf("consumer.Subscribe: %w", err)
 	}
 
-	err = mainServer.Run(ctx, cfg, sender)
+	err = mainServer.Run(ctx, cfg.Server, producer)
 	if err != nil {
 		return fmt.Errorf("mainServer.Run: %w", err)
 	}

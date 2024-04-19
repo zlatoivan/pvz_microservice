@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/kafka"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
 )
 
 func TestKafka_ListOrders(t *testing.T) {
@@ -22,7 +22,7 @@ func TestKafka_ListOrders(t *testing.T) {
 		// arrange
 		req, err := http.NewRequest(http.MethodGet, url+"/api/v1/orders", nil)
 		require.NoError(t, err)
-		addAuthHeaders(t, req)
+		addAuthHeaders(req)
 
 		channelKafka := make(chan kafka.CrudMessage)
 		err = consumerInit(channelKafka)

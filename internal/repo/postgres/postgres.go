@@ -17,11 +17,11 @@ type Database struct {
 	pool *pgxpool.Pool
 }
 
-func GenerateDsn(cfg config.Config) string {
-	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Pg.Host, cfg.Pg.Port, cfg.Pg.User, cfg.Pg.Password, cfg.Pg.DBname)
+func GenerateDsn(cfg config.Pg) string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBname)
 }
 
-func New(ctx context.Context, cfg config.Config) (Database, error) {
+func New(ctx context.Context, cfg config.Pg) (Database, error) {
 	pool, err := ConnectToPostgres(ctx, GenerateDsn(cfg))
 	if err != nil {
 		return Database{}, fmt.Errorf("postgres.New: %w", err)

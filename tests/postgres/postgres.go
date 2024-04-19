@@ -21,7 +21,7 @@ func SetUp(ctx context.Context) (postgres.Database, error) {
 		return postgres.Database{}, fmt.Errorf("config.New: %w", err)
 	}
 
-	db, err := postgres.New(ctx, cfg)
+	db, err := postgres.New(ctx, cfg.Pg)
 	if err != nil {
 		return postgres.Database{}, fmt.Errorf("postgres.SeptUp: %w", err)
 	}

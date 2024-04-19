@@ -4,8 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/delivery"
 )
 
 var (
@@ -23,12 +21,4 @@ var (
 	PackagingType = "box"
 	IsReturned    = false
 	IsDeleted     = false
-
-	ReqCreateOrderGood = delivery.RequestOrder{
-		ClientID:      ClientID,
-		StoresTill:    StoresTill,
-		Weight:        Weight,
-		Cost:          Cost,
-		PackagingType: PackagingType,
-	}
 )
