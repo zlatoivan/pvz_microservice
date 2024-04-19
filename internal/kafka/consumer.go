@@ -57,6 +57,7 @@ func (c Consumer) Subscribe(topic string, handler HandleFunc) error {
 				case errH := <-errCh:
 					log.Printf("[Subscribe]: %v", errH)
 					return
+				default:
 				}
 			}
 		}(pc, partition, errCh)
