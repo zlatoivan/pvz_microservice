@@ -4,78 +4,82 @@
 
 ## Запуск программы
 
-Все в докере:
+##### Все в докере:
+````
+Запуск:
+    make compose-up
+    make migration-up
+    curl-запросы
 
-    Запуск:
-        make compose-up
-        make migration-up
-        curl-запросы
+Запуск для тестов:
+    Заменить в .env CONFIG_PATH на тестовый
+    make compose-up
+    make migration-up-test
+    make test-integration
+    curl-запросы
+````
 
-    Запуск для тестов:
-        Заменить в .env CONFIG_PATH на тестовый
-        make compose-up
-        make migration-up-test
-        make test-integration
-        curl-запросы
+##### Локально приложение, остальное в докере (из-за кафки пока только так работает):
+````
+Для тестов:
+    make compose-up-local
+    make run-test           
+    make migration-up-test  (в другой консоли)
+    make test-integration
+    curl-запросы
 
-Локально приложение, остальное в докере (из-за кафки пока только так работает):
+Не для тестов:
+    make compose-up-local
+    make run                
+    make migration-up       (в другой консоли)
+    curl-запросы
+````
 
-    Для тестов:
-        make compose-up-local
-        make run-test           
-        make migration-up-test  (в другой консоли)
-        make test-integration
-        curl-запросы
+##### Отличия запуска "в докере" от "локально приложение, остальное в докере":
+````
+Все в докере:                       Локально приложние, остальное в докере:
 
-    Не для тестов:
-        make compose-up-local
-        make run                
-        make migration-up       (в другой консоли)
-        curl-запросы
+    config/config.yaml                  config/config.yaml
+        server:
+            brokers: ['kafka2:9092']            brokers: ['localhost:9092']
+        postgres:                           postgres:
+            host: pg_db                         host: localhost
+            port: 5432                          port: 5431
 
-Отличия запуска "в докере" от "локально приложение, остальное в докере":
+    config/config_test.yaml             config/config_test.yaml
+        server:
+            brokers: ['kafka2:9092']            brokers: ['localhost:9092']
+        postgres:                           postgres:
+            host: pg_db_test                    host: localhost
+            port: 5432                          port: 5433
 
-    Все в докере:                       Локально приложние, остальное в докере:
+    Makefile                            Makefile
+        POSTGRES_SETUP                      POSTGRES_SETUP
+            host=pg_db                          host=localhost
+            port=5432                           port=5431
+        POSTGRES_SETUP_TEST                 POSTGRES_SETUP_TEST
+            host=pg_db_test                     host=localhost
+            port=5432                           port=5433
 
-        config/config.yaml                  config/config.yaml
-            server:
-                brokers: ['kafka2:9092']            brokers: ['localhost:9092']
-            postgres:                           postgres:
-                host: pg_db                         host: localhost
-                port: 5432                          port: 5431
-
-        config/config_test.yaml             config/config_test.yaml
-            server:
-                brokers: ['kafka2:9092']            brokers: ['localhost:9092']
-            postgres:                           postgres:
-                host: pg_db_test                    host: localhost
-                port: 5432                          port: 5433
-
-        Makefile                            Makefile
-            POSTGRES_SETUP                      POSTGRES_SETUP
-                host=pg_db                          host=localhost
-                port=5432                           port=5431
-            POSTGRES_SETUP_TEST                 POSTGRES_SETUP_TEST
-                host=pg_db_test                     host=localhost
-                port=5432                           port=5433
-
-        docker-compose.yaml
-            kafka2:
-                environment:
-                    KAFKA_ADVERTISED_LISTENERS: 
-                        LISTNER_INT://kafka2:29092,LISTENER_EXT://kafka2:9092      | <- в докере
-                        LISTNER_INT://kafka2:29092,LISTENER_EXT://localhost:9092   | <- локально
-
+    docker-compose.yaml
+        kafka2:
+            environment:
+                KAFKA_ADVERTISED_LISTENERS: 
+                    LISTNER_INT://kafka2:29092,LISTENER_EXT://kafka2:9092      | <- в докере
+                    LISTNER_INT://kafka2:29092,LISTENER_EXT://localhost:9092   | <- локально
+````
 
 
 ## Остановка программы
-
-    doocker compose down
+````bash
+doocker compose down
+````
 
 или
-
+````bash
     bash
     docker rm $(docker ps -aq) -f
+````
 
 
 ## Запросы к серверу
