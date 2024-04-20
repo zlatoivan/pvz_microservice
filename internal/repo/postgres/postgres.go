@@ -98,3 +98,7 @@ func (db Database) Get(ctx context.Context, dest any, query string, args ...any)
 func (db Database) Select(ctx context.Context, dest any, query string, args ...any) error {
 	return pgxscan.Select(ctx, db.pool, dest, query, args...)
 }
+
+func (db Database) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+	return db.pool.BeginTx(ctx, txOptions)
+}

@@ -1,15 +1,17 @@
-package in_memory_cache
+package pvz
 
 import (
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 // cacheItem struct in_memory_cache cacheItem
 type cacheItem struct {
-	value      interface{}
+	value      model.PVZ
 	expiration time.Time
 	created    time.Time
 }
@@ -55,7 +57,7 @@ func (c cacheItem) isExpired() bool {
 }
 
 // Set setting a in_memory_cache by key
-func (c *Cache) Set(key uuid.UUID, value interface{}, ttl time.Duration) {
+func (c *Cache) Set(key uuid.UUID, value model.PVZ, ttl time.Duration) {
 	if ttl == 0 {
 		ttl = c.defaultExpiration
 	}
@@ -71,18 +73,18 @@ func (c *Cache) Set(key uuid.UUID, value interface{}, ttl time.Duration) {
 }
 
 // Get getting a in_memory_cache by key
-func (c *Cache) Get(key uuid.UUID) (interface{}, bool) {
+func (c *Cache) Get(key uuid.UUID) (model.PVZ, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
 	item, ok := c.items[key]
 	if !ok {
-		return nil, false
+		return model.PVZ{}, false
 	}
 
 	if item.isExpired() {
 		delete(c.items, key)
-		return nil, false
+		return model.PVZ{}, false
 	}
 
 	return item.value, true

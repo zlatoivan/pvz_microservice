@@ -4,10 +4,14 @@ package pvz
 
 import (
 	"context"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
 
 type postgres interface {
@@ -19,10 +23,17 @@ type postgres interface {
 	Select(ctx context.Context, dest any, query string, args ...any) error
 }
 
-type Repo struct {
-	db postgres
+type inMemoryCache interface {
+	Set(key uuid.UUID, value model.PVZ, ttl time.Duration)
+	Get(key uuid.UUID) (model.PVZ, bool)
+	Delete(key uuid.UUID)
 }
 
-func New(database postgres) Repo {
-	return Repo{db: database}
+type Repo struct {
+	db    postgres
+	cache inMemoryCache
+}
+
+func New(database postgres, cache inMemoryCache) Repo {
+	return Repo{db: database, cache: cache}
 }

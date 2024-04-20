@@ -6,13 +6,16 @@ import (
 	"log"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	orderinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/in_memory_cache/order"
+	pvzinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/in_memory_cache/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
-	order2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
+	orderrepo "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
-	pvz2 "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/pvz"
+	pvzrepo "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/service/pvz"
 )
@@ -41,8 +44,11 @@ func bootstrap(ctx context.Context) error {
 	}
 	defer database.GetPool(ctx).Close()
 
-	pvzRepo := pvz2.New(database)
-	orderRepo := order2.New(database)
+	pvzCache := pvzinmemorycache.New(5*time.Minute, 10*time.Minute)
+	orderCache := orderinmemorycache.New(5*time.Minute, 10*time.Minute)
+
+	pvzRepo := pvzrepo.New(database, pvzCache)
+	orderRepo := orderrepo.New(database, orderCache)
 
 	pvzService := pvz.New(pvzRepo)
 	orderService := order.New(orderRepo)
