@@ -13,9 +13,9 @@ import (
 )
 
 // createRouter creates http router
-func (s Server) createRouter(cfg config.Server, producer mwlogger.Producer) *chi.Mux {
-	pvzHandlers := pvz.New(s.pvzService)
-	orderHandlers := order.New(s.orderService)
+func (s Server) createRouter(cfg config.Server, producer mwlogger.Producer, redisPVZCache pvz.Redis, redisOrderCache order.Redis) *chi.Mux {
+	pvzHandlers := pvz.New(s.pvzService, redisPVZCache)
+	orderHandlers := order.New(s.orderService, redisOrderCache)
 	mw := mwlogger.New(producer)
 
 	pvzCreds := map[string]string{cfg.PVZLogin: cfg.PVZPassword}

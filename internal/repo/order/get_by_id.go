@@ -20,8 +20,6 @@ AND is_deleted = FALSE;`
 
 // GetOrderByID gets Order by ID from repo
 func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error) {
-	var order model.Order
-
 	order, ok := repo.cache.Get(id)
 	if ok {
 		repo.cache.Set(id, order, 5*time.Minute)

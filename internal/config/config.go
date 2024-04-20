@@ -29,6 +29,7 @@ type Server struct {
 	OrderPassword string   `yaml:"order_auth_password" env-default:""`
 	Brokers       []string `yaml:"brokers" env-default:""`
 	Topic         string   `yaml:"topic" env-default:""`
+	Redis         string   `yaml:"redis" env-default:""`
 }
 
 func New() (Config, error) {

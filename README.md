@@ -8,6 +8,20 @@
 
 ## Запуск программы
 
+Все в докере:
+
+    Запуск:
+        make compose-up
+        make migration-up
+        curl-запросы
+
+    Запуск для тестов:
+        Заменить в .env CONFIG_PATH на тестовый
+        make compose-up
+        make migration-up-test
+        make test-integration
+        curl-запросы
+
 Локально приложение, остальное в докере (из-за кафки пока только так работает):
 
     Для тестов:
@@ -23,28 +37,40 @@
         make migration-up       (в другой консоли)
         curl-запросы
 
-Безуспешная попытка сделать все в докере:
+Отличия запуска "в докере" от "локально приложение, остальное в докере":
 
-    Изменить в файлах:
-        config/config.yaml
-            postgres:
-                host: pg_db
-                port: 5432
-        config/config_test.yaml
-            postgres:
-                host: pg_db_test
-                port: 5432
-        Makefile
-            POSTGRES_SETUP
-                host=pg_db
-                port=5432
-            POSTGRES_SETUP
-                host=pg_db_test
-                port=5432
-    Затем:
-        make compose-up
-        make migration-up       (в другой консоли)
-        curl-запросы
+    Все в докере:                       Локально приложние, остальное в докере:
+
+        config/config.yaml                  config/config.yaml
+            server:
+                brokers: ['kafka2:9092']            brokers: ['localhost:9092']
+            postgres:                           postgres:
+                host: pg_db                         host: localhost
+                port: 5432                          port: 5431
+
+        config/config_test.yaml             config/config_test.yaml
+            server:
+                brokers: ['kafka2:9092']            brokers: ['localhost:9092']
+            postgres:                           postgres:
+                host: pg_db_test                    host: localhost
+                port: 5432                          port: 5433
+
+        Makefile                            Makefile
+            POSTGRES_SETUP                      POSTGRES_SETUP
+                host=pg_db                          host=localhost
+                port=5432                           port=5431
+            POSTGRES_SETUP_TEST                 POSTGRES_SETUP_TEST
+                host=pg_db_test                     host=localhost
+                port=5432                           port=5433
+
+        docker-compose.yaml
+            kafka2:
+                environment:
+                    KAFKA_ADVERTISED_LISTENERS: 
+                        LISTNER_INT://kafka2:29092,LISTENER_EXT://kafka2:9092      | <- в докере
+                        LISTNER_INT://kafka2:29092,LISTENER_EXT://localhost:9092   | <- локально
+
+
 
 ## Остановка программы
 

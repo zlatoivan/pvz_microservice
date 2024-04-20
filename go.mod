@@ -12,6 +12,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/pkg/errors v0.9.1
+	github.com/redis/go-redis/v9 v9.5.1
 	github.com/stretchr/testify v1.9.0
 )
 
@@ -20,9 +21,11 @@ require (
 	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/ClickHouse/clickhouse-go v1.5.4 // indirect
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/denisenkom/go-mssqldb v0.12.3 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/eapache/go-resiliency v1.6.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect

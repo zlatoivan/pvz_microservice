@@ -15,6 +15,7 @@ services:
       retries: 5
     volumes:
        - pg-data:/var/lib/postgresql/data
+
   pg_db_test:
     image: postgres:13
     restart: unless-stopped
@@ -63,10 +64,9 @@ services:
   kafka2:
     image: confluentinc/cp-kafka:latest
     restart: unless-stopped
-#    healthcheck:
-#      test: ps augwwx | egrep [S]upportedKafka
     healthcheck:
       test: ps aux | grep -q [k]afka
+#      test: ps augwwx | egrep [S]upportedKafka
       interval: 5s
       timeout: 5s
       retries: 5
@@ -78,11 +78,17 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_LISTNERS: LISTNER_INT://kafka2:29092,LISTENER_EXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: LISTNER_INT://kafka2:29092,LISTENER_EXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTNER_INT://kafka2:29092,LISTENER_EXT://kafka2:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTNER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTNER_INT
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       ZOOKEEPER: zookeeper:2181
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
 
 volumes:
   pg-data:

@@ -31,8 +31,8 @@ func New(pvzService pvz.Service, orderService order.Service) Server {
 //}
 
 // Run starts the server
-func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.Producer) error {
-	router := s.createRouter(cfg, producer)
+func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.Producer, redisPVZCache pvz.Redis, redisOrderCache order.Redis) error {
+	router := s.createRouter(cfg, producer, redisPVZCache, redisOrderCache)
 	httpsPort := cfg.HttpsPort
 	httpPort := cfg.HttpPort
 	httpsServer := &http.Server{Addr: "localhost:" + httpsPort, Handler: router}

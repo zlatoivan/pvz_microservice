@@ -18,10 +18,21 @@ type Service interface {
 	DeletePVZ(ctx context.Context, id uuid.UUID) error
 }
 
-type Handler struct {
-	service Service
+type Redis interface {
+	Set(ctx context.Context, key string, value []byte) error
+	Get(ctx context.Context, key string) ([]byte, error)
+	Delete(ctx context.Context, key string) error
 }
 
-func New(service Service) Handler {
-	return Handler{service: service}
+type Handler struct {
+	service Service
+	cache   Redis
+}
+
+func New(service Service, cache Redis) Handler {
+	handler := Handler{
+		service: service,
+		cache:   cache,
+	}
+	return handler
 }

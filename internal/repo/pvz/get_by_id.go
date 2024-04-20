@@ -16,8 +16,6 @@ const querySelectPVZByID = `SELECT id, name, address, contacts FROM pvzs WHERE i
 
 // GetPVZByID gets PVZ by ID from repo
 func (repo Repo) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error) {
-	var pvz model.PVZ
-
 	pvz, ok := repo.cache.Get(id)
 	if ok {
 		repo.cache.Set(id, pvz, 5*time.Minute)

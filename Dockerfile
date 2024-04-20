@@ -10,10 +10,6 @@ COPY . .
 
 RUN go build -o main cmd/server/main.go
 
-EXPOSE 9000
-EXPOSE 9001
-EXPOSE 9092
-
 CMD ["./main"]
 
 

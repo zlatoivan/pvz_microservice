@@ -13,7 +13,7 @@ compose-up: ### run docker compose
 
 .PHONY: compose-up-local
 compose-up-local: ### run docker compose local
-	docker compose up pg_db pg_db_test zookeeper kafka2 -d
+	docker compose up pg_db pg_db_test zookeeper kafka2 redis -d
 
 .PHONY: compose-down
 compose-down: ### down docker compose

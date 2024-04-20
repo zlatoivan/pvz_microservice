@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
+	orderinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/cache/in_memory/order"
+	pvzinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/cache/in_memory/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/cache/redis"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
-	orderinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/in_memory_cache/order"
-	pvzinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/in_memory_cache/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/kafka"
 	orderrepo "gitlab.ozon.dev/zlatoivan4/homework/internal/repo/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/repo/postgres"
@@ -44,11 +45,25 @@ func bootstrap(ctx context.Context) error {
 	}
 	defer database.GetPool(ctx).Close()
 
-	pvzCache := pvzinmemorycache.New(5*time.Minute, 10*time.Minute)
-	orderCache := orderinmemorycache.New(5*time.Minute, 10*time.Minute)
+	inMemPVZCache := pvzinmemorycache.New(5*time.Minute, 10*time.Minute)
+	inMemOrderCache := orderinmemorycache.New(5*time.Minute, 10*time.Minute)
+	redisPVZCache := redis.New(cfg.Redis, 5*time.Minute)
+	defer func() {
+		err = redisPVZCache.Close()
+		if err != nil {
+			log.Printf("redisPVZCache.Close: %v", err)
+		}
+	}()
+	redisOrderCache := redis.New(cfg.Redis, 5*time.Minute)
+	defer func() {
+		err = redisOrderCache.Close()
+		if err != nil {
+			log.Printf("redisPVZCache.Close: %v", err)
+		}
+	}()
 
-	pvzRepo := pvzrepo.New(database, pvzCache)
-	orderRepo := orderrepo.New(database, orderCache)
+	pvzRepo := pvzrepo.New(database, inMemPVZCache)
+	orderRepo := orderrepo.New(database, inMemOrderCache)
 
 	pvzService := pvz.New(pvzRepo)
 	orderService := order.New(orderRepo)
@@ -75,7 +90,7 @@ func bootstrap(ctx context.Context) error {
 		return fmt.Errorf("consumer.Subscribe: %w", err)
 	}
 
-	err = mainServer.Run(ctx, cfg.Server, producer)
+	err = mainServer.Run(ctx, cfg.Server, producer, redisPVZCache, redisOrderCache)
 	if err != nil {
 		return fmt.Errorf("mainServer.Run: %w", err)
 	}
