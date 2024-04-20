@@ -21,33 +21,35 @@ AND is_deleted = FALSE;`
 // GetOrderByID gets Order by ID from repo
 func (repo Repo) GetOrderByID(ctx context.Context, id uuid.UUID) (model.Order, error) {
 	var order model.Order
+
 	order, ok := repo.cache.Get(id)
+	if ok {
+		repo.cache.Set(id, order, 5*time.Minute)
+		return order, nil
+	}
 
-	if !ok {
-		options := pgx.TxOptions{
-			IsoLevel:   pgx.Serializable,
-			AccessMode: pgx.ReadOnly,
-		}
-		tx, err := repo.db.BeginTx(ctx, options)
-		if err != nil {
-			return model.Order{}, fmt.Errorf("repo.db.BeginTx: %w", err)
-		}
+	options := pgx.TxOptions{
+		IsoLevel:   pgx.Serializable,
+		AccessMode: pgx.ReadOnly,
+	}
+	tx, err := repo.db.BeginTx(ctx, options)
+	if err != nil {
+		return model.Order{}, fmt.Errorf("repo.db.BeginTx: %w", err)
+	}
 
-		err = repo.db.Get(ctx, &order, querySelectOrderByID, id)
-		if err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				return model.Order{}, ErrNotFound
-			}
-			return model.Order{}, fmt.Errorf("repo.db.Get: %w", err)
+	err = repo.db.Get(ctx, &order, querySelectOrderByID, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return model.Order{}, ErrNotFound
 		}
+		return model.Order{}, fmt.Errorf("repo.db.Get: %w", err)
+	}
 
-		err = tx.Commit(ctx)
-		if err != nil {
-			return model.Order{}, fmt.Errorf("tx.Commit: %w", err)
-		}
+	err = tx.Commit(ctx)
+	if err != nil {
+		return model.Order{}, fmt.Errorf("tx.Commit: %w", err)
 	}
 
 	repo.cache.Set(id, order, 5*time.Minute)
-
 	return order, nil
 }

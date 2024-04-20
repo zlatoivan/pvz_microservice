@@ -21,6 +21,7 @@ type postgres interface {
 	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
 	Get(ctx context.Context, dest any, query string, args ...any) error
 	Select(ctx context.Context, dest any, query string, args ...any) error
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 }
 
 type inMemoryCache interface {
