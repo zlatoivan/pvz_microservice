@@ -23,7 +23,6 @@ type Producer struct {
 // NewProducer возвращает новую Producer
 func NewProducer(brokers []string, topic string) (*Producer, error) {
 	cfg := sarama.NewConfig()
-	cfg.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 	cfg.Producer.RequiredAcks = sarama.WaitForAll
 	cfg.Producer.Idempotent = true
 	cfg.Producer.Return.Successes = true
