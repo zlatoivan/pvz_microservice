@@ -3,6 +3,9 @@ package order
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/jackc/pgx/v5"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )
@@ -15,6 +18,15 @@ WHERE id = $5
 
 // UpdateOrder updates Order in repo
 func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
+	options := pgx.TxOptions{
+		IsoLevel:   pgx.Serializable,
+		AccessMode: pgx.ReadOnly,
+	}
+	tx, err := repo.db.BeginTx(ctx, options)
+	if err != nil {
+		return fmt.Errorf("repo.db.BeginTx: %w", err)
+	}
+
 	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ClientID, updOrder.Weight, updOrder.Cost, updOrder.StoresTill, updOrder.ID)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
@@ -22,6 +34,13 @@ func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
 	if t.RowsAffected() == 0 {
 		return ErrNotFound
 	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("tx.Commit: %w", err)
+	}
+
+	repo.cache.Set(updOrder.ID, updOrder, 5*time.Minute)
 
 	return nil
 }
