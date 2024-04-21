@@ -344,4 +344,35 @@ go run cmd/cli/main.go help
 ## Архитектура
 
 Демонстрация архитектуры сервера показана на примере этапов запроса создания нового заказа: <br/>
-![GOHW-4, UML.svg](uml%2FGOHW-4%2C%20UML.svg)
+```mermaid
+sequenceDiagram
+    Client->>+Middleware: POST /orders <br> request body (JSON)
+
+    Middleware->>Middleware: Проверка авторизации
+    Middleware->>Middleware: Логгирование запроса
+    Middleware->>+Delivery: GetOrderWithoutIDFromReq
+
+    Delivery->>Delivery: Десериализиация и <br> валидация данных
+    Delivery->>+Service: s.OrderService.CreateOrder
+
+    Service->>+Repo: s.repo.GetOrderByID
+    Repo->>+Database: repo.db.GetOrderByID <br> SQL query (SELECT)
+    Database-->>-Repo: Данные
+    Repo-->>-Service: Данные
+
+    Service->>Service: Проверка отсутствия <br> заказа с таким ID
+    Service->>Service: Проверка, что срок <br> хранения не истек
+    Service->>Service: Корректировка цены <br> заказа в зависимости от <br> его веса и типа упаковки
+
+    Service->>+Repo: s.repo.CreateOrder
+    Repo->>+Database: repo.db.CreateOrder <br> SQL query (INSERT)
+    Database-->>-Repo: Данные
+    Repo-->>-Service: Данные
+
+    Service-->>-Delivery: Данные
+    Delivery->>Delivery: Формирование HTTP-ответа
+
+    Delivery-->>-Middleware: 
+
+    Middleware-->>-Client: 201 OK <br> application/json
+```
