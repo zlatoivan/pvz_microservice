@@ -1,6 +1,7 @@
 package pvz
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -24,6 +25,19 @@ func (s Handler) CreatePVZ(w http.ResponseWriter, req *http.Request) {
 			delivery.RenderResponse(w, req, http.StatusConflict, delivery.MakeRespErrAlreadyExists(err))
 			return
 		}
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+
+	pvzRaw, err := json.Marshal(newPVZ)
+	if err != nil {
+		log.Printf("[CreatePVZ] json.Marshal: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+	err = s.cache.Set(req.Context(), id.String(), pvzRaw)
+	if err != nil {
+		log.Printf("[CreatePVZ] s.cache.Set: %v\n", err)
 		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}

@@ -28,6 +28,12 @@ func (s Handler) GetOrderByID(w http.ResponseWriter, req *http.Request) {
 			delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 			return
 		}
+		err = s.cache.Set(req.Context(), id.String(), orderRaw)
+		if err != nil {
+			log.Printf("[GetOrderByID] s.cache.Set: %v\n", err)
+			delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+			return
+		}
 		log.Printf("[GetOrderByID] Got order by ID\n")
 		delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespOrder(order))
 		return
@@ -41,6 +47,19 @@ func (s Handler) GetOrderByID(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		log.Printf("[GetOrderByID] s.service.GetOrderByID: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+
+	orderRaw, err = json.Marshal(order)
+	if err != nil {
+		log.Printf("[GetOrderByID] json.Marshal: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+	err = s.cache.Set(req.Context(), id.String(), orderRaw)
+	if err != nil {
+		log.Printf("[GetOrderByID] s.cache.Set: %v\n", err)
 		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}

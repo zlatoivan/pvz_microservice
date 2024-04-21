@@ -1,6 +1,7 @@
 package order
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -24,6 +25,19 @@ func (s Handler) CreateOrder(w http.ResponseWriter, req *http.Request) {
 			delivery.RenderResponse(w, req, http.StatusConflict, delivery.MakeRespErrAlreadyExists(err))
 			return
 		}
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+
+	orderRaw, err := json.Marshal(newOrder)
+	if err != nil {
+		log.Printf("[CreateOrder] json.Marshal: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+	err = s.cache.Set(req.Context(), id.String(), orderRaw)
+	if err != nil {
+		log.Printf("[CreateOrder] s.cache.Set: %v\n", err)
 		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}

@@ -28,6 +28,13 @@ func (s Handler) DeletePVZ(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	err = s.cache.Delete(req.Context(), id.String())
+	if err != nil {
+		log.Printf("[DeletePVZ] s.cache.Delete: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+
 	log.Println("[DeletePVZ] PVZ deleted")
 	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespComment("PVZ deleted"))
 }

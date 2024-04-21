@@ -28,6 +28,12 @@ func (s Handler) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 			delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 			return
 		}
+		err = s.cache.Set(req.Context(), id.String(), pvzRaw)
+		if err != nil {
+			log.Printf("[GetPVZByID] s.cache.Set: %v\n", err)
+			delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+			return
+		}
 		log.Printf("[GetPVZByID] Got PVZ by ID\n")
 		delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespPVZ(pvz))
 		return
@@ -41,6 +47,19 @@ func (s Handler) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		log.Printf("[GetPVZByID] s.service.GetPVZByID: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+
+	pvzRaw, err = json.Marshal(pvz)
+	if err != nil {
+		log.Printf("[GetPVZByID] json.Marshal: %v\n", err)
+		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
+		return
+	}
+	err = s.cache.Set(req.Context(), id.String(), pvzRaw)
+	if err != nil {
+		log.Printf("[GetPVZByID] s.cache.Set: %v\n", err)
 		delivery.RenderResponse(w, req, http.StatusInternalServerError, delivery.MakeRespErrInternalServer(err))
 		return
 	}
