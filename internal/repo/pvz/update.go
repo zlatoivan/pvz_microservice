@@ -23,7 +23,7 @@ func (repo Repo) UpdatePVZ(ctx context.Context, updPVZ model.PVZ) error {
 		return fmt.Errorf("repo.db.BeginTx: %w", err)
 	}
 
-	t, err := repo.db.Exec(ctx, queryUpdatePVZ, updPVZ.ID, updPVZ.Name, updPVZ.Address, updPVZ.Contacts)
+	t, err := tx.Exec(ctx, queryUpdatePVZ, updPVZ.ID, updPVZ.Name, updPVZ.Address, updPVZ.Contacts)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}

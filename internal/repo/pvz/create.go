@@ -25,7 +25,7 @@ func (repo Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error
 	}
 
 	var id uuid.UUID
-	err = repo.db.QueryRow(ctx, queryInsertPVZ, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
+	err = tx.QueryRow(ctx, queryInsertPVZ, pvz.Name, pvz.Address, pvz.Contacts).Scan(&id)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
 	}

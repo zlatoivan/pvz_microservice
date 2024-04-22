@@ -27,7 +27,7 @@ func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
 		return fmt.Errorf("repo.db.BeginTx: %w", err)
 	}
 
-	t, err := repo.db.Exec(ctx, queryUpdateOrder, updOrder.ClientID, updOrder.Weight, updOrder.Cost, updOrder.StoresTill, updOrder.ID)
+	t, err := tx.Exec(ctx, queryUpdateOrder, updOrder.ClientID, updOrder.Weight, updOrder.Cost, updOrder.StoresTill, updOrder.ID)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}

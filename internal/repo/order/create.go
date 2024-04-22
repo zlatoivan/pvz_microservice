@@ -29,7 +29,7 @@ func (repo Repo) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID,
 
 	var id uuid.UUID
 	var timeNull time.Time
-	err = repo.db.QueryRow(ctx, queryInsertOrder, order.ClientID, order.Weight, order.Cost, order.StoresTill, timeNull, order.PackagingType).Scan(&id)
+	err = tx.QueryRow(ctx, queryInsertOrder, order.ClientID, order.Weight, order.Cost, order.StoresTill, timeNull, order.PackagingType).Scan(&id)
 	if err != nil {
 		return uuid.UUID{}, fmt.Errorf("repo.db.QueryRow().Scan: %w", err)
 	}

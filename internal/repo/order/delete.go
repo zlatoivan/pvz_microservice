@@ -24,7 +24,7 @@ func (repo Repo) DeleteOrder(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("repo.db.BeginTx: %w", err)
 	}
 
-	t, err := repo.db.Exec(ctx, queryUpdateSoftDelete, id)
+	t, err := tx.Exec(ctx, queryUpdateSoftDelete, id)
 	if err != nil {
 		return fmt.Errorf("repo.db.Exec: %w", err)
 	}
