@@ -16,7 +16,7 @@ const queryUpdatePVZ = `UPDATE pvzs SET name = $2, address = $3, contacts = $4 W
 func (repo Repo) UpdatePVZ(ctx context.Context, updPVZ model.PVZ) error {
 	options := pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
-		AccessMode: pgx.ReadOnly,
+		AccessMode: pgx.ReadWrite,
 	}
 	tx, err := repo.db.BeginTx(ctx, options)
 	if err != nil {

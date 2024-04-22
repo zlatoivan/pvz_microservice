@@ -20,7 +20,7 @@ RETURNING id;`
 func (repo Repo) CreateOrder(ctx context.Context, order model.Order) (uuid.UUID, error) {
 	options := pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
-		AccessMode: pgx.ReadOnly,
+		AccessMode: pgx.ReadWrite,
 	}
 	tx, err := repo.db.BeginTx(ctx, options)
 	if err != nil {

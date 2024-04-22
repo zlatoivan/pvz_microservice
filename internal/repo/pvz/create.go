@@ -17,7 +17,7 @@ const queryInsertPVZ = `INSERT INTO pvzs (name, address, contacts) VALUES ($1, $
 func (repo Repo) CreatePVZ(ctx context.Context, pvz model.PVZ) (uuid.UUID, error) {
 	options := pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
-		AccessMode: pgx.ReadOnly,
+		AccessMode: pgx.ReadWrite,
 	}
 	tx, err := repo.db.BeginTx(ctx, options)
 	if err != nil {

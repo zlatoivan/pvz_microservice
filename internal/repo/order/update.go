@@ -20,7 +20,7 @@ WHERE id = $5
 func (repo Repo) UpdateOrder(ctx context.Context, updOrder model.Order) error {
 	options := pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
-		AccessMode: pgx.ReadOnly,
+		AccessMode: pgx.ReadWrite,
 	}
 	tx, err := repo.db.BeginTx(ctx, options)
 	if err != nil {

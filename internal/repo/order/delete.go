@@ -17,7 +17,7 @@ WHERE id = $1;`
 func (repo Repo) DeleteOrder(ctx context.Context, id uuid.UUID) error {
 	options := pgx.TxOptions{
 		IsoLevel:   pgx.Serializable,
-		AccessMode: pgx.ReadOnly,
+		AccessMode: pgx.ReadWrite,
 	}
 	tx, err := repo.db.BeginTx(ctx, options)
 	if err != nil {
