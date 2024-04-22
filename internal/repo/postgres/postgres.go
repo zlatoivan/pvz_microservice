@@ -91,8 +91,8 @@ func (db Database) Query(ctx context.Context, query string) (pgx.Rows, error) {
 	return db.pool.Query(ctx, query)
 }
 
-func (db Database) Get(ctx context.Context, dest any, query string, args ...any) error {
-	return pgxscan.Get(ctx, db.pool, dest, query, args...)
+func (db Database) Get(ctx context.Context, querier pgxscan.Querier, dest any, query string, args ...any) error {
+	return pgxscan.Get(ctx, querier, dest, query, args...)
 }
 
 func (db Database) Select(ctx context.Context, dest any, query string, args ...any) error {

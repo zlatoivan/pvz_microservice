@@ -22,12 +22,26 @@ func (repo Repo) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error
 		return pvz, nil
 	}
 
-	err := repo.db.Get(ctx, &pvz, querySelectPVZByID, id)
+	options := pgx.TxOptions{
+		IsoLevel:   pgx.Serializable,
+		AccessMode: pgx.ReadOnly,
+	}
+	tx, err := repo.db.BeginTx(ctx, options)
+	if err != nil {
+		return model.PVZ{}, fmt.Errorf("repo.db.BeginTx: %w", err)
+	}
+
+	err = repo.db.Get(ctx, repo.db.GetPool(ctx), &pvz, querySelectPVZByID, id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return model.PVZ{}, ErrNotFound
 		}
 		return model.PVZ{}, fmt.Errorf("repo.db.Get: %w", err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return model.PVZ{}, fmt.Errorf("tx.Commit: %w", err)
 	}
 
 	repo.cache.Set(id, pvz, 5*time.Minute)

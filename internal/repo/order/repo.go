@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -19,7 +20,7 @@ type postgres interface {
 	QueryRow(ctx context.Context, query string, args ...any) pgx.Row
 	Query(ctx context.Context, query string) (pgx.Rows, error)
 	Exec(ctx context.Context, query string, args ...any) (pgconn.CommandTag, error)
-	Get(ctx context.Context, dest any, query string, args ...any) error
+	Get(ctx context.Context, querier pgxscan.Querier, dest any, query string, args ...any) error
 	Select(ctx context.Context, dest any, query string, args ...any) error
 	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 }
