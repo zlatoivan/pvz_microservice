@@ -1,6 +1,7 @@
 # Бэкенд для работы с ПВЗ
 
-[![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com) [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](http://forthebadge.com)
+![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg) 
+![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)
 
 ## Запуск программы
 
