@@ -48,12 +48,12 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	httpServer := &http.Server{Addr: "localhost:" + cfg.HttpPort, Handler: router} // http.HandlerFunc(redirectToHTTPS)
 
 	mux := runtime.NewServeMux()
-	httpForGRPCServer := &http.Server{Addr: "localhost:" + "9002", Handler: mux}
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterApiV1HandlerFromEndpoint(ctx, mux, "localhost:"+cfg.GrpcPort, opts)
 	if err != nil {
 		log.Printf("[httpServerForGrpc] pb.RegisterGatewayHandlerFromEndpoint: %v", err)
 	}
+	httpForGRPCServer := &http.Server{Addr: "localhost:" + "9002", Handler: mux}
 
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
 	if err != nil {
@@ -78,17 +78,17 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		wg.Done()
 	}()
 
-	log.Printf("[grpcServer] starting on %s\n", cfg.GrpcPort)
-	wg.Add(1)
-	go func() {
-		grpcServerRun(grpcServer, lis)
-		wg.Done()
-	}()
-
 	log.Printf("[httpForGrpcServer] starting on 9002")
 	wg.Add(1)
 	go func() {
 		httpForGrpcServerRun(httpForGRPCServer)
+		wg.Done()
+	}()
+
+	log.Printf("[grpcServer] starting on %s\n", cfg.GrpcPort)
+	wg.Add(1)
+	go func() {
+		grpcServerRun(grpcServer, lis)
 		wg.Done()
 	}()
 
