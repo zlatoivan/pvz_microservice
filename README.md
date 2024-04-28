@@ -48,19 +48,12 @@
             port: 5432                          port: 5431
 
     config/config_test.yaml             config/config_test.yaml
-        server:
+        server:                             server:
             brokers: ['kafka2:9092']            brokers: ['localhost:9092']
+            redis: 'redis:6379'                 redis: 'localhost:6379'
         postgres:                           postgres:
             host: pg_db_test                    host: localhost
             port: 5432                          port: 5433
-
-    Makefile                            Makefile
-        POSTGRES_SETUP                      POSTGRES_SETUP
-            host=pg_db                          host=localhost
-            port=5432                           port=5431
-        POSTGRES_SETUP_TEST                 POSTGRES_SETUP_TEST
-            host=pg_db_test                     host=localhost
-            port=5432                           port=5433
 
     docker-compose.yaml
         kafka2:

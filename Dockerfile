@@ -8,7 +8,7 @@ RUN go install github.com/pressly/goose/cmd/goose
 
 COPY . .
 
-RUN go build -o main cmd/server/main.go
+RUN go build -o main cmd/api/main.go
 
 CMD ["./main"]
 
@@ -16,7 +16,5 @@ CMD ["./main"]
 
 #WORKDIR /Homework
 #RUN go get github.com/pressly/goose/cmd/goose@latest
-#ENV CONFIG_PATH=config/config.yaml
 #RUN go get -d -v ./...
 #RUN go install -v ./...
-#RUN CGO_ENABLED=0 GOOS=linux go build -o /main

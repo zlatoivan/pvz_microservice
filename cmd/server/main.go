@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler_grpc"
 	orderinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/cache/in_memory/order"
 	pvzinmemorycache "gitlab.ozon.dev/zlatoivan4/homework/internal/cache/in_memory/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/cache/redis"
@@ -68,7 +69,9 @@ func bootstrap(ctx context.Context) error {
 	pvzService := pvz.New(pvzRepo)
 	orderService := order.New(orderRepo)
 
-	mainServer := server.New(pvzService, orderService)
+	controllerGRPC := handler_grpc.New(pvzService, orderService)
+
+	mainServer := server.New(pvzService, orderService, controllerGRPC)
 
 	producer, err := kafka.NewProducer(cfg.Brokers, cfg.Topic)
 	if err != nil {
@@ -94,6 +97,8 @@ func bootstrap(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("mainServer.Run: %w", err)
 	}
+
+	<-ctx.Done()
 
 	return nil
 }

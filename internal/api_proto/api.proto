@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+import "pvz.proto";
+import "order.proto";
+option go_package = "gitlab.ozon.dev/zlatoivan4/homework/internal/api_proto";
+
+package grpc_server;
+
+service Api {
+  rpc CreatePVZ (CreatePVZReq) returns (CreatePVZResp) {}
+  rpc ListPVZs (ListPVZsReq) returns (ListPVZsResp) {}
+  rpc GetPVZByID (GetPVZByIDReq) returns (GetPVZByIDResp) {}
+  rpc UpdatePVZ (UpdatePVZReq) returns (UpdatePVZResp) {}
+  rpc DeletePVZ (DeletePVZReq) returns (DeletePVZResp) {}
+
+  rpc CreateOrder (CreateOrderReq) returns (CreateOrderResp) {}
+  rpc ListOrders (ListOrdersReq) returns (ListOrdersResp) {}
+  rpc GetOrderByID (GetOrderByIDReq) returns (GetOrderByIDResp) {}
+  rpc UpdateOrder (UpdateOrderReq) returns (UpdateOrderResp) {}
+  rpc DeleteOrder (DeleteOrderReq) returns (DeleteOrderResp) {}
+}

@@ -4,24 +4,33 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"sync"
 	"time"
+
+	"google.golang.org/grpc"
+
+	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler_grpc"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
 )
 
 type Server struct {
-	pvzService   pvz.Service
-	orderService order.Service
+	pvzService     pvz.Service
+	orderService   order.Service
+	controllerGRPC handler_grpc.Controller
 }
 
-func New(pvzService pvz.Service, orderService order.Service) Server {
+func New(pvzService pvz.Service, orderService order.Service, controllerGRPC handler_grpc.Controller) Server {
 	server := Server{
-		pvzService:   pvzService,
-		orderService: orderService,
+		pvzService:     pvzService,
+		orderService:   orderService,
+		controllerGRPC: controllerGRPC,
 	}
 	return server
 }
@@ -33,41 +42,83 @@ func New(pvzService pvz.Service, orderService order.Service) Server {
 // Run starts the server
 func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.Producer, redisPVZCache pvz.Redis, redisOrderCache order.Redis) error {
 	router := s.createRouter(cfg, producer, redisPVZCache, redisOrderCache)
-	httpsPort := cfg.HttpsPort
-	httpPort := cfg.HttpPort
-	httpsServer := &http.Server{Addr: "localhost:" + httpsPort, Handler: router}
-	httpServer := &http.Server{Addr: "localhost:" + httpPort, Handler: router} // http.HandlerFunc(redirectToHTTPS)
+	httpsServer := &http.Server{Addr: "localhost:" + cfg.HttpsPort, Handler: router}
+	httpServer := &http.Server{Addr: "localhost:" + cfg.HttpPort, Handler: router} // http.HandlerFunc(redirectToHTTPS)
+	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
+	if err != nil {
+		return fmt.Errorf("[grpcServer] net.Listen: %v\n", err)
+	}
+	grpcServer := grpc.NewServer()
+	pb.RegisterApiServer(grpcServer, s.controllerGRPC)
 
+	wg := sync.WaitGroup{}
+
+	log.Printf("[httpsServer] starting on %s\n", cfg.HttpsPort)
+	wg.Add(1)
 	go func() {
-		log.Printf("[httpsServer] starting on %s\n", httpsPort)
-		err := httpsServer.ListenAndServeTLS("internal/app/server/certificate/server.crt", "internal/app/server/certificate/server.key")
-		if err != nil {
-			log.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
-		}
+		httpsServerStart(httpsServer)
+		wg.Done()
 	}()
 
+	log.Printf("[httpServer] starting on %s\n", cfg.HttpPort)
+	wg.Add(1)
 	go func() {
-		log.Printf("[httpServer] starting on %s\n", httpPort)
-		err := httpServer.ListenAndServe()
-		if err != nil {
-			log.Printf("[httpServer] ListenAndServe: %v\n", err)
-		}
+		httpServerStart(httpServer)
+		wg.Done()
+	}()
+
+	log.Printf("[grpcServer] starting on %s\n", cfg.GrpcPort)
+	wg.Add(1)
+	go func() {
+		grpcServerStart(grpcServer, lis)
+		wg.Done()
 	}()
 
 	<-ctx.Done()
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	gracefulShutdown(ctx, httpsServer, httpsServer, grpcServer, lis)
+	wg.Wait()
+
+	return nil
+}
+
+func httpsServerStart(httpsServer *http.Server) {
+	err := httpsServer.ListenAndServeTLS("internal/app/server/certificate/server.crt", "internal/app/server/certificate/server.key")
+	if err != nil {
+		fmt.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
+	}
+}
+
+func httpServerStart(httpServer *http.Server) {
+	err := httpServer.ListenAndServe()
+	if err != nil {
+		fmt.Printf("[httpServer] ListenAndServe: %v\n", err)
+	}
+}
+
+func grpcServerStart(grpcServer *grpc.Server, lis net.Listener) {
+	err := grpcServer.Serve(lis)
+	if err != nil {
+		fmt.Printf("[grpcServer] grpcServer.Serve: %v\n", err)
+	}
+}
+
+func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, lis net.Listener) {
+	ctxTo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	log.Println("[servers] shutting down")
-	err := httpsServer.Shutdown(ctx)
-	if err != nil {
-		return fmt.Errorf("httpsServer.Shutdown: %w", err)
-	}
-	err = httpServer.Shutdown(ctx)
-	if err != nil {
-		return fmt.Errorf("httpServer.Shutdown: %w", err)
-	}
-	log.Println("[servers] shut down successfully")
 
-	return nil
+	err := httpsServer.Shutdown(ctxTo)
+	if err != nil {
+		log.Printf("httpsServer.Shutdown: %v\n", err)
+	}
+
+	err = httpServer.Shutdown(ctxTo)
+	if err != nil {
+		log.Printf("httpServer.Shutdown: %v\n", err)
+	}
+
+	grpcServer.GracefulStop()
+
+	log.Println("[servers] shut down successfully")
 }

@@ -10,7 +10,7 @@ import (
 func (s Service) ListPVZs(ctx context.Context) ([]model.PVZ, error) {
 	list, err := s.repo.ListPVZs(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("[service] s.ListPVZs: %w", err)
+		return nil, fmt.Errorf("s.ListPVZs: %w", err)
 	}
 	return list, nil
 }

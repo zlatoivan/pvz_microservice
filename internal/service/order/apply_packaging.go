@@ -46,6 +46,8 @@ func ApplyPackaging(order model.Order) (model.Order, error) {
 		newApplyer = pack{}
 	case "tape":
 		newApplyer = tape{}
+	default:
+		return model.Order{}, fmt.Errorf("the package type is incorrectly specified")
 	}
 
 	newOrder, err := newApplyer.apply(order)

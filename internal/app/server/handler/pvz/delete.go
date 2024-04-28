@@ -35,6 +35,6 @@ func (s Handler) DeletePVZ(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Println("[DeletePVZ] PVZ deleted")
+	log.Printf("[DeletePVZ] PVZ deleted\n")
 	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespComment("PVZ deleted"))
 }

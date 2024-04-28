@@ -1,4 +1,4 @@
-package order
+package pvz
 
 import (
 	"sync"
@@ -56,7 +56,7 @@ func (c cacheItem) isExpired() bool {
 	return c.expiration.Before(time.Now())
 }
 
-// Set setting a in_memory by key
+// Set setting an in_memory by key
 func (c *Cache) Set(key uuid.UUID, value model.Order, ttl time.Duration) {
 	if ttl == 0 {
 		ttl = c.defaultExpiration

@@ -12,7 +12,7 @@ import (
 func (s Service) GetPVZByID(ctx context.Context, id uuid.UUID) (model.PVZ, error) {
 	pvz, err := s.repo.GetPVZByID(ctx, id)
 	if err != nil {
-		return model.PVZ{}, fmt.Errorf("[service] s.GetPVZByID: %w", err)
+		return model.PVZ{}, fmt.Errorf("s.GetPVZByID: %w", err)
 	}
 	return pvz, nil
 }

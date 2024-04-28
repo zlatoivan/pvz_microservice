@@ -23,6 +23,7 @@ type Pg struct {
 type Server struct {
 	HttpPort      string   `yaml:"http_port" env-default:"9000"`
 	HttpsPort     string   `yaml:"https_port" env-default:"9001"`
+	GrpcPort      string   `yaml:"grpc_port" env-default:"50051"`
 	PVZLogin      string   `yaml:"pvz_auth_login" env-default:""`
 	PVZPassword   string   `yaml:"pvz_auth_password" env-default:""`
 	OrderLogin    string   `yaml:"order_auth_login" env-default:""`
