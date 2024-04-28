@@ -16,7 +16,7 @@ func (h Controller) UpdatePVZ(ctx context.Context, in *pb.UpdatePVZReq) (*pb.Upd
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[UpdatePVZ] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.pvzService.UpdatePVZ: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	updPVZ := model.PVZ{
 		ID:       id,
@@ -26,7 +26,7 @@ func (h Controller) UpdatePVZ(ctx context.Context, in *pb.UpdatePVZReq) (*pb.Upd
 	}
 	err = h.pvzService.UpdatePVZ(ctx, updPVZ)
 	if err != nil {
-		log.Printf("[UpdatePVZ] h.Service.UpdatePVZ: %v\n", err)
+		log.Printf("[UpdatePVZ] h.pvzService.UpdatePVZ: %v\n", err)
 		return nil, fmt.Errorf("h.pvzService.UpdatePVZ: %w", err)
 	}
 

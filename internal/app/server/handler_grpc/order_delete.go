@@ -15,7 +15,7 @@ func (h Controller) DeleteOrder(ctx context.Context, in *pb.DeleteOrderReq) (*pb
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[DeleteOrder] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.orderService.UpdateOrder: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	err = h.orderService.DeleteOrder(ctx, id)
 	if err != nil {

@@ -32,6 +32,10 @@ type ApiClient interface {
 	GetOrderByID(ctx context.Context, in *GetOrderByIDReq, opts ...grpc.CallOption) (*GetOrderByIDResp, error)
 	UpdateOrder(ctx context.Context, in *UpdateOrderReq, opts ...grpc.CallOption) (*UpdateOrderResp, error)
 	DeleteOrder(ctx context.Context, in *DeleteOrderReq, opts ...grpc.CallOption) (*DeleteOrderResp, error)
+	ListClientOrders(ctx context.Context, in *ListClientOrdersReq, opts ...grpc.CallOption) (*ListClientOrdersResp, error)
+	GiveOutOrders(ctx context.Context, in *GiveOutOrdersReq, opts ...grpc.CallOption) (*GiveOutOrdersResp, error)
+	ReturnOrder(ctx context.Context, in *ReturnOrderReq, opts ...grpc.CallOption) (*ReturnOrderResp, error)
+	ListReturnedOrders(ctx context.Context, in *ListReturnedOrdersReq, opts ...grpc.CallOption) (*ListReturnedOrdersResp, error)
 }
 
 type apiClient struct {
@@ -132,6 +136,42 @@ func (c *apiClient) DeleteOrder(ctx context.Context, in *DeleteOrderReq, opts ..
 	return out, nil
 }
 
+func (c *apiClient) ListClientOrders(ctx context.Context, in *ListClientOrdersReq, opts ...grpc.CallOption) (*ListClientOrdersResp, error) {
+	out := new(ListClientOrdersResp)
+	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListClientOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) GiveOutOrders(ctx context.Context, in *GiveOutOrdersReq, opts ...grpc.CallOption) (*GiveOutOrdersResp, error) {
+	out := new(GiveOutOrdersResp)
+	err := c.cc.Invoke(ctx, "/grpc_server.Api/GiveOutOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) ReturnOrder(ctx context.Context, in *ReturnOrderReq, opts ...grpc.CallOption) (*ReturnOrderResp, error) {
+	out := new(ReturnOrderResp)
+	err := c.cc.Invoke(ctx, "/grpc_server.Api/ReturnOrder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *apiClient) ListReturnedOrders(ctx context.Context, in *ListReturnedOrdersReq, opts ...grpc.CallOption) (*ListReturnedOrdersResp, error) {
+	out := new(ListReturnedOrdersResp)
+	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListReturnedOrders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApiServer is the server API for Api service.
 // All implementations must embed UnimplementedApiServer
 // for forward compatibility
@@ -146,6 +186,10 @@ type ApiServer interface {
 	GetOrderByID(context.Context, *GetOrderByIDReq) (*GetOrderByIDResp, error)
 	UpdateOrder(context.Context, *UpdateOrderReq) (*UpdateOrderResp, error)
 	DeleteOrder(context.Context, *DeleteOrderReq) (*DeleteOrderResp, error)
+	ListClientOrders(context.Context, *ListClientOrdersReq) (*ListClientOrdersResp, error)
+	GiveOutOrders(context.Context, *GiveOutOrdersReq) (*GiveOutOrdersResp, error)
+	ReturnOrder(context.Context, *ReturnOrderReq) (*ReturnOrderResp, error)
+	ListReturnedOrders(context.Context, *ListReturnedOrdersReq) (*ListReturnedOrdersResp, error)
 	mustEmbedUnimplementedApiServer()
 }
 
@@ -182,6 +226,18 @@ func (UnimplementedApiServer) UpdateOrder(context.Context, *UpdateOrderReq) (*Up
 }
 func (UnimplementedApiServer) DeleteOrder(context.Context, *DeleteOrderReq) (*DeleteOrderResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteOrder not implemented")
+}
+func (UnimplementedApiServer) ListClientOrders(context.Context, *ListClientOrdersReq) (*ListClientOrdersResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListClientOrders not implemented")
+}
+func (UnimplementedApiServer) GiveOutOrders(context.Context, *GiveOutOrdersReq) (*GiveOutOrdersResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GiveOutOrders not implemented")
+}
+func (UnimplementedApiServer) ReturnOrder(context.Context, *ReturnOrderReq) (*ReturnOrderResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReturnOrder not implemented")
+}
+func (UnimplementedApiServer) ListReturnedOrders(context.Context, *ListReturnedOrdersReq) (*ListReturnedOrdersResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListReturnedOrders not implemented")
 }
 func (UnimplementedApiServer) mustEmbedUnimplementedApiServer() {}
 
@@ -376,6 +432,78 @@ func _Api_DeleteOrder_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Api_ListClientOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListClientOrdersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).ListClientOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_server.Api/ListClientOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).ListClientOrders(ctx, req.(*ListClientOrdersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_GiveOutOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GiveOutOrdersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).GiveOutOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_server.Api/GiveOutOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).GiveOutOrders(ctx, req.(*GiveOutOrdersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_ReturnOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReturnOrderReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).ReturnOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_server.Api/ReturnOrder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).ReturnOrder(ctx, req.(*ReturnOrderReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Api_ListReturnedOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListReturnedOrdersReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApiServer).ListReturnedOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/grpc_server.Api/ListReturnedOrders",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApiServer).ListReturnedOrders(ctx, req.(*ListReturnedOrdersReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Api_ServiceDesc is the grpc.ServiceDesc for Api service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -422,6 +550,22 @@ var Api_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteOrder",
 			Handler:    _Api_DeleteOrder_Handler,
+		},
+		{
+			MethodName: "ListClientOrders",
+			Handler:    _Api_ListClientOrders_Handler,
+		},
+		{
+			MethodName: "GiveOutOrders",
+			Handler:    _Api_GiveOutOrders_Handler,
+		},
+		{
+			MethodName: "ReturnOrder",
+			Handler:    _Api_ReturnOrder_Handler,
+		},
+		{
+			MethodName: "ListReturnedOrders",
+			Handler:    _Api_ListReturnedOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

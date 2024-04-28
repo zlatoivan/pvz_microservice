@@ -5,7 +5,7 @@ option go_package = "gitlab.ozon.dev/zlatoivan4/homework/internal/api_proto";
 
 package grpc_server;
 
-message modelOrder {
+message model_order {
   string id = 1;
   string client_id = 2;
   int64 weight = 3;
@@ -32,7 +32,22 @@ message ListOrdersReq {
 }
 
 message ListOrdersResp {
-  repeated modelOrder orders = 1;
+  repeated model_order orders = 1;
+}
+
+message ListClientOrdersReq {
+  string id = 1;
+}
+
+message ListClientOrdersResp {
+  repeated model_order orders = 1;
+}
+
+message ListReturnedOrdersReq {
+}
+
+message ListReturnedOrdersResp {
+  repeated model_order orders = 1;
 }
 
 message GetOrderByIDReq {
@@ -68,5 +83,23 @@ message DeleteOrderReq {
 }
 
 message DeleteOrderResp {
+  string comment = 1;
+}
+
+message GiveOutOrdersReq {
+  string client_id = 1;
+  repeated string ids = 2;
+}
+
+message GiveOutOrdersResp {
+  string comment = 1;
+}
+
+message ReturnOrderReq {
+  string client_id = 1;
+  string id = 2;
+}
+
+message ReturnOrderResp {
   string comment = 1;
 }

@@ -17,12 +17,12 @@ func (h Controller) UpdateOrder(ctx context.Context, in *pb.UpdateOrderReq) (*pb
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[UpdateOrder] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.orderService.UpdateOrder: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	clientID, err := uuid.Parse(in.ClientId)
 	if err != nil {
 		log.Printf("[UpdateOrder] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.orderService.UpdateOrder: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	updOrder := model.Order{
 		ID:            id,
@@ -34,7 +34,7 @@ func (h Controller) UpdateOrder(ctx context.Context, in *pb.UpdateOrderReq) (*pb
 	}
 	err = h.orderService.UpdateOrder(ctx, updOrder)
 	if err != nil {
-		log.Printf("[UpdateOrder] h.Service.UpdateOrder: %v\n", err)
+		log.Printf("[UpdateOrder] h.orderService.UpdateOrder: %v\n", err)
 		return nil, fmt.Errorf("h.orderService.UpdateOrder: %w", err)
 	}
 

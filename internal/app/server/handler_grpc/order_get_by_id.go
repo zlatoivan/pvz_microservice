@@ -16,7 +16,7 @@ func (h Controller) GetOrderByID(ctx context.Context, in *pb.GetOrderByIDReq) (*
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[GetOrderByID] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.orderService.GetOrderByID: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	order, err := h.orderService.GetOrderByID(ctx, id)
 	if err != nil {

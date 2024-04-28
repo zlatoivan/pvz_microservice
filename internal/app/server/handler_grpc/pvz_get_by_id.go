@@ -15,7 +15,7 @@ func (h Controller) GetPVZByID(ctx context.Context, in *pb.GetPVZByIDReq) (*pb.G
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[GetPVZByID] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.pvzService.GetPVZByID: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	pvz, err := h.pvzService.GetPVZByID(ctx, id)
 	if err != nil {

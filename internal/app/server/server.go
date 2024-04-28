@@ -74,8 +74,12 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		wg.Done()
 	}()
 
-	<-ctx.Done()
-	gracefulShutdown(ctx, httpsServer, httpsServer, grpcServer, lis)
+	wg.Add(1)
+	go func() {
+		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer)
+		wg.Done()
+	}()
+
 	wg.Wait()
 
 	return nil
@@ -84,29 +88,30 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 func httpsServerStart(httpsServer *http.Server) {
 	err := httpsServer.ListenAndServeTLS("internal/app/server/certificate/server.crt", "internal/app/server/certificate/server.key")
 	if err != nil {
-		fmt.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
+		log.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
 	}
 }
 
 func httpServerStart(httpServer *http.Server) {
 	err := httpServer.ListenAndServe()
 	if err != nil {
-		fmt.Printf("[httpServer] ListenAndServe: %v\n", err)
+		log.Printf("[httpServer] ListenAndServe: %v\n", err)
 	}
 }
 
 func grpcServerStart(grpcServer *grpc.Server, lis net.Listener) {
 	err := grpcServer.Serve(lis)
 	if err != nil {
-		fmt.Printf("[grpcServer] grpcServer.Serve: %v\n", err)
+		log.Printf("[grpcServer] grpcServer.Serve: %v\n", err)
 	}
 }
 
-func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, lis net.Listener) {
+func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server) {
+	<-ctx.Done()
 	ctxTo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	log.Println("[servers] shutting down")
+	log.Println("[gracefulShutdown] shutting down")
 
 	err := httpsServer.Shutdown(ctxTo)
 	if err != nil {
@@ -120,5 +125,5 @@ func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer 
 
 	grpcServer.GracefulStop()
 
-	log.Println("[servers] shut down successfully")
+	log.Println("[gracefulShutdown] shut down successfully")
 }

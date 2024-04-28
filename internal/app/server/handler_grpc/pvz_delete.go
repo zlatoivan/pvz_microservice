@@ -15,7 +15,7 @@ func (h Controller) DeletePVZ(ctx context.Context, in *pb.DeletePVZReq) (*pb.Del
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[DeletePVZ] uuid.Parse: %v\n", err)
-		return nil, fmt.Errorf("h.pvzService.UpdatePVZ: %w", err)
+		return nil, fmt.Errorf("uuid.Parse: %w", err)
 	}
 	err = h.pvzService.DeletePVZ(ctx, id)
 	if err != nil {

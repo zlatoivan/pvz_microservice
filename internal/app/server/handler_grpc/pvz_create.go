@@ -18,7 +18,7 @@ func (h Controller) CreatePVZ(ctx context.Context, in *pb.CreatePVZReq) (*pb.Cre
 	}
 	id, err := h.pvzService.CreatePVZ(ctx, newPVZ)
 	if err != nil {
-		log.Printf("[CreatePVZ] h.Service.CreatePVZ: %v\n", err)
+		log.Printf("[CreatePVZ] h.pvzService.CreatePVZ: %v\n", err)
 		return nil, fmt.Errorf("h.pvzService.CreatePVZ: %w", err)
 	}
 

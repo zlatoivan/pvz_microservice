@@ -23,6 +23,6 @@ func (s Handler) ListClientOrders(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Printf("[ListClientOrders] Got list of clients orders! Length = %d.\n", len(list))
+	log.Printf("[ListClientOrders] Got list of clients orders. Length = %d.\n", len(list))
 	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespOrderList(list))
 }

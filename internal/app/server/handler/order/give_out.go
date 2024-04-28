@@ -28,6 +28,6 @@ func (s Handler) GiveOutOrders(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Println("[GiveOutOrders] Orders are given out")
+	log.Printf("[GiveOutOrders] Orders are given out\n")
 	delivery.RenderResponse(w, req, http.StatusOK, delivery.MakeRespComment("Orders are given out"))
 }

@@ -18,4 +18,8 @@ service Api {
   rpc GetOrderByID (GetOrderByIDReq) returns (GetOrderByIDResp) {}
   rpc UpdateOrder (UpdateOrderReq) returns (UpdateOrderResp) {}
   rpc DeleteOrder (DeleteOrderReq) returns (DeleteOrderResp) {}
+  rpc ListClientOrders (ListClientOrdersReq) returns (ListClientOrdersResp) {}
+  rpc GiveOutOrders (GiveOutOrdersReq) returns (GiveOutOrdersResp) {}
+  rpc ReturnOrder (ReturnOrderReq) returns (ReturnOrderResp) {}
+  rpc ListReturnedOrders (ListReturnedOrdersReq) returns (ListReturnedOrdersResp) {}
 }
