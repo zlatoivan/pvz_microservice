@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: api.proto
 
-package api_proto
+package pb
 
 import (
 	context "context"
@@ -18,10 +18,10 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// ApiClient is the client API for Api service.
+// ApiV1Client is the client API for ApiV1 service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type ApiClient interface {
+type ApiV1Client interface {
 	CreatePVZ(ctx context.Context, in *CreatePVZReq, opts ...grpc.CallOption) (*CreatePVZResp, error)
 	ListPVZs(ctx context.Context, in *ListPVZsReq, opts ...grpc.CallOption) (*ListPVZsResp, error)
 	GetPVZByID(ctx context.Context, in *GetPVZByIDReq, opts ...grpc.CallOption) (*GetPVZByIDResp, error)
@@ -38,144 +38,144 @@ type ApiClient interface {
 	ListReturnedOrders(ctx context.Context, in *ListReturnedOrdersReq, opts ...grpc.CallOption) (*ListReturnedOrdersResp, error)
 }
 
-type apiClient struct {
+type apiV1Client struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewApiClient(cc grpc.ClientConnInterface) ApiClient {
-	return &apiClient{cc}
+func NewApiV1Client(cc grpc.ClientConnInterface) ApiV1Client {
+	return &apiV1Client{cc}
 }
 
-func (c *apiClient) CreatePVZ(ctx context.Context, in *CreatePVZReq, opts ...grpc.CallOption) (*CreatePVZResp, error) {
+func (c *apiV1Client) CreatePVZ(ctx context.Context, in *CreatePVZReq, opts ...grpc.CallOption) (*CreatePVZResp, error) {
 	out := new(CreatePVZResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/CreatePVZ", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/CreatePVZ", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) ListPVZs(ctx context.Context, in *ListPVZsReq, opts ...grpc.CallOption) (*ListPVZsResp, error) {
+func (c *apiV1Client) ListPVZs(ctx context.Context, in *ListPVZsReq, opts ...grpc.CallOption) (*ListPVZsResp, error) {
 	out := new(ListPVZsResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListPVZs", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/ListPVZs", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) GetPVZByID(ctx context.Context, in *GetPVZByIDReq, opts ...grpc.CallOption) (*GetPVZByIDResp, error) {
+func (c *apiV1Client) GetPVZByID(ctx context.Context, in *GetPVZByIDReq, opts ...grpc.CallOption) (*GetPVZByIDResp, error) {
 	out := new(GetPVZByIDResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/GetPVZByID", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/GetPVZByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) UpdatePVZ(ctx context.Context, in *UpdatePVZReq, opts ...grpc.CallOption) (*UpdatePVZResp, error) {
+func (c *apiV1Client) UpdatePVZ(ctx context.Context, in *UpdatePVZReq, opts ...grpc.CallOption) (*UpdatePVZResp, error) {
 	out := new(UpdatePVZResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/UpdatePVZ", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/UpdatePVZ", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) DeletePVZ(ctx context.Context, in *DeletePVZReq, opts ...grpc.CallOption) (*DeletePVZResp, error) {
+func (c *apiV1Client) DeletePVZ(ctx context.Context, in *DeletePVZReq, opts ...grpc.CallOption) (*DeletePVZResp, error) {
 	out := new(DeletePVZResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/DeletePVZ", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/DeletePVZ", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) CreateOrder(ctx context.Context, in *CreateOrderReq, opts ...grpc.CallOption) (*CreateOrderResp, error) {
+func (c *apiV1Client) CreateOrder(ctx context.Context, in *CreateOrderReq, opts ...grpc.CallOption) (*CreateOrderResp, error) {
 	out := new(CreateOrderResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/CreateOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/CreateOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) ListOrders(ctx context.Context, in *ListOrdersReq, opts ...grpc.CallOption) (*ListOrdersResp, error) {
+func (c *apiV1Client) ListOrders(ctx context.Context, in *ListOrdersReq, opts ...grpc.CallOption) (*ListOrdersResp, error) {
 	out := new(ListOrdersResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListOrders", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/ListOrders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) GetOrderByID(ctx context.Context, in *GetOrderByIDReq, opts ...grpc.CallOption) (*GetOrderByIDResp, error) {
+func (c *apiV1Client) GetOrderByID(ctx context.Context, in *GetOrderByIDReq, opts ...grpc.CallOption) (*GetOrderByIDResp, error) {
 	out := new(GetOrderByIDResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/GetOrderByID", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/GetOrderByID", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) UpdateOrder(ctx context.Context, in *UpdateOrderReq, opts ...grpc.CallOption) (*UpdateOrderResp, error) {
+func (c *apiV1Client) UpdateOrder(ctx context.Context, in *UpdateOrderReq, opts ...grpc.CallOption) (*UpdateOrderResp, error) {
 	out := new(UpdateOrderResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/UpdateOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/UpdateOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) DeleteOrder(ctx context.Context, in *DeleteOrderReq, opts ...grpc.CallOption) (*DeleteOrderResp, error) {
+func (c *apiV1Client) DeleteOrder(ctx context.Context, in *DeleteOrderReq, opts ...grpc.CallOption) (*DeleteOrderResp, error) {
 	out := new(DeleteOrderResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/DeleteOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/DeleteOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) ListClientOrders(ctx context.Context, in *ListClientOrdersReq, opts ...grpc.CallOption) (*ListClientOrdersResp, error) {
+func (c *apiV1Client) ListClientOrders(ctx context.Context, in *ListClientOrdersReq, opts ...grpc.CallOption) (*ListClientOrdersResp, error) {
 	out := new(ListClientOrdersResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListClientOrders", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/ListClientOrders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) GiveOutOrders(ctx context.Context, in *GiveOutOrdersReq, opts ...grpc.CallOption) (*GiveOutOrdersResp, error) {
+func (c *apiV1Client) GiveOutOrders(ctx context.Context, in *GiveOutOrdersReq, opts ...grpc.CallOption) (*GiveOutOrdersResp, error) {
 	out := new(GiveOutOrdersResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/GiveOutOrders", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/GiveOutOrders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) ReturnOrder(ctx context.Context, in *ReturnOrderReq, opts ...grpc.CallOption) (*ReturnOrderResp, error) {
+func (c *apiV1Client) ReturnOrder(ctx context.Context, in *ReturnOrderReq, opts ...grpc.CallOption) (*ReturnOrderResp, error) {
 	out := new(ReturnOrderResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/ReturnOrder", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/ReturnOrder", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *apiClient) ListReturnedOrders(ctx context.Context, in *ListReturnedOrdersReq, opts ...grpc.CallOption) (*ListReturnedOrdersResp, error) {
+func (c *apiV1Client) ListReturnedOrders(ctx context.Context, in *ListReturnedOrdersReq, opts ...grpc.CallOption) (*ListReturnedOrdersResp, error) {
 	out := new(ListReturnedOrdersResp)
-	err := c.cc.Invoke(ctx, "/grpc_server.Api/ListReturnedOrders", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/grpc_server.ApiV1/ListReturnedOrders", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// ApiServer is the server API for Api service.
-// All implementations must embed UnimplementedApiServer
+// ApiV1Server is the server API for ApiV1 service.
+// All implementations must embed UnimplementedApiV1Server
 // for forward compatibility
-type ApiServer interface {
+type ApiV1Server interface {
 	CreatePVZ(context.Context, *CreatePVZReq) (*CreatePVZResp, error)
 	ListPVZs(context.Context, *ListPVZsReq) (*ListPVZsResp, error)
 	GetPVZByID(context.Context, *GetPVZByIDReq) (*GetPVZByIDResp, error)
@@ -190,382 +190,382 @@ type ApiServer interface {
 	GiveOutOrders(context.Context, *GiveOutOrdersReq) (*GiveOutOrdersResp, error)
 	ReturnOrder(context.Context, *ReturnOrderReq) (*ReturnOrderResp, error)
 	ListReturnedOrders(context.Context, *ListReturnedOrdersReq) (*ListReturnedOrdersResp, error)
-	mustEmbedUnimplementedApiServer()
+	mustEmbedUnimplementedApiV1Server()
 }
 
-// UnimplementedApiServer must be embedded to have forward compatible implementations.
-type UnimplementedApiServer struct {
+// UnimplementedApiV1Server must be embedded to have forward compatible implementations.
+type UnimplementedApiV1Server struct {
 }
 
-func (UnimplementedApiServer) CreatePVZ(context.Context, *CreatePVZReq) (*CreatePVZResp, error) {
+func (UnimplementedApiV1Server) CreatePVZ(context.Context, *CreatePVZReq) (*CreatePVZResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreatePVZ not implemented")
 }
-func (UnimplementedApiServer) ListPVZs(context.Context, *ListPVZsReq) (*ListPVZsResp, error) {
+func (UnimplementedApiV1Server) ListPVZs(context.Context, *ListPVZsReq) (*ListPVZsResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListPVZs not implemented")
 }
-func (UnimplementedApiServer) GetPVZByID(context.Context, *GetPVZByIDReq) (*GetPVZByIDResp, error) {
+func (UnimplementedApiV1Server) GetPVZByID(context.Context, *GetPVZByIDReq) (*GetPVZByIDResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPVZByID not implemented")
 }
-func (UnimplementedApiServer) UpdatePVZ(context.Context, *UpdatePVZReq) (*UpdatePVZResp, error) {
+func (UnimplementedApiV1Server) UpdatePVZ(context.Context, *UpdatePVZReq) (*UpdatePVZResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdatePVZ not implemented")
 }
-func (UnimplementedApiServer) DeletePVZ(context.Context, *DeletePVZReq) (*DeletePVZResp, error) {
+func (UnimplementedApiV1Server) DeletePVZ(context.Context, *DeletePVZReq) (*DeletePVZResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeletePVZ not implemented")
 }
-func (UnimplementedApiServer) CreateOrder(context.Context, *CreateOrderReq) (*CreateOrderResp, error) {
+func (UnimplementedApiV1Server) CreateOrder(context.Context, *CreateOrderReq) (*CreateOrderResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateOrder not implemented")
 }
-func (UnimplementedApiServer) ListOrders(context.Context, *ListOrdersReq) (*ListOrdersResp, error) {
+func (UnimplementedApiV1Server) ListOrders(context.Context, *ListOrdersReq) (*ListOrdersResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListOrders not implemented")
 }
-func (UnimplementedApiServer) GetOrderByID(context.Context, *GetOrderByIDReq) (*GetOrderByIDResp, error) {
+func (UnimplementedApiV1Server) GetOrderByID(context.Context, *GetOrderByIDReq) (*GetOrderByIDResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetOrderByID not implemented")
 }
-func (UnimplementedApiServer) UpdateOrder(context.Context, *UpdateOrderReq) (*UpdateOrderResp, error) {
+func (UnimplementedApiV1Server) UpdateOrder(context.Context, *UpdateOrderReq) (*UpdateOrderResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateOrder not implemented")
 }
-func (UnimplementedApiServer) DeleteOrder(context.Context, *DeleteOrderReq) (*DeleteOrderResp, error) {
+func (UnimplementedApiV1Server) DeleteOrder(context.Context, *DeleteOrderReq) (*DeleteOrderResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteOrder not implemented")
 }
-func (UnimplementedApiServer) ListClientOrders(context.Context, *ListClientOrdersReq) (*ListClientOrdersResp, error) {
+func (UnimplementedApiV1Server) ListClientOrders(context.Context, *ListClientOrdersReq) (*ListClientOrdersResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListClientOrders not implemented")
 }
-func (UnimplementedApiServer) GiveOutOrders(context.Context, *GiveOutOrdersReq) (*GiveOutOrdersResp, error) {
+func (UnimplementedApiV1Server) GiveOutOrders(context.Context, *GiveOutOrdersReq) (*GiveOutOrdersResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GiveOutOrders not implemented")
 }
-func (UnimplementedApiServer) ReturnOrder(context.Context, *ReturnOrderReq) (*ReturnOrderResp, error) {
+func (UnimplementedApiV1Server) ReturnOrder(context.Context, *ReturnOrderReq) (*ReturnOrderResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReturnOrder not implemented")
 }
-func (UnimplementedApiServer) ListReturnedOrders(context.Context, *ListReturnedOrdersReq) (*ListReturnedOrdersResp, error) {
+func (UnimplementedApiV1Server) ListReturnedOrders(context.Context, *ListReturnedOrdersReq) (*ListReturnedOrdersResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListReturnedOrders not implemented")
 }
-func (UnimplementedApiServer) mustEmbedUnimplementedApiServer() {}
+func (UnimplementedApiV1Server) mustEmbedUnimplementedApiV1Server() {}
 
-// UnsafeApiServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to ApiServer will
+// UnsafeApiV1Server may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ApiV1Server will
 // result in compilation errors.
-type UnsafeApiServer interface {
-	mustEmbedUnimplementedApiServer()
+type UnsafeApiV1Server interface {
+	mustEmbedUnimplementedApiV1Server()
 }
 
-func RegisterApiServer(s grpc.ServiceRegistrar, srv ApiServer) {
-	s.RegisterService(&Api_ServiceDesc, srv)
+func RegisterApiV1Server(s grpc.ServiceRegistrar, srv ApiV1Server) {
+	s.RegisterService(&ApiV1_ServiceDesc, srv)
 }
 
-func _Api_CreatePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_CreatePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreatePVZReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).CreatePVZ(ctx, in)
+		return srv.(ApiV1Server).CreatePVZ(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/CreatePVZ",
+		FullMethod: "/grpc_server.ApiV1/CreatePVZ",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).CreatePVZ(ctx, req.(*CreatePVZReq))
+		return srv.(ApiV1Server).CreatePVZ(ctx, req.(*CreatePVZReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_ListPVZs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_ListPVZs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListPVZsReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).ListPVZs(ctx, in)
+		return srv.(ApiV1Server).ListPVZs(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/ListPVZs",
+		FullMethod: "/grpc_server.ApiV1/ListPVZs",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).ListPVZs(ctx, req.(*ListPVZsReq))
+		return srv.(ApiV1Server).ListPVZs(ctx, req.(*ListPVZsReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_GetPVZByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_GetPVZByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetPVZByIDReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).GetPVZByID(ctx, in)
+		return srv.(ApiV1Server).GetPVZByID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/GetPVZByID",
+		FullMethod: "/grpc_server.ApiV1/GetPVZByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).GetPVZByID(ctx, req.(*GetPVZByIDReq))
+		return srv.(ApiV1Server).GetPVZByID(ctx, req.(*GetPVZByIDReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_UpdatePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_UpdatePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdatePVZReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).UpdatePVZ(ctx, in)
+		return srv.(ApiV1Server).UpdatePVZ(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/UpdatePVZ",
+		FullMethod: "/grpc_server.ApiV1/UpdatePVZ",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).UpdatePVZ(ctx, req.(*UpdatePVZReq))
+		return srv.(ApiV1Server).UpdatePVZ(ctx, req.(*UpdatePVZReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_DeletePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_DeletePVZ_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeletePVZReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).DeletePVZ(ctx, in)
+		return srv.(ApiV1Server).DeletePVZ(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/DeletePVZ",
+		FullMethod: "/grpc_server.ApiV1/DeletePVZ",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).DeletePVZ(ctx, req.(*DeletePVZReq))
+		return srv.(ApiV1Server).DeletePVZ(ctx, req.(*DeletePVZReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_CreateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateOrderReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).CreateOrder(ctx, in)
+		return srv.(ApiV1Server).CreateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/CreateOrder",
+		FullMethod: "/grpc_server.ApiV1/CreateOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).CreateOrder(ctx, req.(*CreateOrderReq))
+		return srv.(ApiV1Server).CreateOrder(ctx, req.(*CreateOrderReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_ListOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_ListOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListOrdersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).ListOrders(ctx, in)
+		return srv.(ApiV1Server).ListOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/ListOrders",
+		FullMethod: "/grpc_server.ApiV1/ListOrders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).ListOrders(ctx, req.(*ListOrdersReq))
+		return srv.(ApiV1Server).ListOrders(ctx, req.(*ListOrdersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_GetOrderByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_GetOrderByID_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetOrderByIDReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).GetOrderByID(ctx, in)
+		return srv.(ApiV1Server).GetOrderByID(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/GetOrderByID",
+		FullMethod: "/grpc_server.ApiV1/GetOrderByID",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).GetOrderByID(ctx, req.(*GetOrderByIDReq))
+		return srv.(ApiV1Server).GetOrderByID(ctx, req.(*GetOrderByIDReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_UpdateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_UpdateOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(UpdateOrderReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).UpdateOrder(ctx, in)
+		return srv.(ApiV1Server).UpdateOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/UpdateOrder",
+		FullMethod: "/grpc_server.ApiV1/UpdateOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).UpdateOrder(ctx, req.(*UpdateOrderReq))
+		return srv.(ApiV1Server).UpdateOrder(ctx, req.(*UpdateOrderReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_DeleteOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_DeleteOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteOrderReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).DeleteOrder(ctx, in)
+		return srv.(ApiV1Server).DeleteOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/DeleteOrder",
+		FullMethod: "/grpc_server.ApiV1/DeleteOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).DeleteOrder(ctx, req.(*DeleteOrderReq))
+		return srv.(ApiV1Server).DeleteOrder(ctx, req.(*DeleteOrderReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_ListClientOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_ListClientOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListClientOrdersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).ListClientOrders(ctx, in)
+		return srv.(ApiV1Server).ListClientOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/ListClientOrders",
+		FullMethod: "/grpc_server.ApiV1/ListClientOrders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).ListClientOrders(ctx, req.(*ListClientOrdersReq))
+		return srv.(ApiV1Server).ListClientOrders(ctx, req.(*ListClientOrdersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_GiveOutOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_GiveOutOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GiveOutOrdersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).GiveOutOrders(ctx, in)
+		return srv.(ApiV1Server).GiveOutOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/GiveOutOrders",
+		FullMethod: "/grpc_server.ApiV1/GiveOutOrders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).GiveOutOrders(ctx, req.(*GiveOutOrdersReq))
+		return srv.(ApiV1Server).GiveOutOrders(ctx, req.(*GiveOutOrdersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_ReturnOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_ReturnOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ReturnOrderReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).ReturnOrder(ctx, in)
+		return srv.(ApiV1Server).ReturnOrder(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/ReturnOrder",
+		FullMethod: "/grpc_server.ApiV1/ReturnOrder",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).ReturnOrder(ctx, req.(*ReturnOrderReq))
+		return srv.(ApiV1Server).ReturnOrder(ctx, req.(*ReturnOrderReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Api_ListReturnedOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApiV1_ListReturnedOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListReturnedOrdersReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApiServer).ListReturnedOrders(ctx, in)
+		return srv.(ApiV1Server).ListReturnedOrders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/grpc_server.Api/ListReturnedOrders",
+		FullMethod: "/grpc_server.ApiV1/ListReturnedOrders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApiServer).ListReturnedOrders(ctx, req.(*ListReturnedOrdersReq))
+		return srv.(ApiV1Server).ListReturnedOrders(ctx, req.(*ListReturnedOrdersReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Api_ServiceDesc is the grpc.ServiceDesc for Api service.
+// ApiV1_ServiceDesc is the grpc.ServiceDesc for ApiV1 service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Api_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "grpc_server.Api",
-	HandlerType: (*ApiServer)(nil),
+var ApiV1_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "grpc_server.ApiV1",
+	HandlerType: (*ApiV1Server)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreatePVZ",
-			Handler:    _Api_CreatePVZ_Handler,
+			Handler:    _ApiV1_CreatePVZ_Handler,
 		},
 		{
 			MethodName: "ListPVZs",
-			Handler:    _Api_ListPVZs_Handler,
+			Handler:    _ApiV1_ListPVZs_Handler,
 		},
 		{
 			MethodName: "GetPVZByID",
-			Handler:    _Api_GetPVZByID_Handler,
+			Handler:    _ApiV1_GetPVZByID_Handler,
 		},
 		{
 			MethodName: "UpdatePVZ",
-			Handler:    _Api_UpdatePVZ_Handler,
+			Handler:    _ApiV1_UpdatePVZ_Handler,
 		},
 		{
 			MethodName: "DeletePVZ",
-			Handler:    _Api_DeletePVZ_Handler,
+			Handler:    _ApiV1_DeletePVZ_Handler,
 		},
 		{
 			MethodName: "CreateOrder",
-			Handler:    _Api_CreateOrder_Handler,
+			Handler:    _ApiV1_CreateOrder_Handler,
 		},
 		{
 			MethodName: "ListOrders",
-			Handler:    _Api_ListOrders_Handler,
+			Handler:    _ApiV1_ListOrders_Handler,
 		},
 		{
 			MethodName: "GetOrderByID",
-			Handler:    _Api_GetOrderByID_Handler,
+			Handler:    _ApiV1_GetOrderByID_Handler,
 		},
 		{
 			MethodName: "UpdateOrder",
-			Handler:    _Api_UpdateOrder_Handler,
+			Handler:    _ApiV1_UpdateOrder_Handler,
 		},
 		{
 			MethodName: "DeleteOrder",
-			Handler:    _Api_DeleteOrder_Handler,
+			Handler:    _ApiV1_DeleteOrder_Handler,
 		},
 		{
 			MethodName: "ListClientOrders",
-			Handler:    _Api_ListClientOrders_Handler,
+			Handler:    _ApiV1_ListClientOrders_Handler,
 		},
 		{
 			MethodName: "GiveOutOrders",
-			Handler:    _Api_GiveOutOrders_Handler,
+			Handler:    _ApiV1_GiveOutOrders_Handler,
 		},
 		{
 			MethodName: "ReturnOrder",
-			Handler:    _Api_ReturnOrder_Handler,
+			Handler:    _ApiV1_ReturnOrder_Handler,
 		},
 		{
 			MethodName: "ListReturnedOrders",
-			Handler:    _Api_ListReturnedOrders_Handler,
+			Handler:    _ApiV1_ListReturnedOrders_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

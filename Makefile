@@ -82,11 +82,13 @@ test-integration-colored: ## run integration tests colored
 generate-proto:
 	cd internal && \
 	rm -rf pkg && \
-	mkdir -p pkg/pb && \
+	mkdir -p pkg && \
 	protoc  --proto_path=api_proto \
-			--go_out=pkg/pb --go_opt=paths=source_relative \
-			--go-grpc_out=pkg/pb --go-grpc_opt=paths=source_relative \
- 			api_proto/*.proto
+			--go_out=pkg \
+			--go-grpc_out=pkg \
+			--grpc-gateway_out=pkg --grpc-gateway_opt generate_unbound_methods=true \
+			--openapiv2_out . \
+ 			api.proto
 
 .PHONY: help
 help: ## display this help screen

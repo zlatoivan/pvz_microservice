@@ -1,25 +1,242 @@
 syntax = "proto3";
 
-import "pvz.proto";
-import "order.proto";
-option go_package = "gitlab.ozon.dev/zlatoivan4/homework/internal/api_proto";
-
 package grpc_server;
+option go_package = "/pb";
 
-service Api {
-  rpc CreatePVZ (CreatePVZReq) returns (CreatePVZResp) {}
-  rpc ListPVZs (ListPVZsReq) returns (ListPVZsResp) {}
-  rpc GetPVZByID (GetPVZByIDReq) returns (GetPVZByIDResp) {}
-  rpc UpdatePVZ (UpdatePVZReq) returns (UpdatePVZResp) {}
-  rpc DeletePVZ (DeletePVZReq) returns (DeletePVZResp) {}
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
-  rpc CreateOrder (CreateOrderReq) returns (CreateOrderResp) {}
-  rpc ListOrders (ListOrdersReq) returns (ListOrdersResp) {}
-  rpc GetOrderByID (GetOrderByIDReq) returns (GetOrderByIDResp) {}
-  rpc UpdateOrder (UpdateOrderReq) returns (UpdateOrderResp) {}
-  rpc DeleteOrder (DeleteOrderReq) returns (DeleteOrderResp) {}
-  rpc ListClientOrders (ListClientOrdersReq) returns (ListClientOrdersResp) {}
-  rpc GiveOutOrders (GiveOutOrdersReq) returns (GiveOutOrdersResp) {}
-  rpc ReturnOrder (ReturnOrderReq) returns (ReturnOrderResp) {}
-  rpc ListReturnedOrders (ListReturnedOrdersReq) returns (ListReturnedOrdersResp) {}
+service ApiV1 {
+  rpc CreatePVZ (CreatePVZReq) returns (CreatePVZResp) {
+    option (google.api.http) = {
+      post: "/api/v1/pvzs"
+      body: "*"
+    };
+  }
+  rpc ListPVZs (ListPVZsReq) returns (ListPVZsResp) {
+    option (google.api.http) = {
+      get: "/api/v1/pvzs"
+    };
+  }
+  rpc GetPVZByID (GetPVZByIDReq) returns (GetPVZByIDResp) {
+    option (google.api.http) = {
+      get: "/api/v1/pvzs/id"
+    };
+  }
+  rpc UpdatePVZ (UpdatePVZReq) returns (UpdatePVZResp) {
+    option (google.api.http) = {
+      put: "/api/v1/pvzs/id"
+      body: "*"
+    };
+  }
+  rpc DeletePVZ (DeletePVZReq) returns (DeletePVZResp) {
+    option (google.api.http) = {
+      delete: "/api/v1/pvzs/id"
+    };
+  }
+
+  rpc CreateOrder (CreateOrderReq) returns (CreateOrderResp) {
+    option (google.api.http) = {
+      post: "/api/v1/orders"
+      body: "*"
+    };
+  }
+  rpc ListOrders (ListOrdersReq) returns (ListOrdersResp) {
+    option (google.api.http) = {
+      get: "/api/v1/orders"
+    };
+  }
+  rpc GetOrderByID (GetOrderByIDReq) returns (GetOrderByIDResp) {
+    option (google.api.http) = {
+      get: "/api/v1/orders/id"
+    };
+  }
+  rpc UpdateOrder (UpdateOrderReq) returns (UpdateOrderResp) {
+    option (google.api.http) = {
+      put: "/api/v1/orders/id"
+      body: "*"
+    };
+  }
+  rpc DeleteOrder (DeleteOrderReq) returns (DeleteOrderResp) {
+    option (google.api.http) = {
+      delete: "/api/v1/orders/id"
+    };
+  }
+  rpc ListClientOrders (ListClientOrdersReq) returns (ListClientOrdersResp) {
+    option (google.api.http) = {
+      get: "/api/v1/orders/client/id"
+    };
+  }
+  rpc GiveOutOrders (GiveOutOrdersReq) returns (GiveOutOrdersResp) {
+    option (google.api.http) = {
+      put: "/api/v1/orders/client/id"
+      body: "*"
+    };
+  }
+  rpc ReturnOrder (ReturnOrderReq) returns (ReturnOrderResp) {
+    option (google.api.http) = {
+      put: "/api/v1/orders/client/id/return"
+      body: "*"
+    };
+  }
+  rpc ListReturnedOrders (ListReturnedOrdersReq) returns (ListReturnedOrdersResp) {
+    option (google.api.http) = {
+      get: "/api/v1/orders/returned"
+    };
+  }
+}
+
+
+message modelPVZ {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string contacts = 4;
+}
+
+message CreatePVZReq {
+  string name = 1;
+  string address = 2;
+  string contacts = 3;
+}
+
+message CreatePVZResp {
+  string id = 1;
+}
+
+message ListPVZsReq {
+}
+
+message ListPVZsResp {
+  repeated modelPVZ pvzs = 1;
+}
+
+message GetPVZByIDReq {
+  string id = 1;
+}
+
+message GetPVZByIDResp {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string contacts = 4;
+}
+
+message UpdatePVZReq {
+  string id = 1;
+  string name = 2;
+  string address = 3;
+  string contacts = 4;
+}
+
+message UpdatePVZResp {
+  string comment = 1;
+}
+
+message DeletePVZReq {
+  string id = 1;
+}
+
+message DeletePVZResp {
+  string comment = 1;
+}
+
+
+message model_order {
+  string id = 1;
+  string client_id = 2;
+  int64 weight = 3;
+  int64 cost = 4;
+  google.protobuf.Timestamp stores_till = 5;
+  google.protobuf.Timestamp give_out_time = 6;
+  bool is_returned = 7;
+  string packaging_type = 8;
+}
+
+message CreateOrderReq {
+  string client_id = 1;
+  int64 weight = 2;
+  int64 cost = 3;
+  google.protobuf.Timestamp stores_till = 4;
+  string packaging_type = 5;
+}
+
+message CreateOrderResp {
+  string id = 1;
+}
+
+message ListOrdersReq {
+}
+
+message ListOrdersResp {
+  repeated model_order orders = 1;
+}
+
+message ListClientOrdersReq {
+  string id = 1;
+}
+
+message ListClientOrdersResp {
+  repeated model_order orders = 1;
+}
+
+message ListReturnedOrdersReq {
+}
+
+message ListReturnedOrdersResp {
+  repeated model_order orders = 1;
+}
+
+message GetOrderByIDReq {
+  string id = 1;
+}
+
+message GetOrderByIDResp {
+  string id = 1;
+  string client_id = 2;
+  int64 weight = 3;
+  int64 cost = 4;
+  google.protobuf.Timestamp stores_till = 5;
+  google.protobuf.Timestamp give_out_time = 6;
+  bool is_returned = 7;
+  string packaging_type = 8;
+}
+
+message UpdateOrderReq {
+  string id = 1;
+  string client_id = 2;
+  int64 weight = 3;
+  int64 cost = 4;
+  google.protobuf.Timestamp stores_till = 5;
+  string packaging_type = 6;
+}
+
+message UpdateOrderResp {
+  string comment = 1;
+}
+
+message DeleteOrderReq {
+  string id = 1;
+}
+
+message DeleteOrderResp {
+  string comment = 1;
+}
+
+message GiveOutOrdersReq {
+  string client_id = 1;
+  repeated string ids = 2;
+}
+
+message GiveOutOrdersResp {
+  string comment = 1;
+}
+
+message ReturnOrderReq {
+  string client_id = 1;
+  string id = 2;
+}
+
+message ReturnOrderResp {
+  string comment = 1;
 }

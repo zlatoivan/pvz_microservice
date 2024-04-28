@@ -1,0 +1,761 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "api.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "ApiV1"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/orders": {
+      "get": {
+        "operationId": "ApiV1_ListOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverListOrdersResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "post": {
+        "operationId": "ApiV1_CreateOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverCreateOrderResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverCreateOrderReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/orders/client/id": {
+      "get": {
+        "operationId": "ApiV1_ListClientOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverListClientOrdersResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "put": {
+        "operationId": "ApiV1_GiveOutOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverGiveOutOrdersResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverGiveOutOrdersReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/orders/client/id/return": {
+      "put": {
+        "operationId": "ApiV1_ReturnOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverReturnOrderResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverReturnOrderReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/orders/id": {
+      "get": {
+        "operationId": "ApiV1_GetOrderByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverGetOrderByIDResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "delete": {
+        "operationId": "ApiV1_DeleteOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverDeleteOrderResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "put": {
+        "operationId": "ApiV1_UpdateOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverUpdateOrderResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverUpdateOrderReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/orders/returned": {
+      "get": {
+        "operationId": "ApiV1_ListReturnedOrders",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverListReturnedOrdersResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/pvzs": {
+      "get": {
+        "operationId": "ApiV1_ListPVZs",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverListPVZsResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "post": {
+        "operationId": "ApiV1_CreatePVZ",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverCreatePVZResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverCreatePVZReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    },
+    "/api/v1/pvzs/id": {
+      "get": {
+        "operationId": "ApiV1_GetPVZByID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverGetPVZByIDResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "delete": {
+        "operationId": "ApiV1_DeletePVZ",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverDeletePVZResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      },
+      "put": {
+        "operationId": "ApiV1_UpdatePVZ",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpc_serverUpdatePVZResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpc_serverUpdatePVZReq"
+            }
+          }
+        ],
+        "tags": [
+          "ApiV1"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "grpc_serverCreateOrderReq": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storesTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "packagingType": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverCreateOrderResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverCreatePVZReq": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverCreatePVZResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverDeleteOrderResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverDeletePVZResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverGetOrderByIDResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storesTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "giveOutTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isReturned": {
+          "type": "boolean"
+        },
+        "packagingType": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverGetPVZByIDResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverGiveOutOrdersReq": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "grpc_serverGiveOutOrdersResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverListClientOrdersResp": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/grpc_servermodel_order"
+          }
+        }
+      }
+    },
+    "grpc_serverListOrdersResp": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/grpc_servermodel_order"
+          }
+        }
+      }
+    },
+    "grpc_serverListPVZsResp": {
+      "type": "object",
+      "properties": {
+        "pvzs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/grpc_servermodelPVZ"
+          }
+        }
+      }
+    },
+    "grpc_serverListReturnedOrdersResp": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/grpc_servermodel_order"
+          }
+        }
+      }
+    },
+    "grpc_serverReturnOrderReq": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverReturnOrderResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverUpdateOrderReq": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storesTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "packagingType": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverUpdateOrderResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverUpdatePVZReq": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_serverUpdatePVZResp": {
+      "type": "object",
+      "properties": {
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_servermodelPVZ": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "contacts": {
+          "type": "string"
+        }
+      }
+    },
+    "grpc_servermodel_order": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "cost": {
+          "type": "string",
+          "format": "int64"
+        },
+        "storesTill": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "giveOutTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "isReturned": {
+          "type": "boolean"
+        },
+        "packagingType": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

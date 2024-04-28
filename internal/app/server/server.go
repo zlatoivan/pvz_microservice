@@ -9,9 +9,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
-	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
@@ -44,39 +46,55 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	router := s.createRouter(cfg, producer, redisPVZCache, redisOrderCache)
 	httpsServer := &http.Server{Addr: "localhost:" + cfg.HttpsPort, Handler: router}
 	httpServer := &http.Server{Addr: "localhost:" + cfg.HttpPort, Handler: router} // http.HandlerFunc(redirectToHTTPS)
+
+	mux := runtime.NewServeMux()
+	httpForGRPCServer := &http.Server{Addr: "localhost:" + "9002", Handler: mux}
+	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	err := pb.RegisterApiV1HandlerFromEndpoint(ctx, mux, "localhost:"+cfg.GrpcPort, opts)
+	if err != nil {
+		log.Printf("[httpServerForGrpc] pb.RegisterGatewayHandlerFromEndpoint: %v", err)
+	}
+
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
 	if err != nil {
 		return fmt.Errorf("[grpcServer] net.Listen: %v\n", err)
 	}
 	grpcServer := grpc.NewServer()
-	pb.RegisterApiServer(grpcServer, s.controllerGRPC)
+	pb.RegisterApiV1Server(grpcServer, s.controllerGRPC)
 
 	wg := sync.WaitGroup{}
 
 	log.Printf("[httpsServer] starting on %s\n", cfg.HttpsPort)
 	wg.Add(1)
 	go func() {
-		httpsServerStart(httpsServer)
+		httpsServerRun(httpsServer)
 		wg.Done()
 	}()
 
 	log.Printf("[httpServer] starting on %s\n", cfg.HttpPort)
 	wg.Add(1)
 	go func() {
-		httpServerStart(httpServer)
+		httpServerRun(httpServer)
 		wg.Done()
 	}()
 
 	log.Printf("[grpcServer] starting on %s\n", cfg.GrpcPort)
 	wg.Add(1)
 	go func() {
-		grpcServerStart(grpcServer, lis)
+		grpcServerRun(grpcServer, lis)
+		wg.Done()
+	}()
+
+	log.Printf("[httpForGrpcServer] starting on 9002")
+	wg.Add(1)
+	go func() {
+		httpForGrpcServerRun(httpForGRPCServer)
 		wg.Done()
 	}()
 
 	wg.Add(1)
 	go func() {
-		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer)
+		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer, httpForGRPCServer)
 		wg.Done()
 	}()
 
@@ -85,28 +103,35 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	return nil
 }
 
-func httpsServerStart(httpsServer *http.Server) {
+func httpsServerRun(httpsServer *http.Server) {
 	err := httpsServer.ListenAndServeTLS("internal/app/server/certificate/server.crt", "internal/app/server/certificate/server.key")
 	if err != nil {
 		log.Printf("[httpsServer] ListenAndServeTLS: %v\n", err)
 	}
 }
 
-func httpServerStart(httpServer *http.Server) {
+func httpServerRun(httpServer *http.Server) {
 	err := httpServer.ListenAndServe()
 	if err != nil {
 		log.Printf("[httpServer] ListenAndServe: %v\n", err)
 	}
 }
 
-func grpcServerStart(grpcServer *grpc.Server, lis net.Listener) {
+func grpcServerRun(grpcServer *grpc.Server, lis net.Listener) {
 	err := grpcServer.Serve(lis)
 	if err != nil {
 		log.Printf("[grpcServer] grpcServer.Serve: %v\n", err)
 	}
 }
 
-func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server) {
+func httpForGrpcServerRun(httpServerForGrpc *http.Server) {
+	err := httpServerForGrpc.ListenAndServe()
+	if err != nil {
+		log.Printf("[httpServerForGrpc] http.ListenAndServe: %v", err)
+	}
+}
+
+func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, httpForGRPCServer *http.Server) {
 	<-ctx.Done()
 	ctxTo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -124,6 +149,11 @@ func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer 
 	}
 
 	grpcServer.GracefulStop()
+
+	err = httpForGRPCServer.Shutdown(ctxTo)
+	if err != nil {
+		log.Printf("httpForGRPCServer.Shutdown: %v\n", err)
+	}
 
 	log.Println("[gracefulShutdown] shut down successfully")
 }
