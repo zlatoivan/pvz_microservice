@@ -81,13 +81,13 @@ test-integration-colored: ## run integration tests colored
 .PHONY: generate-proto
 generate-proto:
 	cd internal && \
-	rm -rf pkg && \
-	mkdir -p pkg && \
+	rm -rf pkg swagger && \
+	mkdir -p pkg swagger && \
 	protoc  --proto_path=api_proto \
 			--go_out=pkg \
 			--go-grpc_out=pkg \
 			--grpc-gateway_out=pkg --grpc-gateway_opt generate_unbound_methods=true \
-			--openapiv2_out . \
+			--openapiv2_out=swagger \
  			api.proto
 
 .PHONY: help
