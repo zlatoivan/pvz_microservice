@@ -13,10 +13,13 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/tracing"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
@@ -41,10 +44,6 @@ func New(pvzService pvz.Service, orderService order.Service, controllerGRPC hand
 	return server
 }
 
-//func redirectToHTTPS(w http.ResponseWriter, req *http.Data) {
-//	http.Redirect(w, req, "https://localhost:9001"+req.RequestURI, http.StatusMovedPermanently)
-//}
-
 // Run starts the server
 func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.Producer, redisPVZCache pvz.Redis, redisOrderCache order.Redis) error {
 	router := s.createRouter(cfg, producer, redisPVZCache, redisOrderCache)
@@ -61,7 +60,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterApiV1HandlerFromEndpoint(ctx, mux, "localhost:"+cfg.GrpcPort, opts)
 	if err != nil {
-		log.Printf("[httpServerForGrpc] pb.RegisterGatewayHandlerFromEndpoint: %v", err)
+		return fmt.Errorf("[httpServerForGrpc] pb.RegisterGatewayHandlerFromEndpoint: %w", err)
 	}
 	httpGatewayToGRPCServer := &http.Server{Addr: "localhost:" + gatewayPort, Handler: mux}
 
@@ -76,11 +75,23 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		metrics.ReturnedOrdersCounterMetric,
 		metrics.DeletedPVZsCounterMetric,
 	)
-
 	httpMetricsServer := &http.Server{
 		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
 		Addr:    "localhost:" + metricsPort,
 	}
+
+	// Tracing
+	shutdown, err := tracing.InitProvider(ctx)
+	if err != nil {
+		return fmt.Errorf("tracing.InitProvider: %w", err)
+	}
+	defer func() {
+		err = shutdown(ctx)
+		if err != nil {
+			log.Printf("tracing shutdown: %v", err)
+		}
+	}()
+	s.controllerGRPC.Tracer = otel.Tracer("my-tracer")
 
 	// gRPC
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
@@ -90,6 +101,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	grpcServer := grpc.NewServer(
 		grpc.StreamInterceptor(grpcMetrics.StreamServerInterceptor()),
 		grpc.UnaryInterceptor(grpcMetrics.UnaryServerInterceptor()),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 	pb.RegisterApiV1Server(grpcServer, s.controllerGRPC)
 

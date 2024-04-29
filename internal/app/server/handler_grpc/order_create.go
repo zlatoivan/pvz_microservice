@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/uuid"
 
-	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/model"
 )

@@ -6,6 +6,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
@@ -13,6 +15,17 @@ import (
 
 // GiveOutOrders creates Order
 func (h Controller) GiveOutOrders(ctx context.Context, in *pb.GiveOutOrdersReq) (*pb.GiveOutOrdersResp, error) {
+	commonAttrs := []attribute.KeyValue{
+		attribute.String("attrA", "1"),
+		attribute.String("attrB", "2"),
+		attribute.String("attrC", "3"),
+	}
+	ctx, span := h.Tracer.Start(
+		ctx,
+		"CollectorExporter-Example",
+		trace.WithAttributes(commonAttrs...))
+	defer span.End()
+
 	clientID, err := uuid.Parse(in.ClientId)
 	if err != nil {
 		log.Printf("[GiveOutOrders] uuid.Parse: %v\n", err)

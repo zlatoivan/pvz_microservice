@@ -14,7 +14,7 @@ compose-down: ## down docker compose
 
 .PHONY: compose-up-local
 compose-up-local: ## up docker compose local
-	docker compose up pg_db pg_db_test zookeeper kafka2 redis prometheus node-exporter -d
+	docker compose up pg_db pg_db_test zookeeper kafka2 redis prometheus node-exporter jaeger -d
 
 .PHONY: run
 run: ## run local
