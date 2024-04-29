@@ -73,6 +73,8 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		grpcMetrics,
 		metrics.GivenOutOrdersCounterMetric,
 		metrics.ClientGivenOutOrdersCounterMetric,
+		metrics.ReturnedOrdersCounterMetric,
+		metrics.DeletedPVZsCounterMetric,
 	)
 
 	httpMetricsServer := &http.Server{
