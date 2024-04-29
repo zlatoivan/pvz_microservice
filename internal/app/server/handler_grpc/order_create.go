@@ -24,7 +24,7 @@ func (h Controller) CreateOrder(ctx context.Context, in *pb.CreateOrderReq) (*pb
 		attribute.String("StoresTill", in.StoresTill.String()),
 		attribute.String("PackagingType", in.PackagingType),
 	}
-	ctx, span := h.Tracer.Start(
+	_, span := h.Tracer.Start(
 		ctx,
 		"CollectorExporter-CreateOrder",
 		trace.WithAttributes(commonAttrs...))

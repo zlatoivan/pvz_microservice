@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,13 +17,12 @@ import (
 // GiveOutOrders creates Order
 func (h Controller) GiveOutOrders(ctx context.Context, in *pb.GiveOutOrdersReq) (*pb.GiveOutOrdersResp, error) {
 	commonAttrs := []attribute.KeyValue{
-		attribute.String("attrA", "1"),
-		attribute.String("attrB", "2"),
-		attribute.String("attrC", "3"),
+		attribute.String("ClientID", in.ClientId),
+		attribute.String("IDs", strings.Join(in.Ids, ", ")),
 	}
-	ctx, span := h.Tracer.Start(
+	_, span := h.Tracer.Start(
 		ctx,
-		"CollectorExporter-Example",
+		"CollectorExporter-GiveOutOrders",
 		trace.WithAttributes(commonAttrs...))
 	defer span.End()
 

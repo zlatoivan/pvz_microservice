@@ -92,6 +92,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		}
 	}()
 	s.controllerGRPC.Tracer = otel.Tracer("grpc-tracer")
+	log.Printf("[traser] starting on %s", "16686")
 
 	// gRPC
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)

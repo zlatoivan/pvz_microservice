@@ -6,6 +6,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
@@ -13,6 +15,15 @@ import (
 
 // DeletePVZ creates PVZ
 func (h Controller) DeletePVZ(ctx context.Context, in *pb.DeletePVZReq) (*pb.DeletePVZResp, error) {
+	commonAttrs := []attribute.KeyValue{
+		attribute.String("ID", in.Id),
+	}
+	_, span := h.Tracer.Start(
+		ctx,
+		"CollectorExporter-DeletePVZ",
+		trace.WithAttributes(commonAttrs...))
+	defer span.End()
+
 	id, err := uuid.Parse(in.Id)
 	if err != nil {
 		log.Printf("[DeletePVZ] uuid.Parse: %v\n", err)
