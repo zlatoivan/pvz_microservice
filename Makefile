@@ -20,12 +20,12 @@ compose-up-local: ## up docker compose local
 compose-down-local: ## down docker compose local
 	docker compose -f docker-compose.local.yaml down
 
-.PHONY: run-local
+.PHONY: run
 run-local: ## run local
 	CONFIG_PATH=config/config.local.yaml go run cmd/server/main.go
 
-.PHONY: run-test-local
-run-test-local: ## run local with tests
+.PHONY: run-test
+run-test: ## run local with tests
 	CONFIG_PATH=config/config_test.local.yaml go run cmd/server/main.go
 
 ..PHONY: build
