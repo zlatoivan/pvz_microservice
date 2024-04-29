@@ -30,8 +30,8 @@ func InitTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("otlptracehttp.New: %w", err)
 	}
-
 	bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
+
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithResource(res),
