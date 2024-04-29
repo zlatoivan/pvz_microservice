@@ -1,18 +1,22 @@
 server:
   http_port: 9000
   https_port: 9001
+  gateway_port: 9002
+  metrics_port: 9003
   grpcPort: 50051
+  tracer_exporter_port: 4318
+  tracer_jaeger_ui_port: 16686
   pvz_auth_login: ivan
   pvz_auth_password: pvz_best_pass
   order_auth_login: ivan
   order_auth_password: order_best_pass
-  brokers: ['localhost:9092']
+  brokers: ['kafka2:9092']
   topic: crud
-  redis: 'localhost:6379'
+  redis: 'redis:6379'
 
 postgres:
-  host: localhost
-  port: 5433
+  host: pg_db
+  port: 5432
   dbname: postgres
   user: postgres
   password: postgres

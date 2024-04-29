@@ -55,17 +55,15 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	httpsServer := &http.Server{Addr: "localhost:" + cfg.HttpsPort, Handler: router}
 
 	// HTTP gateway to gRPC
-	const gatewayPort = "9002"
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := pb.RegisterApiV1HandlerFromEndpoint(ctx, mux, "localhost:"+cfg.GrpcPort, opts)
 	if err != nil {
 		return fmt.Errorf("[httpServerForGrpc] pb.RegisterGatewayHandlerFromEndpoint: %w", err)
 	}
-	httpGatewayToGRPCServer := &http.Server{Addr: "localhost:" + gatewayPort, Handler: mux}
+	httpGatewayToGRPCServer := &http.Server{Addr: "localhost:" + cfg.GatewayPort, Handler: mux}
 
 	// HTTP metrics
-	const metricsPort = "9003"
 	reg := prometheus.NewRegistry()
 	grpcMetrics := grpc_prometheus.NewServerMetrics()
 	reg.MustRegister(
@@ -77,22 +75,16 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	)
 	httpMetricsServer := &http.Server{
 		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
-		Addr:    "localhost:" + metricsPort,
+		Addr:    "localhost:" + cfg.MetricsPort,
 	}
 
 	// Tracing
-	tracer, err := tracing.InitTracerProvider(ctx)
+	tracerShutdown, err := tracing.InitTracerProvider(ctx)
 	if err != nil {
 		return fmt.Errorf("tracing.InitTracerProvider: %w", err)
 	}
-	defer func() {
-		err = tracer.Shutdown(ctx)
-		if err != nil {
-			log.Printf("tracer.Shutdown: %v", err)
-		}
-	}()
 	s.controllerGRPC.Tracer = otel.Tracer("grpc-tracer")
-	log.Printf("[traser] starting on %s", "16686")
+	log.Printf("[traser] starting on %s", cfg.TracerJaegerUIPort)
 
 	// gRPC
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
@@ -123,14 +115,14 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		wg.Done()
 	}()
 
-	log.Printf("[httpGatewayToGRPCServer] starting on %s\n", gatewayPort)
+	log.Printf("[httpGatewayToGRPCServer] starting on %s\n", cfg.GatewayPort)
 	wg.Add(1)
 	go func() {
 		httpGatewayToGrpcServerRun(httpGatewayToGRPCServer)
 		wg.Done()
 	}()
 
-	log.Printf("[httpMetricsServer] starting on %s\n", metricsPort)
+	log.Printf("[httpMetricsServer] starting on %s\n", cfg.MetricsPort)
 	wg.Add(1)
 	go func() {
 		httpMetricsServerRun(httpMetricsServer)
@@ -146,7 +138,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 
 	wg.Add(1)
 	go func() {
-		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer, httpGatewayToGRPCServer, httpMetricsServer)
+		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer, httpGatewayToGRPCServer, httpMetricsServer, tracerShutdown)
 		wg.Done()
 	}()
 
@@ -190,7 +182,7 @@ func grpcServerRun(grpcServer *grpc.Server, lis net.Listener) {
 	}
 }
 
-func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, httpForGRPCServer *http.Server, httpMetricsServer *http.Server) {
+func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, httpForGRPCServer *http.Server, httpMetricsServer *http.Server, tracerShutdown func(context.Context) error) {
 	<-ctx.Done()
 	ctxTo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -215,6 +207,11 @@ func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer 
 	err = httpMetricsServer.Shutdown(ctxTo)
 	if err != nil {
 		log.Printf("httpMetricsServer.Shutdown: %v\n", err)
+	}
+
+	err = tracerShutdown(ctx)
+	if err != nil {
+		log.Printf("[tracerShutdown] tracer shutdown: %v", err)
 	}
 
 	grpcServer.GracefulStop()

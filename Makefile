@@ -3,26 +3,30 @@
 
 .PHONY: compose-up
 compose-up: ## up docker compose
-	docker compose up --build
+	docker compose -f docker-compose.yaml up --build
 
 .PHONY: compose-down
 compose-down: ## down docker compose
-	docker compose down
+	docker compose -f docker-compose.yaml down
 
 
 # ---------- run local ----------
 
 .PHONY: compose-up-local
 compose-up-local: ## up docker compose local
-	docker compose up pg_db pg_db_test zookeeper kafka2 redis prometheus node-exporter jaeger -d
+	docker compose -f docker-compose.local.yaml up -d
 
-.PHONY: run
-run: ## run local
-	CONFIG_PATH=config/config.yaml go run cmd/server/main.go
+.PHONY: compose-down-local
+compose-down-local: ## down docker compose local
+	docker compose -f docker-compose.local.yaml down
 
-.PHONY: run-test
-run-test: ## run local with tests
-	CONFIG_PATH=config/config_test.yaml go run cmd/server/main.go
+.PHONY: run-local
+run-local: ## run local
+	CONFIG_PATH=config/config.local.yaml go run cmd/server/main.go
+
+.PHONY: run-test-local
+run-test-local: ## run local with tests
+	CONFIG_PATH=config/config_test.local.yaml go run cmd/server/main.go
 
 ..PHONY: build
 build: ## build local

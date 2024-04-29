@@ -1,22 +1,4 @@
 services:
-  app:
-    build: .
-    restart: unless-stopped
-    environment:
-      - CONFIG_PATH
-    depends_on:
-      pg_db:
-        condition: service_healthy
-      pg_db_test:
-        condition: service_healthy
-      kafka2:
-        condition: service_healthy
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    hostname:
-      localhost
-
   pg_db:
     image: postgres:13
     restart: unless-stopped
@@ -85,7 +67,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_LISTENERS: LISTENER_INT://kafka2:29092,LISTENER_EXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: LISTENER_INT://kafka2:29092,LISTENER_EXT://kafka2:9092
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_INT://kafka2:29092,LISTENER_EXT://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_INT
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181

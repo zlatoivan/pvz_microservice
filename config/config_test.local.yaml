@@ -10,13 +10,13 @@ server:
   pvz_auth_password: pvz_best_pass
   order_auth_login: ivan
   order_auth_password: order_best_pass
-  brokers: ['kafka2:9092']
+  brokers: ['localhost:9092']
   topic: crud
-  redis: 'redis:6379'
+  redis: 'localhost:6379'
 
 postgres:
-  host: pg_db_еуые
-  port: 5432
+  host: localhost
+  port: 5431
   dbname: test
   user: postgres
   password: postgres
