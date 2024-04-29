@@ -1,4 +1,10 @@
 
+# ---------- help ----------
+.PHONY: help
+help: ## display this help screen
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+
+
 # ---------- run ----------
 
 .PHONY: compose-up
@@ -25,7 +31,7 @@ run-local: ## run local
 	CONFIG_PATH=config/config.local.yaml go run cmd/server/main.go
 
 .PHONY: run-test
-run-test: ## run local with tests
+run-test: ## run local for tests
 	CONFIG_PATH=config/config_test.local.yaml go run cmd/server/main.go
 
 ..PHONY: build
@@ -83,7 +89,7 @@ test-integration-colored: ## run integration tests colored
 # ---------- rare ----------
 
 .PHONY: generate-proto
-generate-proto:
+generate-proto: ## generate proto
 	rm -rf internal/pkg swagger && \
 	mkdir -p internal/pkg swagger
 	protoc  --proto_path=internal/api_proto \
@@ -92,10 +98,6 @@ generate-proto:
 			--grpc-gateway_out=internal/pkg --grpc-gateway_opt generate_unbound_methods=true \
 			--openapiv2_out=swagger \
  			api.proto
-
-.PHONY: help
-help: ## display this help screen
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-24s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: linter
 linter: ## check by golangci linter
