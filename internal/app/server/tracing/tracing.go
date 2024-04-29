@@ -12,27 +12,25 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 )
 
-func InitProvider(ctx context.Context) (func(context.Context) error, error) {
+func InitTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
-			// the service name used to display traces in backends
-			semconv.ServiceName("my-service"),
+			semconv.ServiceName("grpc-server"),
 		),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create resource: %w", err)
+		return nil, fmt.Errorf("resource.New: %w", err)
 	}
 
-	// Set up a trace exporter
-	traceExporter, err := otlptracehttp.New(context.Background(),
+	traceExporter, err := otlptracehttp.New(
+		ctx,
 		otlptracehttp.WithInsecure(),
-		otlptracehttp.WithEndpoint("localhost:16686"))
+		otlptracehttp.WithEndpoint("localhost:4318"),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
+		return nil, fmt.Errorf("otlptracehttp.New: %w", err)
 	}
 
-	// Register the trace exporter with a TracerProvider, using a batch
-	// span processor to aggregate spans before export.
 	bsp := sdktrace.NewBatchSpanProcessor(traceExporter)
 	tracerProvider := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
@@ -40,10 +38,7 @@ func InitProvider(ctx context.Context) (func(context.Context) error, error) {
 		sdktrace.WithSpanProcessor(bsp),
 	)
 	otel.SetTracerProvider(tracerProvider)
-
-	// set global propagator to tracecontext (the default is no-op).
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
-	// Shutdown will flush any remaining spans and shut down the exporter.
-	return tracerProvider.Shutdown, nil
+	return tracerProvider, nil
 }

@@ -81,17 +81,17 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	}
 
 	// Tracing
-	shutdown, err := tracing.InitProvider(ctx)
+	tracer, err := tracing.InitTracerProvider(ctx)
 	if err != nil {
-		return fmt.Errorf("tracing.InitProvider: %w", err)
+		return fmt.Errorf("tracing.InitTracerProvider: %w", err)
 	}
 	defer func() {
-		err = shutdown(ctx)
+		err = tracer.Shutdown(ctx)
 		if err != nil {
-			log.Printf("tracing shutdown: %v", err)
+			log.Printf("tracer.Shutdown: %v", err)
 		}
 	}()
-	s.controllerGRPC.Tracer = otel.Tracer("my-tracer")
+	s.controllerGRPC.Tracer = otel.Tracer("grpc-tracer")
 
 	// gRPC
 	lis, err := net.Listen("tcp", ":"+cfg.GrpcPort)
@@ -122,7 +122,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 		wg.Done()
 	}()
 
-	log.Printf("[httpForGrpcServer] starting on %s\n", gatewayPort)
+	log.Printf("[httpGatewayToGRPCServer] starting on %s\n", gatewayPort)
 	wg.Add(1)
 	go func() {
 		httpGatewayToGrpcServerRun(httpGatewayToGRPCServer)
