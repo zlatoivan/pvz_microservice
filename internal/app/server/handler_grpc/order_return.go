@@ -7,7 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
 // ReturnOrder creates Order
@@ -27,6 +28,8 @@ func (h Controller) ReturnOrder(ctx context.Context, in *pb.ReturnOrderReq) (*pb
 		log.Printf("[ReturnOrder] h.orderService.ReturnOrder: %v\n", err)
 		return nil, fmt.Errorf("h.orderService.ReturnOrder: %w", err)
 	}
+
+	metrics.ReturnedOrdersCounterMetric.Inc()
 
 	log.Println("[ReturnOrder] Order is returned")
 	resp := &pb.ReturnOrderResp{

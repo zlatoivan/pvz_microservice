@@ -7,7 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
 // DeletePVZ creates PVZ
@@ -22,6 +23,8 @@ func (h Controller) DeletePVZ(ctx context.Context, in *pb.DeletePVZReq) (*pb.Del
 		log.Printf("[DeletePVZ] h.pvzService.DeletePVZ: %v\n", err)
 		return nil, fmt.Errorf("h.pvzService.DeletePVZ: %w", err)
 	}
+
+	metrics.DeletedPVZsCounterMetric.Inc()
 
 	log.Printf("[DeletePVZ] PVZ deleted\n")
 	resp := &pb.DeletePVZResp{

@@ -7,7 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	pb "gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
 // GiveOutOrders creates Order
@@ -31,6 +32,9 @@ func (h Controller) GiveOutOrders(ctx context.Context, in *pb.GiveOutOrdersReq) 
 		log.Printf("[GiveOutOrders] h.orderService.GiveOutOrders: %v\n", err)
 		return nil, fmt.Errorf("h.orderService.GiveOutOrders: %w", err)
 	}
+
+	metrics.GivenOutOrdersCounterMetric.Add(float64(len(ids)))
+	metrics.ClientGivenOutOrdersCounterMetric.WithLabelValues(clientID.String()).Inc()
 
 	log.Printf("[GiveOutOrders] Orders are given out\n")
 	resp := &pb.GiveOutOrdersResp{
