@@ -67,8 +67,8 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 
 	// HTTP metrics
 	const metricsPort = "9003"
-	grpcMetrics := grpc_prometheus.NewServerMetrics()
 	reg := prometheus.NewRegistry()
+	grpcMetrics := grpc_prometheus.NewServerMetrics()
 	reg.MustRegister(
 		grpcMetrics,
 		metrics.GivenOutOrdersCounterMetric,

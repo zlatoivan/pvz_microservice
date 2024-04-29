@@ -3,6 +3,21 @@
 ![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg) 
 ![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)
 
+## Стек технологий
+* [gRPC](https://grpc.io/) - gRPC
+* [Postgres](https://www.postgresql.org/) - PostgreSQL
+* [pgx](https://github.com/jackc/pgx) - PostgreSQL driver and toolkit for Go
+* [goose](https://github.com/pressly/goose) - Database migrations
+* [testify](https://github.com/stretchr/testify) - Testing toolkit
+* [minimock](https://github.com/gojuno/minimock) - Mocking framework
+* [Docker](https://www.docker.com/) - Docker
+* [Kafka](https://kafka.apache.org/) - Message broker
+* [Redis](https://github.com/go-redis/redis) - Cache
+* [Prometheus](https://prometheus.io/) - Prometheus
+
+[//]: # (* [Grafana]&#40;https://grafana.com/&#41; - Grafana)
+[//]: # (* [Jaeger]&#40;https://www.jaegertracing.io/&#41; - Jaeger tracing)
+
 ## Запуск программы
 
 ##### Все в докере
