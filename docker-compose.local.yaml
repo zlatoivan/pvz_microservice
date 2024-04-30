@@ -42,7 +42,7 @@ services:
       ZOOKEEPER_SERVERS: zookeeper:2888:3888
     healthcheck:
       test: echo stat | nc localhost 2181
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
     ports:
@@ -56,7 +56,7 @@ services:
     healthcheck:
       test: ps aux | grep -q [k]afka
 #      test: ps augwwx | egrep [S]upportedKafka
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
     depends_on:
@@ -87,22 +87,6 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
       - '9090:9090'
-    depends_on:
-      - node-exporter
-
-  node-exporter:
-    image: prom/node-exporter:v1.1.2
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - --path.procfs=/host/proc
-      - --path.sysfs=/host/sys
-      - --collector.filesystem.ignored-mount-points
-      - ^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
-    ports:
-      - '9100:9100'
 
   jaeger:
     image: jaegertracing/all-in-one:latest

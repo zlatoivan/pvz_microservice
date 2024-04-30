@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metric"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
@@ -41,7 +41,7 @@ func (h Controller) ReturnOrder(ctx context.Context, in *pb.ReturnOrderReq) (*pb
 		return nil, fmt.Errorf("h.orderService.ReturnOrder: %w", err)
 	}
 
-	metrics.ReturnedOrdersCounterMetric.Inc()
+	metric.ReturnedOrdersCounterMetric.Inc()
 
 	log.Println("[ReturnOrder] Order is returned")
 	resp := &pb.ReturnOrderResp{

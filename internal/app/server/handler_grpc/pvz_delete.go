@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metric"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
@@ -35,7 +35,7 @@ func (h Controller) DeletePVZ(ctx context.Context, in *pb.DeletePVZReq) (*pb.Del
 		return nil, fmt.Errorf("h.pvzService.DeletePVZ: %w", err)
 	}
 
-	metrics.DeletedPVZsCounterMetric.Inc()
+	metric.DeletedPVZsCounterMetric.Inc()
 
 	log.Printf("[DeletePVZ] PVZ deleted\n")
 	resp := &pb.DeletePVZResp{

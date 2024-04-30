@@ -15,13 +15,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler_grpc"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metric"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/tracing"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
@@ -62,23 +63,25 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 	}
 	httpGatewayToGRPCServer := &http.Server{Addr: "localhost:" + cfg.GatewayPort, Handler: mux}
 
-	// HTTP metrics
+	// HTTP metric
 	reg := prometheus.NewRegistry()
 	grpcMetrics := grpc_prometheus.NewServerMetrics()
 	reg.MustRegister(
 		grpcMetrics,
-		metrics.GivenOutOrdersCounterMetric,
-		metrics.ClientGivenOutOrdersCounterMetric,
-		metrics.ReturnedOrdersCounterMetric,
-		metrics.DeletedPVZsCounterMetric,
+		metric.GivenOutOrdersCounterMetric,
+		metric.ClientGivenOutOrdersCounterMetric,
+		metric.ReturnedOrdersCounterMetric,
+		metric.DeletedPVZsCounterMetric,
 	)
+	metricsRouter := http.NewServeMux()
+	metricsRouter.Handle("/", promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
 	httpMetricsServer := &http.Server{
-		Handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
 		Addr:    "localhost:" + cfg.MetricsPort,
+		Handler: metricsRouter,
 	}
 
 	// Tracing
-	tracerShutdown, err := tracing.InitTracerProvider(ctx)
+	tracerProvider, err := tracing.InitTracerProvider(ctx)
 	if err != nil {
 		return fmt.Errorf("tracing.InitTracerProvider: %w", err)
 	}
@@ -137,7 +140,7 @@ func (s Server) Run(ctx context.Context, cfg config.Server, producer middleware.
 
 	wg.Add(1)
 	go func() {
-		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer, httpGatewayToGRPCServer, httpMetricsServer, tracerShutdown)
+		gracefulShutdown(ctx, httpsServer, httpServer, grpcServer, httpGatewayToGRPCServer, httpMetricsServer, tracerProvider)
 		wg.Done()
 	}()
 
@@ -181,7 +184,7 @@ func grpcServerRun(grpcServer *grpc.Server, lis net.Listener) {
 	}
 }
 
-func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, httpForGRPCServer *http.Server, httpMetricsServer *http.Server, tracerShutdown func(context.Context) error) {
+func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer *http.Server, grpcServer *grpc.Server, httpForGRPCServer *http.Server, httpMetricsServer *http.Server, tracerProvider *sdktrace.TracerProvider) {
 	<-ctx.Done()
 	ctxTo, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -208,7 +211,7 @@ func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer 
 		log.Printf("httpMetricsServer.Shutdown: %v\n", err)
 	}
 
-	err = tracerShutdown(ctx)
+	err = tracerProvider.Shutdown(ctx)
 	if err != nil {
 		log.Printf("[tracerShutdown] tracer shutdown: %v", err)
 	}

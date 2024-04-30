@@ -12,7 +12,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.25.0"
 )
 
-func InitTracerProvider(ctx context.Context) (func(context.Context) error, error) {
+func InitTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	res, err := resource.New(ctx,
 		resource.WithAttributes(
 			semconv.ServiceName("grpc-server"),
@@ -40,5 +40,5 @@ func InitTracerProvider(ctx context.Context) (func(context.Context) error, error
 	otel.SetTracerProvider(tracerProvider)
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 
-	return tracerProvider.Shutdown, nil
+	return tracerProvider, nil
 }

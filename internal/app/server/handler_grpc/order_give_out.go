@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metric"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
@@ -46,8 +46,8 @@ func (h Controller) GiveOutOrders(ctx context.Context, in *pb.GiveOutOrdersReq) 
 		return nil, fmt.Errorf("h.orderService.GiveOutOrders: %w", err)
 	}
 
-	metrics.GivenOutOrdersCounterMetric.Add(float64(len(ids)))
-	metrics.ClientGivenOutOrdersCounterMetric.WithLabelValues(clientID.String()).Inc()
+	metric.GivenOutOrdersCounterMetric.Add(float64(len(ids)))
+	metric.ClientGivenOutOrdersCounterMetric.WithLabelValues(clientID.String()).Inc()
 
 	log.Printf("[GiveOutOrders] Orders are given out\n")
 	resp := &pb.GiveOutOrdersResp{
