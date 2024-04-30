@@ -188,14 +188,14 @@ func gracefulShutdown(ctx context.Context, httpsServer *http.Server, httpServer 
 
 	log.Println("[gracefulShutdown] shutting down")
 
-	err := httpsServer.Shutdown(ctxTo)
-	if err != nil {
-		log.Printf("httpsServer.Shutdown: %v\n", err)
-	}
-
-	err = httpServer.Shutdown(ctxTo)
+	err := httpServer.Shutdown(ctxTo)
 	if err != nil {
 		log.Printf("httpServer.Shutdown: %v\n", err)
+	}
+
+	err = httpsServer.Shutdown(ctxTo)
+	if err != nil {
+		log.Printf("httpsServer.Shutdown: %v\n", err)
 	}
 
 	err = httpForGRPCServer.Shutdown(ctxTo)
