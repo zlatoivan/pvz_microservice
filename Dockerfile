@@ -8,7 +8,7 @@ RUN go install github.com/pressly/goose/cmd/goose
 
 COPY . .
 
-RUN go build -o main cmd/api/main.go
+RUN go build -o main cmd/server/main.go
 
 CMD ["./main"]
 

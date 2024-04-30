@@ -3,7 +3,7 @@ server:
   https_port: 9001
   gateway_port: 9002
   metrics_port: 9003
-  grpcPort: 50051
+  grpc_port: 50051
   tracer_exporter_port: 4318
   tracer_jaeger_ui_port: 16686
   pvz_auth_login: ivan
