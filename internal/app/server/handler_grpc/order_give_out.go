@@ -46,8 +46,9 @@ func (h Controller) GiveOutOrders(ctx context.Context, in *pb.GiveOutOrdersReq) 
 		return nil, fmt.Errorf("h.orderService.GiveOutOrders: %w", err)
 	}
 
-	metric.GivenOutOrdersCounterMetric.Add(float64(len(ids)))
-	metric.ClientGivenOutOrdersCounterMetric.WithLabelValues(clientID.String()).Inc()
+	cnt := float64(len(ids))
+	metric.GivenOutOrdersCounterMetric.Add(cnt)
+	metric.ClientGivenOutOrdersCounterMetric.WithLabelValues(clientID.String()).Add(cnt)
 
 	log.Printf("[GiveOutOrders] Orders are given out\n")
 	resp := &pb.GiveOutOrdersResp{
