@@ -13,7 +13,7 @@
 * [Docker](https://www.docker.com/) - Docker
 * [Kafka](https://kafka.apache.org/) - Message broker
 * [Redis](https://github.com/go-redis/redis) - Cache
-* [Prometheus](https://prometheus.io/) - Prometheus
+* [Prometheus](https://prometheus.io/) - Metrics
 * [Jaeger](https://www.jaegertracing.io/) - Tracing
 
 
@@ -59,12 +59,12 @@
 
 ## Остановка программы
 
-##### Все в докере:
+##### Все в докере
 ````bash
 make compose-down
 ````
 
-##### Локально приложение, остальное в докере:
+##### Локально приложение, остальное в докере
 ````bash
 make compose-down-local
 ````

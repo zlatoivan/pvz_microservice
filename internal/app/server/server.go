@@ -18,15 +18,14 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/tracing"
-	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
-
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/order"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler/pvz"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/handler_grpc"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/metrics"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/middleware"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/app/server/tracing"
 	"gitlab.ozon.dev/zlatoivan4/homework/internal/config"
+	"gitlab.ozon.dev/zlatoivan4/homework/internal/pkg/pb"
 )
 
 type Server struct {
